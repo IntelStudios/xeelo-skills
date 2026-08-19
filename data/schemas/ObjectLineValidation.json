@@ -1,0 +1,20 @@
+{
+  "table": "ObjectLineValidation",
+  "columns": [
+    {
+      "name": "ObjectLineValidationID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineValidationName",
+      "type": "VARCHAR (50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": []
+}

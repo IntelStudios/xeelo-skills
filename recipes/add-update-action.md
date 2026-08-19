@@ -1,0 +1,92 @@
+# Add Update Action
+
+Add an **ObjectUpdateAction** so users can create a **new request version** after the current one is **Completed**.
+
+Entity reference: [docs/entities/update-actions.md](../docs/entities/update-actions.md)
+
+## Preconditions
+
+- Object exists with layout + **ObjectDefault** (template) and workflow including a **Completed** status step
+- Target site has roles/statuses referenced by the template workflow
+- For user visibility: configure **ObjectUpdateActionUserList** in Admin (not in Object Transfer)
+
+## Admin UI path
+
+Object Detail → **Update Actions**:
+
+1. **Create action** — name, order, template scope (all or one ObjectDefault), optional **Workflow** for the new version, quick flag, tab focus
+2. **Conditions** — when the action appears on completed requests (`spRequestUpdateActionList`)
+3. **Access** — per-line editable/visible flags during EditableUpdate
+4. **Users** — allow list (`ObjectUpdateActionUserList`)
+5. **Messages** — optional object messages on the update form
+
+## Spec / Object Transfer path
+
+Optional fragment `spec/update-actions.yaml` (see [spec-format.md](../docs/transfer/spec-format.md)):
+
+```yaml
+updateActions:
+  - key: amend
+    name: Amend record
+    order: 10
+    access:
+      - field: FIELD_CODE
+        editable: true
+        visible: true
+```
+
+Include in `xeelo-spec.yaml`:
+
+```yaml
+includes:
+  - spec/object.yaml
+  - spec/workflow.yaml
+  - spec/update-actions.yaml
+  - spec/ids.yaml
+```
+
+Populate `ids.explicit.updateActions`, `objectUpdateAccess`, etc. from Admin export or extract:
+
+```bash
+python scripts/extract-object-transfer-to-spec.py \
+  path/to/object-transfer.xml \
+  --object-id <id> \
+  -o projects/<project>/env/objects/<slug>
+```
+
+Generate OT via change loop:
+
+```bash
+python scripts/generate-change-loop.py projects/<project>/changes/<slug>
+```
+
+**Transfer scope:** `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectUpdateActionCondition`, `ObjectUpdateMessage`. **Not** `ObjectUpdateActionUserList` (configure users in Admin after deploy).
+
+## Checklist
+
+- [ ] Template workflow can reach **Completed**
+- [ ] Update action defined with order and name
+- [ ] Line access set (defaults: visible yes, editable no)
+- [ ] Conditions if action should not always appear
+- [ ] User allow list in Admin
+- [ ] Optional workflow on action for post-update process
+- [ ] Spec `ids.explicit` populated for Orig. ID import
+- [ ] OT package includes ObjectUpdateAction subtree
+
+## Troubleshooting
+
+| Symptom | Check |
+|---------|--------|
+| No update buttons on request | Request must be **Completed** |
+| Action missing for some users | `ObjectUpdateActionUserList` / User Access Detail |
+| Action missing for some requests | Conditions failed (`spRequestUpdateActionList`) |
+| Wrong workflow on new version | `ObjectUpdateAction.WorkflowID` vs template fallback |
+| Wrong fields editable | `ObjectUpdateAccess` for that action |
+
+## Planned: WorkflowStepAction M:N
+
+Target model: junction table linking **WorkflowStepAction** ↔ **ObjectUpdateAction** (not in current platform schema). Until then, update actions are offered on all completed requests for the object (filtered by conditions + users).
+
+## Sample
+
+[`projects/cars/`](../projects/cars/) — `ObjectUpdateAction` id 5118 in Object Transfer extract.

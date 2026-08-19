@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.venv/
+
+# Site working copies — never in the public KB
+/projects/
+
+# Local product-source index — never in the public KB
+/internal/
+
+# Per-project Admin credentials (never commit)
+**/.xeelo-connection.json

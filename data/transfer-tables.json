@@ -1,0 +1,442 @@
+[
+  {
+    "table": "AttachmentStorage",
+    "type": "X"
+  },
+  {
+    "table": "Calendar",
+    "type": "U"
+  },
+  {
+    "table": "Company",
+    "type": "U"
+  },
+  {
+    "table": "CustomColor",
+    "type": "D"
+  },
+  {
+    "table": "DataClassification",
+    "type": "U"
+  },
+  {
+    "table": "Export",
+    "type": "U"
+  },
+  {
+    "table": "ExportCalculation",
+    "type": "D"
+  },
+  {
+    "table": "ExportCondition",
+    "type": "D"
+  },
+  {
+    "table": "ExportLine",
+    "type": "D"
+  },
+  {
+    "table": "ExportTempCalc",
+    "type": "D"
+  },
+  {
+    "table": "GeneralVariable",
+    "type": "X"
+  },
+  {
+    "table": "Import",
+    "type": "U"
+  },
+  {
+    "table": "ImportSection",
+    "type": "U"
+  },
+  {
+    "table": "ImportSectionLine",
+    "type": "D"
+  },
+  {
+    "table": "LanguageTable",
+    "type": "D"
+  },
+  {
+    "table": "Notification",
+    "type": "U"
+  },
+  {
+    "table": "NotificationAttachment",
+    "type": "D"
+  },
+  {
+    "table": "NotificationCalculation",
+    "type": "D"
+  },
+  {
+    "table": "NotificationCondition",
+    "type": "D"
+  },
+  {
+    "table": "NotificationPrintout",
+    "type": "D"
+  },
+  {
+    "table": "NotificationTempCalc",
+    "type": "D"
+  },
+  {
+    "table": "Object",
+    "type": "U"
+  },
+  {
+    "table": "ObjectAction",
+    "type": "U"
+  },
+  {
+    "table": "ObjectActionCondition",
+    "type": "D"
+  },
+  {
+    "table": "ObjectActionParam",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefault",
+    "type": "U"
+  },
+  {
+    "table": "ObjectDefaultAccess",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultAccessExternal",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultAccessOwner",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultAccessView",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultCreateCopy",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultLineCalculationOrder",
+    "type": "D"
+  },
+  {
+    "table": "ObjectDefaultMessage",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLine",
+    "type": "U"
+  },
+  {
+    "table": "ObjectLineAutoNumber",
+    "type": "X"
+  },
+  {
+    "table": "ObjectLineLookup",
+    "type": "U"
+  },
+  {
+    "table": "ObjectLineLookupRefExternal",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLineLookupRefObject",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLineLookupValue",
+    "type": "X"
+  },
+  {
+    "table": "ObjectLineOnGrid",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLineSection",
+    "type": "U"
+  },
+  {
+    "table": "ObjectLineSource",
+    "type": "X"
+  },
+  {
+    "table": "ObjectLineSourceRefExternal",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLineSourceRefObject",
+    "type": "D"
+  },
+  {
+    "table": "ObjectLineSourceValue",
+    "type": "X"
+  },
+  {
+    "table": "ObjectLineTab",
+    "type": "U"
+  },
+  {
+    "table": "ObjectMessage",
+    "type": "U"
+  },
+  {
+    "table": "ObjectMessageCondition",
+    "type": "D"
+  },
+  {
+    "table": "ObjectService",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSub",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubDefault",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "type": "D"
+  },
+  {
+    "table": "ObjectSubDefaultLineCalculationOrder",
+    "type": "D"
+  },
+  {
+    "table": "ObjectSubLine",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubLineOnGrid",
+    "type": "D"
+  },
+  {
+    "table": "ObjectSubLineSection",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubLineTab",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubPrefill",
+    "type": "U"
+  },
+  {
+    "table": "ObjectSubPrefillData",
+    "type": "D"
+  },
+  {
+    "table": "ObjectTempCalc",
+    "type": "U"
+  },
+  {
+    "table": "ObjectTempCalcLine",
+    "type": "U"
+  },
+  {
+    "table": "ObjectType",
+    "type": "U"
+  },
+  {
+    "table": "ObjectUpdateAccess",
+    "type": "D"
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "type": "U"
+  },
+  {
+    "table": "ObjectUpdateActionCondition",
+    "type": "D"
+  },
+  {
+    "table": "ObjectUpdateMessage",
+    "type": "D"
+  },
+  {
+    "table": "ObjectVisibility",
+    "type": "U"
+  },
+  {
+    "table": "ObjectVisibilityAccessView",
+    "type": "D"
+  },
+  {
+    "table": "ObjectWebhook",
+    "type": "U"
+  },
+  {
+    "table": "Periodic",
+    "type": "U"
+  },
+  {
+    "table": "PeriodicAction",
+    "type": "U"
+  },
+  {
+    "table": "PeriodicActionCondition",
+    "type": "D"
+  },
+  {
+    "table": "PeriodicActionParam",
+    "type": "D"
+  },
+  {
+    "table": "PeriodicCalculation",
+    "type": "D"
+  },
+  {
+    "table": "PeriodicCondition",
+    "type": "D"
+  },
+  {
+    "table": "Printout",
+    "type": "U"
+  },
+  {
+    "table": "PrintoutCalculation",
+    "type": "D"
+  },
+  {
+    "table": "PrintoutCondition",
+    "type": "D"
+  },
+  {
+    "table": "PrintoutMessage",
+    "type": "D"
+  },
+  {
+    "table": "PrintoutTempCalc",
+    "type": "D"
+  },
+  {
+    "table": "ReportResult",
+    "type": "U"
+  },
+  {
+    "table": "ReportResultGraph",
+    "type": "U"
+  },
+  {
+    "table": "ReportResultGraphDataset",
+    "type": "D"
+  },
+  {
+    "table": "ReportResultGraphParam",
+    "type": "D"
+  },
+  {
+    "table": "ReportResultLine",
+    "type": "D"
+  },
+  {
+    "table": "ReportSource",
+    "type": "U"
+  },
+  {
+    "table": "ReportSourceLine",
+    "type": "D"
+  },
+  {
+    "table": "ReportStructure",
+    "type": "U"
+  },
+  {
+    "table": "ReportStructureLine",
+    "type": "D"
+  },
+  {
+    "table": "RequestStatus",
+    "type": "U"
+  },
+  {
+    "table": "Role",
+    "type": "U"
+  },
+  {
+    "table": "Scheduler",
+    "type": "U"
+  },
+  {
+    "table": "SchedulerLine",
+    "type": "U"
+  },
+  {
+    "table": "SchedulerLineParam",
+    "type": "D"
+  },
+  {
+    "table": "TableComments",
+    "type": "D"
+  },
+  {
+    "table": "UserOrgChartGroup",
+    "type": "U"
+  },
+  {
+    "table": "Workflow",
+    "type": "U"
+  },
+  {
+    "table": "WorkflowMessage",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStep",
+    "type": "U"
+  },
+  {
+    "table": "WorkflowStepAccess",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "type": "U"
+  },
+  {
+    "table": "WorkflowStepActionCondition",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepActionStyle",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepCalculation",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepExport",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepMessage",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepNotification",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepObjectAction",
+    "type": "D"
+  },
+  {
+    "table": "WorkflowStepObjectLineTab",
+    "type": "D"
+  }
+]

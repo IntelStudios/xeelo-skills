@@ -1,0 +1,254 @@
+[
+  {
+    "id": 0,
+    "name": "None"
+  },
+  {
+    "id": 1,
+    "name": "Client-Math"
+  },
+  {
+    "id": 2,
+    "name": "Client-String"
+  },
+  {
+    "id": 3,
+    "name": "Client-Service"
+  },
+  {
+    "id": 4,
+    "name": "Client-DateAdd"
+  },
+  {
+    "id": 5,
+    "name": "Client-DateDiff"
+  },
+  {
+    "id": 6,
+    "name": "Client-Focus"
+  },
+  {
+    "id": 7,
+    "name": "Client-UserInfo"
+  },
+  {
+    "id": 8,
+    "name": "Client-DeviceInfo"
+  },
+  {
+    "id": 31,
+    "name": "Adhoc-SubTotal"
+  },
+  {
+    "id": 32,
+    "name": "Adhoc-SubConcat"
+  },
+  {
+    "id": 33,
+    "name": "Adhoc-String"
+  },
+  {
+    "id": 35,
+    "name": "Adhoc-Math"
+  },
+  {
+    "id": 37,
+    "name": "Adhoc-SubAverage"
+  },
+  {
+    "id": 38,
+    "name": "Adhoc-SubWeightAverage"
+  },
+  {
+    "id": 39,
+    "name": "Adhoc-SubCount"
+  },
+  {
+    "id": 40,
+    "name": "Adhoc-SubMax"
+  },
+  {
+    "id": 41,
+    "name": "Adhoc-SubMin"
+  },
+  {
+    "id": 42,
+    "name": "Adhoc-SubTotalConditional"
+  },
+  {
+    "id": 43,
+    "name": "Adhoc-SubCountConditional"
+  },
+  {
+    "id": 44,
+    "name": "Adhoc-SubStringConditional"
+  },
+  {
+    "id": 51,
+    "name": "Server-SubTotal"
+  },
+  {
+    "id": 52,
+    "name": "Server-SubConcat"
+  },
+  {
+    "id": 53,
+    "name": "Server-String"
+  },
+  {
+    "id": 54,
+    "name": "Server-RequestInfo"
+  },
+  {
+    "id": 55,
+    "name": "Server-Math"
+  },
+  {
+    "id": 56,
+    "name": "Server-Lookup"
+  },
+  {
+    "id": 57,
+    "name": "Server-SubAverage"
+  },
+  {
+    "id": 58,
+    "name": "Server-SubWeightAverage"
+  },
+  {
+    "id": 59,
+    "name": "Server-SubCount"
+  },
+  {
+    "id": 60,
+    "name": "Server-SubMax"
+  },
+  {
+    "id": 61,
+    "name": "Server-SubMin"
+  },
+  {
+    "id": 62,
+    "name": "Server-SubTotalConditional"
+  },
+  {
+    "id": 63,
+    "name": "Server-SubCountConditional"
+  },
+  {
+    "id": 64,
+    "name": "Server-Search"
+  },
+  {
+    "id": 65,
+    "name": "Server-SubStringConditional"
+  },
+  {
+    "id": 66,
+    "name": "Server-DateRange"
+  },
+  {
+    "id": 67,
+    "name": "Server-DateDiff"
+  },
+  {
+    "id": 68,
+    "name": "Server-DateAdd"
+  },
+  {
+    "id": 69,
+    "name": "Server-LogicalMath"
+  },
+  {
+    "id": 70,
+    "name": "Server-LogicalString"
+  },
+  {
+    "id": 71,
+    "name": "Server-SubTotalSearch"
+  },
+  {
+    "id": 72,
+    "name": "Server-SubCheckDuplicity"
+  },
+  {
+    "id": 73,
+    "name": "Server-UniqueIdentifier"
+  },
+  {
+    "id": 76,
+    "name": "Server-SubMaxConditional"
+  },
+  {
+    "id": 77,
+    "name": "Server-SubMinConditional"
+  },
+  {
+    "id": 78,
+    "name": "Server-UserSearch"
+  },
+  {
+    "id": 79,
+    "name": "Server-UserInfo"
+  },
+  {
+    "id": 80,
+    "name": "Server-UserIsRole"
+  },
+  {
+    "id": 81,
+    "name": "Server-UserListRole"
+  },
+  {
+    "id": 82,
+    "name": "Server-LinesChanged"
+  },
+  {
+    "id": 83,
+    "name": "Server-AttachmentOCR"
+  },
+  {
+    "id": 84,
+    "name": "Server-AttachmentLink"
+  },
+  {
+    "id": 85,
+    "name": "Server-AttachmentPrintout"
+  },
+  {
+    "id": 86,
+    "name": "Server-LineHistory"
+  },
+  {
+    "id": 87,
+    "name": "Server-SubConcatConditional"
+  },
+  {
+    "id": 88,
+    "name": "Server-ActionUserCheck"
+  },
+  {
+    "id": 89,
+    "name": "Server-SubAverageConditional"
+  },
+  {
+    "id": 90,
+    "name": "Server-ReportResult"
+  },
+  {
+    "id": 92,
+    "name": "Server-TotalSearch"
+  },
+  {
+    "id": 93,
+    "name": "Server-ConcatSearch"
+  },
+  {
+    "id": 94,
+    "name": "Server-SubConcatSearch"
+  },
+  {
+    "id": 95,
+    "name": "Server-AutonumberGenerate"
+  }
+]

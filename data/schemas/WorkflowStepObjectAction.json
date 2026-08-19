@@ -1,0 +1,106 @@
+{
+  "table": "WorkflowStepObjectAction",
+  "columns": [
+    {
+      "name": "WorkflowStepObjectActionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectActionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestTypeID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CopyID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "WorkflowStepID",
+      "referencesTable": "WorkflowStep",
+      "referencesColumn": "WorkflowStepID"
+    },
+    {
+      "column": "ObjectActionID",
+      "referencesTable": "ObjectAction",
+      "referencesColumn": "ObjectActionID"
+    },
+    {
+      "column": "RequestTypeID",
+      "referencesTable": "RequestType",
+      "referencesColumn": "RequestTypeID"
+    }
+  ]
+}

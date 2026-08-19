@@ -1,0 +1,611 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xeelo.local/schema/xeelo-spec.schema.json",
+  "title": "XeeloSpec",
+  "type": "object",
+  "required": ["version", "kind", "object", "company", "layout"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 2 },
+    "kind": { "type": "string", "enum": ["create_object"] },
+    "transferType": { "type": "string", "enum": ["object"], "default": "object" },
+    "includes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "object": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "code": { "type": "string", "maxLength": 255 },
+        "objectType": { "type": "string", "minLength": 1, "maxLength": 50 }
+      }
+    },
+    "company": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "required": ["tabs"],
+      "additionalProperties": false,
+      "properties": {
+        "tabs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/tab" }
+        }
+      }
+    },
+    "onGrid": { "$ref": "#/$defs/onGrid" },
+    "roles": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/role" }
+    },
+    "statuses": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/status" }
+    },
+    "workflow": { "$ref": "#/$defs/workflow" },
+    "sources": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/sourceDefinition" }
+    },
+    "ids": { "$ref": "#/$defs/ids" },
+    "source": { "$ref": "#/$defs/source" },
+    "transferVersion": { "type": "string", "default": "1.3.0" },
+    "objectDefault": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "order": { "type": "integer", "minimum": 0 },
+        "accessOwnerLevel": { "type": "integer", "minimum": 0 },
+        "isExternal": { "type": "integer", "enum": [0, 1] },
+        "externalLink": { "type": "string", "format": "uuid" }
+      }
+    },
+    "templates": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/template" }
+    },
+    "objectActions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/objectAction" }
+    },
+    "updateActions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/updateAction" }
+    }
+  },
+  "$defs": {
+    "tab": {
+      "type": "object",
+      "required": ["name", "sections"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "placement": { "type": "integer", "enum": [0, 1], "default": 0 },
+        "order": { "type": "integer", "minimum": 1 },
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/section" }
+        }
+      }
+    },
+    "section": {
+      "type": "object",
+      "required": ["name", "width", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1, "maximum": 100, "default": 100 },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "code": { "type": "string", "maxLength": 255 },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "textarea",
+            "number",
+            "combobox",
+            "combobox_search",
+            "checkbox",
+            "date",
+            "attachment",
+            "subgrid",
+            "radio",
+            "button",
+            "memo",
+            "empty_space",
+            "web_frame",
+            "report",
+            "combobox_server",
+            "time",
+            "description_memo",
+            "attachment_preview",
+            "checkbox_multiselect"
+          ]
+        },
+        "slot": { "type": "integer", "minimum": 1 },
+        "width": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "order": { "type": "integer", "minimum": 1 },
+        "mandatory": { "type": "boolean" },
+        "precision": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "objectSubId": { "type": "integer", "minimum": 1 },
+        "lookup": { "$ref": "#/$defs/lookup" },
+        "reference": { "$ref": "#/$defs/reference" },
+        "saveAction": { "type": "integer" },
+        "attachmentStorageId": { "type": "integer", "minimum": 0 },
+        "ocr": { "type": "boolean" },
+        "ocrLang": { "type": "string", "maxLength": 5 },
+        "imageResizeMax": { "type": "integer", "minimum": 1 },
+        "mobileScan": { "type": "boolean" },
+        "mobileSignature": { "type": "boolean" },
+        "previewField": { "type": "string", "minLength": 1 },
+        "previewDownload": { "type": "boolean" },
+        "webFrameTypeId": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "textInputType": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "columnNumbers": { "type": "integer", "minimum": 1 },
+        "numberSeparator": { "type": "string", "maxLength": 1 },
+        "numberMin": { "type": "integer" },
+        "numberMax": { "type": "integer" },
+        "height": { "type": "integer", "minimum": 1 },
+        "uniqueId": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "descMemoBorder": {
+          "type": "boolean",
+          "description": "ObjectLineDescMemoIsBorder. Default false (omit or false). Set true only for a visible box."
+        },
+        "descMemoPadding": { "type": "integer", "minimum": 0 },
+        "buttonMessage": { "type": "string" },
+        "colorFont": { "type": "string", "maxLength": 50 },
+        "colorBack": { "type": "string", "maxLength": 50 },
+        "isReferenceLink": { "type": "boolean" }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "sourceId": { "type": "integer", "minimum": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "filterField": { "type": "string", "minLength": 1 }
+      },
+      "oneOf": [
+        { "required": ["sourceId"] },
+        { "required": ["source"] }
+      ]
+    },
+    "sourceValue": {
+      "type": "object",
+      "required": ["value", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "string" },
+        "label": { "type": "string" },
+        "bind": { "type": "string" },
+        "order": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "sourceRefObject": {
+      "type": "object",
+      "required": ["objectId", "lines"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "objectId": { "type": "integer", "minimum": 1 },
+        "requestType": {
+          "type": "string",
+          "enum": ["all", "completed", "in-progress"],
+          "default": "all"
+        },
+        "lines": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": { "type": "string" },
+            "valueName": { "type": "string" },
+            "valueBind": { "type": "string" },
+            "valueFilter": { "type": "string" },
+            "valueOrder": { "type": "string" }
+          }
+        }
+      }
+    },
+    "sourceDefinition": {
+      "type": "object",
+      "required": ["name", "typeId"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "typeId": { "type": "integer", "minimum": 1 },
+        "styleId": { "type": "integer", "minimum": 1, "default": 4 },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sourceValue" }
+        },
+        "refObject": { "$ref": "#/$defs/sourceRefObject" }
+      },
+      "oneOf": [
+        { "required": ["values"], "not": { "required": ["refObject"] } },
+        { "required": ["refObject"], "not": { "required": ["values"] } }
+      ]
+    },
+    "lookup": {
+      "type": "object",
+      "required": ["values"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "sourceField": { "type": "string", "minLength": 1 },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["value"],
+            "additionalProperties": false,
+            "properties": {
+              "label": { "type": "string" },
+              "value": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "onGrid": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "allowed": { "type": "boolean" },
+              "name": { "type": "string" },
+              "isTag": { "type": "boolean" },
+              "isSearch": { "type": "boolean" }
+            }
+          }
+        },
+        "layouts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["placements"],
+            "additionalProperties": false,
+            "properties": {
+              "size": { "type": "string", "enum": ["Small", "Medium", "Large"] },
+              "type": { "type": "string", "enum": ["Grid", "Table"] },
+              "module": { "type": "string", "enum": ["Items", "Tasks"] },
+              "placements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["row", "columns"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "row": { "type": "string", "enum": ["T", "A", "B", "C", "D", "E"] },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": ["field"],
+                        "additionalProperties": false,
+                        "properties": {
+                          "field": { "type": "string" },
+                          "position": { "type": "integer", "minimum": 0 },
+                          "length": { "type": "integer", "minimum": 1 },
+                          "valueWidth": { "type": "integer", "minimum": 0 },
+                          "labelType": { "type": "integer", "enum": [0, 1, 2] }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "isRequestor": { "type": "boolean", "default": false },
+        "isOwner": { "type": "boolean", "default": false },
+        "isActive": { "type": "boolean", "default": true }
+      }
+    },
+    "status": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "order": { "type": "integer", "minimum": 0 },
+        "isCompleted": { "type": "boolean", "default": false },
+        "isCanceled": { "type": "boolean", "default": false },
+        "isActive": { "type": "boolean", "default": true }
+      }
+    },
+    "workflowStepAccessLine": {
+      "type": "object",
+      "required": ["field"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "editable": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "sublineId": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "workflowStepAction": {
+      "type": "object",
+      "required": ["name", "role", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "styleId": { "type": "integer", "minimum": 1 },
+        "order": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "workflowStep": {
+      "type": "object",
+      "required": ["name", "role", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workflowStepAction" }
+        },
+        "access": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workflowStepAccessLine" }
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["minimal", "full"] },
+        "name": { "type": "string" },
+        "steps": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workflowStep" }
+        }
+      }
+    },
+    "templateField": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "hidden": { "type": "boolean" },
+        "mandatory": { "type": "boolean" },
+        "defaultValue": {
+          "type": ["string", "number"],
+          "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
+        },
+        "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
+        "extended": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hidden": { "type": "string" },
+            "disabled": { "type": "string" },
+            "mandatory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "clientCalculation": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "math",
+            "string",
+            "service",
+            "date_add",
+            "date_diff",
+            "focus",
+            "user_info",
+            "device_info"
+          ]
+        },
+        "expr": {
+          "type": "string",
+          "description": "Stored without the G4 prefix. Math/string expression, or for user_info/device_info a single {Placeholder} such as {UserName} or {DeviceIP}."
+        }
+      }
+    },
+    "template": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "isDefault": { "type": "boolean" },
+        "order": { "type": "integer", "minimum": 0 },
+        "accessOwnerLevel": { "type": "integer", "minimum": 0 },
+        "isExternal": { "type": "integer", "enum": [0, 1] },
+        "externalLink": { "type": "string" },
+        "fields": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/templateField" }
+        }
+      }
+    },
+    "objectActionParamValue": {
+      "oneOf": [
+        { "type": "string" },
+        { "type": "integer" },
+        {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": false,
+          "properties": { "field": { "type": "string" } }
+        }
+      ]
+    },
+    "objectAction": {
+      "type": "object",
+      "required": ["typeCode"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "typeCode": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 },
+        "isActive": { "type": "boolean" },
+        "workflowSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/objectActionParamValue" }
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        }
+      }
+    },
+    "actionCondition": {
+      "type": "object",
+      "required": ["field", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string" },
+        "type": { "type": "string" },
+        "param1": { "type": ["string", "number"] },
+        "param2": { "type": ["string", "number"] }
+      }
+    },
+    "updateAction": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "order": { "type": "integer" },
+        "template": { "type": "string" },
+        "workflow": { "type": "string" },
+        "isQuick": { "type": "boolean" },
+        "access": { "type": "array" },
+        "conditions": { "type": "array" },
+        "messages": { "type": "array" }
+      }
+    },
+    "idsExplicit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "objectTypeId": { "type": "integer", "minimum": 1 },
+        "objectId": { "type": "integer", "minimum": 1 },
+        "companyId": { "type": "integer", "minimum": 1 },
+        "objectDefaultId": { "type": "integer", "minimum": 1 },
+        "objectDefaultExternalLink": { "type": "string" },
+        "objectDefaultExternalLinks": { "type": "object", "additionalProperties": { "type": "string" } },
+        "objectDefaultAccessOwnerLevel": { "type": "integer", "minimum": 0 },
+        "objectDefaultIsExternal": { "type": "integer", "enum": [0, 1] },
+        "workflowId": { "type": "integer", "minimum": 1 },
+        "tabs": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "sections": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "fields": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectDefaultLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "templates": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "lookups": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "lookupValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "sources": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "sourceValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "sourceRefObjects": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "refObjectLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "workflowSteps": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "workflowStepActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "workflowStepAccess": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectLineOnGrid": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "roles": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "statuses": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "updateActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectUpdateAccess": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectUpdateActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectUpdateMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "workflowStepObjectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "ids": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            {
+              "type": "object",
+              "additionalProperties": { "type": "integer", "minimum": 1 }
+            }
+          ]
+        },
+        "explicit": { "$ref": "#/$defs/idsExplicit" },
+        "byTable": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "transfer": { "type": "string" },
+        "objectId": { "type": "integer", "minimum": 1 },
+        "objectCode": { "type": "string" },
+        "extractedAt": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "table": "WorkflowStepAction",
+  "columns": [
+    {
+      "name": "WorkflowStepID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionName",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionOrder",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RoleID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionIsUserSelection",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsAlways",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsSpecial",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsExclusive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsOnGrid",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsOffline",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionIsOfflineAuthorisation",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepActionIsCommented",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepActionStyleID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionReopenTypeID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionConfirmMethod",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "DATETIME",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "DATETIME",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "RequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "WorkflowStepID",
+      "referencesTable": "WorkflowStep",
+      "referencesColumn": "WorkflowStepID"
+    },
+    {
+      "column": "WorkflowStepActionStyleID",
+      "referencesTable": "WorkflowStepActionStyle",
+      "referencesColumn": "WorkflowStepActionStyleID"
+    },
+    {
+      "column": "NotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    },
+    {
+      "column": "RoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    }
+  ]
+}

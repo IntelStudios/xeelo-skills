@@ -1,0 +1,118 @@
+{
+  "table": "WorkflowStepActionStyle",
+  "columns": [
+    {
+      "name": "WorkflowStepActionStyleID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleName",
+      "type": "VARCHAR (50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleIcon",
+      "type": "VARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleOfflineDisplayIcon",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleColorFont",
+      "type": "VARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleColorBack",
+      "type": "VARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleColorBackHover",
+      "type": "VARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleOffline",
+      "type": "VARCHAR (max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepActionStyleIsDefault",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "DATETIME",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "DATETIME",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": []
+}

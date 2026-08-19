@@ -1,0 +1,498 @@
+[
+  {
+    "parent": "Export",
+    "child": "ExportCalculation"
+  },
+  {
+    "parent": "Export",
+    "child": "ExportCondition"
+  },
+  {
+    "parent": "Export",
+    "child": "ExportLine"
+  },
+  {
+    "parent": "Export",
+    "child": "ExportTempCalc"
+  },
+  {
+    "parent": "ExportCalculation",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "Import",
+    "child": "ImportSection"
+  },
+  {
+    "parent": "ImportSection",
+    "child": "ImportSectionLine"
+  },
+  {
+    "parent": "Notification",
+    "child": "NotificationAttachment"
+  },
+  {
+    "parent": "Notification",
+    "child": "NotificationCalculation"
+  },
+  {
+    "parent": "Notification",
+    "child": "NotificationCondition"
+  },
+  {
+    "parent": "Notification",
+    "child": "NotificationPrintout"
+  },
+  {
+    "parent": "Notification",
+    "child": "NotificationTempCalc"
+  },
+  {
+    "parent": "NotificationCalculation",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "Object",
+    "child": "Calendar"
+  },
+  {
+    "parent": "Object",
+    "child": "Company"
+  },
+  {
+    "parent": "Object",
+    "child": "CustomColor"
+  },
+  {
+    "parent": "Object",
+    "child": "DataClassification"
+  },
+  {
+    "parent": "Object",
+    "child": "Export"
+  },
+  {
+    "parent": "Object",
+    "child": "Import"
+  },
+  {
+    "parent": "Object",
+    "child": "Object"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectAction"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectDefault"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectLine"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectLineOnGrid"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectMessage"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectTempCalc"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectType"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectUpdateAction"
+  },
+  {
+    "parent": "Object",
+    "child": "ObjectVisibility"
+  },
+  {
+    "parent": "Object",
+    "child": "Periodic"
+  },
+  {
+    "parent": "Object",
+    "child": "Printout"
+  },
+  {
+    "parent": "Object",
+    "child": "ReportStructure"
+  },
+  {
+    "parent": "Object",
+    "child": "Workflow"
+  },
+  {
+    "parent": "ObjectAction",
+    "child": "Notification"
+  },
+  {
+    "parent": "ObjectAction",
+    "child": "ObjectActionCondition"
+  },
+  {
+    "parent": "ObjectAction",
+    "child": "ObjectActionParam"
+  },
+  {
+    "parent": "ObjectActionParam",
+    "child": "ObjectWebhook"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultAccess"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultAccessExternal"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultAccessOwner"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultAccessView"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultCreateCopy"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultLine"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultLineCalculationOrder"
+  },
+  {
+    "parent": "ObjectDefault",
+    "child": "ObjectDefaultMessage"
+  },
+  {
+    "parent": "ObjectDefaultLine",
+    "child": "ObjectLineAutoNumber"
+  },
+  {
+    "parent": "ObjectDefaultLine",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "ObjectDefaultLine",
+    "child": "ObjectService"
+  },
+  {
+    "parent": "ObjectDefaultLine",
+    "child": "ReportStructure"
+  },
+  {
+    "parent": "ObjectLine",
+    "child": "AttachmentStorage"
+  },
+  {
+    "parent": "ObjectLine",
+    "child": "ObjectLineSource"
+  },
+  {
+    "parent": "ObjectLine",
+    "child": "ObjectLineTab"
+  },
+  {
+    "parent": "ObjectLine",
+    "child": "ObjectSub"
+  },
+  {
+    "parent": "ObjectLineLookup",
+    "child": "ObjectLineLookupRefExternal"
+  },
+  {
+    "parent": "ObjectLineLookup",
+    "child": "ObjectLineLookupRefObject"
+  },
+  {
+    "parent": "ObjectLineLookup",
+    "child": "ObjectLineLookupValue"
+  },
+  {
+    "parent": "ObjectLineSource",
+    "child": "ObjectLineSourceRefExternal"
+  },
+  {
+    "parent": "ObjectLineSource",
+    "child": "ObjectLineSourceRefObject"
+  },
+  {
+    "parent": "ObjectLineSource",
+    "child": "ObjectLineSourceValue"
+  },
+  {
+    "parent": "ObjectLineSource",
+    "child": "UserOrgChartGroup"
+  },
+  {
+    "parent": "ObjectLineTab",
+    "child": "ObjectLineSection"
+  },
+  {
+    "parent": "ObjectMessage",
+    "child": "ObjectMessageCondition"
+  },
+  {
+    "parent": "ObjectSub",
+    "child": "ObjectSubDefault"
+  },
+  {
+    "parent": "ObjectSub",
+    "child": "ObjectSubLine"
+  },
+  {
+    "parent": "ObjectSub",
+    "child": "ObjectSubPrefill"
+  },
+  {
+    "parent": "ObjectSubDefault",
+    "child": "ObjectSubDefaultLine"
+  },
+  {
+    "parent": "ObjectSubDefault",
+    "child": "ObjectSubDefaultLineCalculationOrder"
+  },
+  {
+    "parent": "ObjectSubDefaultLine",
+    "child": "ObjectLineAutoNumber"
+  },
+  {
+    "parent": "ObjectSubDefaultLine",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "ObjectSubDefaultLine",
+    "child": "ObjectService"
+  },
+  {
+    "parent": "ObjectSubLine",
+    "child": "AttachmentStorage"
+  },
+  {
+    "parent": "ObjectSubLine",
+    "child": "ObjectLineSource"
+  },
+  {
+    "parent": "ObjectSubLine",
+    "child": "ObjectSubLineOnGrid"
+  },
+  {
+    "parent": "ObjectSubLine",
+    "child": "ObjectSubLineTab"
+  },
+  {
+    "parent": "ObjectSubLineTab",
+    "child": "ObjectSubLineSection"
+  },
+  {
+    "parent": "ObjectSubPrefill",
+    "child": "ObjectSubPrefillData"
+  },
+  {
+    "parent": "ObjectTempCalc",
+    "child": "ObjectTempCalcLine"
+  },
+  {
+    "parent": "ObjectUpdateAction",
+    "child": "ObjectUpdateAccess"
+  },
+  {
+    "parent": "ObjectUpdateAction",
+    "child": "ObjectUpdateActionCondition"
+  },
+  {
+    "parent": "ObjectUpdateAction",
+    "child": "ObjectUpdateMessage"
+  },
+  {
+    "parent": "ObjectVisibility",
+    "child": "ObjectVisibilityAccessView"
+  },
+  {
+    "parent": "Periodic",
+    "child": "PeriodicAction"
+  },
+  {
+    "parent": "Periodic",
+    "child": "PeriodicCalculation"
+  },
+  {
+    "parent": "Periodic",
+    "child": "PeriodicCondition"
+  },
+  {
+    "parent": "PeriodicAction",
+    "child": "Notification"
+  },
+  {
+    "parent": "PeriodicAction",
+    "child": "PeriodicActionCondition"
+  },
+  {
+    "parent": "PeriodicAction",
+    "child": "PeriodicActionParam"
+  },
+  {
+    "parent": "PeriodicActionParam",
+    "child": "ObjectWebhook"
+  },
+  {
+    "parent": "PeriodicCalculation",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "Printout",
+    "child": "PrintoutCalculation"
+  },
+  {
+    "parent": "Printout",
+    "child": "PrintoutCondition"
+  },
+  {
+    "parent": "Printout",
+    "child": "PrintoutMessage"
+  },
+  {
+    "parent": "Printout",
+    "child": "PrintoutTempCalc"
+  },
+  {
+    "parent": "PrintoutCalculation",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "ReportResult",
+    "child": "ReportResultGraph"
+  },
+  {
+    "parent": "ReportResult",
+    "child": "ReportResultLine"
+  },
+  {
+    "parent": "ReportResultGraph",
+    "child": "ReportResultGraphDataset"
+  },
+  {
+    "parent": "ReportResultGraph",
+    "child": "ReportResultGraphParam"
+  },
+  {
+    "parent": "ReportSource",
+    "child": "ReportSourceLine"
+  },
+  {
+    "parent": "ReportStructure",
+    "child": "ReportResult"
+  },
+  {
+    "parent": "ReportStructure",
+    "child": "ReportSource"
+  },
+  {
+    "parent": "ReportStructure",
+    "child": "ReportStructureLine"
+  },
+  {
+    "parent": "UserOrgChartGroup",
+    "child": "UserOrgChartCategory"
+  },
+  {
+    "parent": "Workflow",
+    "child": "Notification"
+  },
+  {
+    "parent": "Workflow",
+    "child": "RequestStatus"
+  },
+  {
+    "parent": "Workflow",
+    "child": "Role"
+  },
+  {
+    "parent": "Workflow",
+    "child": "WorkflowMessage"
+  },
+  {
+    "parent": "Workflow",
+    "child": "WorkflowStep"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "RequestStatus"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "Role"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "UserOrgChartGroup"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepAccess"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepAction"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepCalculation"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepExport"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepMessage"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepNotification"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepObjectAction"
+  },
+  {
+    "parent": "WorkflowStep",
+    "child": "WorkflowStepObjectLineTab"
+  },
+  {
+    "parent": "WorkflowStepAction",
+    "child": "Notification"
+  },
+  {
+    "parent": "WorkflowStepAction",
+    "child": "WorkflowStepActionCondition"
+  },
+  {
+    "parent": "WorkflowStepAction",
+    "child": "WorkflowStepActionStyle"
+  },
+  {
+    "parent": "WorkflowStepCalculation",
+    "child": "ObjectLineLookup"
+  },
+  {
+    "parent": "WorkflowStepNotification",
+    "child": "Notification"
+  }
+]

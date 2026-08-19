@@ -1,0 +1,14 @@
+---
+description: KB is the repo except projects/ and internal/; do not treat site copies or the local playbook as KB
+alwaysApply: true
+---
+
+# KB vs projects
+
+**KB** = this repository **except** `projects/` and `internal/`.
+
+When the user asks what the KB contains or what it says, answer only from KB paths (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills). Do not present `projects/` or `internal/` as KB.
+
+You may **draw from** `projects/` when implementing (env, change loops, samples). Mention a project path only if they ask for a sample or a specific site. If `internal/` exists, read it when the KB is incomplete; write extracted facts into the public KB **only in `project-kb` work mode** (`internal/work-mode.md`; missing file → `project`), do not copy source paths into `docs/` or `recipes/`.
+
+Before creating a site, downloading a DB transfer, or otherwise using `projects/`, check that it has a site folder or nested `projects/.git`. If not, explain the nested-repo intent and offer to initialize it — see [docs/projects.md](../../docs/projects.md). Do not silently scaffold `projects/<name>/`.

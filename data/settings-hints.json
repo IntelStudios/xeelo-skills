@@ -1,0 +1,177 @@
+[
+  {
+    "key": "EmailIgnoreSummaryUserNotification",
+    "hintHtml": "Select \"Yes\" in case you would like to ignore user notification preferences for summary notifications. In case of \"Yes\" summary notification is sent every time.",
+    "hintText": "Select \"Yes\" in case you would like to ignore user notification preferences for summary notifications. In case of \"Yes\" summary notification is sent every time."
+  },
+  {
+    "key": "EmailFromDomainDifference",
+    "hintHtml": "Select \"Yes\" in case you would like to use ReplyTo in case email domain differs from domain in \"Notification email address\" settings. Ensure that SMTP relay accepts the domain.",
+    "hintText": "Select \"Yes\" in case you would like to use ReplyTo in case email domain differs from domain in \"Notification email address\" settings. Ensure that SMTP relay accepts the domain."
+  },
+  {
+    "key": "PrecompilationMaintenanceMode",
+    "hintHtml": "<p>Switch on maintenance mode during pre-compilation. Can be switched off on development and test sites.</p>",
+    "hintText": "Switch on maintenance mode during pre-compilation. Can be switched off on development and test sites."
+  },
+  {
+    "key": "PrecompilationUserRefresh",
+    "hintHtml": "<p>Refresh of user connections after pre-compilation. Can be switched off on development and test sites.</p>",
+    "hintText": "Refresh of user connections after pre-compilation. Can be switched off on development and test sites."
+  },
+  {
+    "key": "ObjectLineSourceCacheLimit",
+    "hintHtml": "<p>Limit the size of reference list cache. Reference with higher number of records will not be part of cache and will be taken directly from DB.</p>",
+    "hintText": "Limit the size of reference list cache. Reference with higher number of records will not be part of cache and will be taken directly from DB."
+  },
+  {
+    "key": "ObjectLineLookupCacheLimit",
+    "hintHtml": "<p>Limit the size of lookup list cache. Lookup with higher number of records will not be part of cache and will be taken directly from DB.</p>",
+    "hintText": "Limit the size of lookup list cache. Lookup with higher number of records will not be part of cache and will be taken directly from DB."
+  },
+  {
+    "key": "EnvironmentType",
+    "hintHtml": "<p>When you set Environment type to <strong>Development</strong> or <strong>Test</strong>, Xeelo application will render environment badge indicator in application header. Note that you need to run precompilation before you can see the badge.</p>",
+    "hintText": "When you set Environment type to Development or Test , Xeelo application will render environment badge indicator in application header. Note that you need to run precompilation before you can see the badge."
+  },
+  {
+    "key": "GridFilterShowSearchMinItems",
+    "hintHtml": "<p>Minimum count of filter items (roles, statuses, user filters or tags) to display quick filter input</p>",
+    "hintText": "Minimum count of filter items (roles, statuses, user filters or tags) to display quick filter input"
+  },
+  {
+    "key": "ShowAnnouncements",
+    "hintHtml": "<p>Enable pop-up announcements for the users.</p>",
+    "hintText": "Enable pop-up announcements for the users."
+  },
+  {
+    "key": "HtmlPDFTimeout",
+    "hintHtml": "<p>Timeout for Html2Pdf service (seconds)</p>",
+    "hintText": "Timeout for Html2Pdf service (seconds)"
+  },
+  {
+    "key": "ServerAddressMessageBroker",
+    "hintHtml": "<p>This address must be accessible from SQL Server</p>",
+    "hintText": "This address must be accessible from SQL Server"
+  },
+  {
+    "key": "MessageBrokerEnabled",
+    "hintHtml": "<p>Disable message broker in case you need to pre-compile settings when Xeelo backend is not running or reachable from SQL Server</p>",
+    "hintText": "Disable message broker in case you need to pre-compile settings when Xeelo backend is not running or reachable from SQL Server"
+  },
+  {
+    "key": "MobileRequestTimeout",
+    "hintHtml": "<p>Maximum time allowed for Xeelo mobile application to upload request attachment.</p>",
+    "hintText": "Maximum time allowed for Xeelo mobile application to upload request attachment."
+  },
+  {
+    "key": "RedisEnabled",
+    "hintHtml": "<p>Enable/Disable Redis integration. <span style=\"font-weight: bold\">Redis connection</span> setting must also be specified</p>",
+    "hintText": "Enable/Disable Redis integration. Redis connection setting must also be specified"
+  },
+  {
+    "key": "RedisConnection",
+    "hintHtml": "<p>Redis connection string. See <a target=\"_blank\" href=\"https://stackexchange.github.io/StackExchange.Redis/Configuration.html\">examples</a>.</p>",
+    "hintText": "Redis connection string. See examples ."
+  },
+  {
+    "key": "RedisConnectionOptions",
+    "hintHtml": "Additional Redis connection options. Options are appended to <span style=\"font-weight: bold\">Redis connection</span>",
+    "hintText": "Additional Redis connection options. Options are appended to Redis connection"
+  },
+  {
+    "key": "MessageBrokerEndpointToken",
+    "hintHtml": "Security token for exchanging messages between DB and backend, can be any string",
+    "hintText": "Security token for exchanging messages between DB and backend, can be any string"
+  },
+  {
+    "key": "GenerateOpenLinks",
+    "hintHtml": "<p>If enabled links targeting requests, attachments and offline actions will lead through <a target=\"_blank\" href=\"https://open.xeelo.online\">open.xeelo.online</a>. Such links can be handled by <strong>Xeelo Mobile</strong> application.</p>",
+    "hintText": "If enabled links targeting requests, attachments and offline actions will lead through open.xeelo.online . Such links can be handled by Xeelo Mobile application."
+  },
+  {
+    "key": "SessionTimeout",
+    "hintHtml": "<p>Session in the browser expires after a period of user inactivity. This behavior is always enforced for local (username/password) logins.</p>",
+    "hintText": "Session in the browser expires after a period of user inactivity. This behavior is always enforced for local (username/password) logins."
+  },
+  {
+    "key": "AuthRememberMeHours",
+    "hintHtml": "<p>Session in the browser expires after a period of user inactivity. This behavior is always enforced <strong>and relevant only</strong> for local (username/password) logins.</p>",
+    "hintText": "Session in the browser expires after a period of user inactivity. This behavior is always enforced and relevant only for local (username/password) logins."
+  },
+  {
+    "key": "RefreshTokenDays",
+    "hintHtml": "<p>Defines the total duration of a user’s authenticated session across all login methods. Once this period expires, the user must log in again.</p>",
+    "hintText": "Defines the total duration of a user’s authenticated session across all login methods. Once this period expires, the user must log in again."
+  },
+  {
+    "key": "LoginLocalEnabled",
+    "hintHtml": "<p>Enables username/password login. This setting applies only to the frontend and can be bypassed by accessing <strong>[Xeelo server address]?local=true</strong></p>",
+    "hintText": "Enables username/password login. This setting applies only to the frontend and can be bypassed by accessing [Xeelo server address]?local=true"
+  },
+  {
+    "key": "QRCodeLogin",
+    "hintHtml": "<p>Allows users to log in using Xeelo Mobile application by scanning a QR code.</p>",
+    "hintText": "Allows users to log in using Xeelo Mobile application by scanning a QR code."
+  },
+  {
+    "key": "AADClientID",
+    "hintHtml": "<p>App registration Client ID - minimum setup in order to enable MS Entra login. You must also add Redirect URI as <strong>[Xeelo server address]/api/MSAL/Redirect</strong></p>",
+    "hintText": "App registration Client ID - minimum setup in order to enable MS Entra login. You must also add Redirect URI as [Xeelo server address]/api/MSAL/Redirect"
+  },
+  {
+    "key": "AADLogoutOnSessionTimeout",
+    "hintHtml": "<p>Determines the behavior when <strong>General: Session expiration (minutes)</strong> is reached:</p><ul><li><strong>Enabled</strong> - The user is signed out of Xeelo and must reauthenticate via MS Entra ID.</li><li><strong>Disabled</strong> - The user is silently reauthenticated via MS Entra ID and can continue using Xeelo without interruption.</li></ul>",
+    "hintText": "Determines the behavior when General: Session expiration (minutes) is reached: Enabled - The user is signed out of Xeelo and must reauthenticate via MS Entra ID. Disabled - The user is silently reauthenticated via MS Entra ID and can continue using Xeelo without interruption."
+  },
+  {
+    "key": "ADFSClientID",
+    "hintHtml": "<p>Client Identifier of ADFS Application Group. You must also add Redirect URI as <strong>[Xeelo server address]</strong></p>",
+    "hintText": "Client Identifier of ADFS Application Group. You must also add Redirect URI as [Xeelo server address]"
+  },
+  {
+    "key": "ADFSIssuerURL",
+    "hintHtml": "<p>ADFS hostname e.g. <strong>https://[Your AD FS hostname]/adfs</strong></p>",
+    "hintText": "ADFS hostname e.g. https://[Your AD FS hostname]/adfs"
+  },
+  {
+    "key": "ADFSLoginButton",
+    "hintHtml": "<p>Custom label for ADFS Login button</p>",
+    "hintText": "Custom label for ADFS Login button"
+  },
+  {
+    "key": "ADFSLogoutOnSessionTimeout",
+    "hintHtml": "<p>Determines the behavior when <strong>General: Session expiration (minutes)</strong> is reached:</p><ul><li><strong>Enabled</strong> - The user is signed out of Xeelo and must reauthenticate via ADFS.</li><li><strong>Disabled</strong> - The user is silently reauthenticated via ADFS and can continue using Xeelo without interruption.</li></ul>",
+    "hintText": "Determines the behavior when General: Session expiration (minutes) is reached: Enabled - The user is signed out of Xeelo and must reauthenticate via ADFS. Disabled - The user is silently reauthenticated via ADFS and can continue using Xeelo without interruption."
+  },
+  {
+    "key": "OAuth2ClientID",
+    "hintHtml": "<p>Application Client Identifier - You must also add Redirect URI as <strong>[Xeelo server address]/token/oidc/callback</strong></p>",
+    "hintText": "Application Client Identifier - You must also add Redirect URI as [Xeelo server address]/token/oidc/callback"
+  },
+  {
+    "key": "OAuth2ClientSecret",
+    "hintHtml": "<p>Application Client secret</p>",
+    "hintText": "Application Client secret"
+  },
+  {
+    "key": "OAuth2IssuerURL",
+    "hintHtml": "<p>OpenID Connect Discovery base path (exclude .well-known/openid-configuration)</p>",
+    "hintText": "OpenID Connect Discovery base path (exclude .well-known/openid-configuration)"
+  },
+  {
+    "key": "OAuth2LoginButton",
+    "hintHtml": "<p>Custom label for OAuth2 Login button</p>",
+    "hintText": "Custom label for OAuth2 Login button"
+  },
+  {
+    "key": "OAuth2LogoutOnSessionTimeout",
+    "hintHtml": "<p>Determines the behavior when <strong>General: Session expiration (minutes)</strong> is reached:</p><ul><li><strong>Enabled</strong> - The user is signed out of Xeelo and must reauthenticate via OAuth2.</li><li><strong>Disabled</strong> - The user is silently reauthenticated via OAuth2 and can continue using Xeelo without interruption.</li></ul>",
+    "hintText": "Determines the behavior when General: Session expiration (minutes) is reached: Enabled - The user is signed out of Xeelo and must reauthenticate via OAuth2. Disabled - The user is silently reauthenticated via OAuth2 and can continue using Xeelo without interruption."
+  },
+  {
+    "key": "DisableCsrfProtection",
+    "hintHtml": "<p>Disables CSRF protection for API/request endpoints only. <strong>Warning:</strong> Enabling this setting may expose these endpoints to CSRF attacks.</p>",
+    "hintText": "Disables CSRF protection for API/request endpoints only. Warning: Enabling this setting may expose these endpoints to CSRF attacks."
+  }
+]

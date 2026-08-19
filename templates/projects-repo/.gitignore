@@ -1,0 +1,7 @@
+# Admin credentials (parent XeeloKB .gitignore does not apply here)
+**/.xeelo-connection.json
+**/.xeelo-connection.example.json
+
+# DB transfer snapshots — re-download with /download-db
+**/snapshots/**/*.zip
+**/snapshots/**/*.xml

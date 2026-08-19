@@ -1,0 +1,285 @@
+{
+  "table": "ObjectLineSourceRefObject",
+  "columns": [
+    {
+      "name": "ObjectLineSourceRefObjectID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceRefObjectName",
+      "type": "nVARCHAR(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueBindObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueBindObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueNameObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueNameObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueName2ObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueName2ObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueHierarchyObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueHierarchyObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueFilterObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueFilterObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueOrderObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ValueOrderObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceRefObjectIsOnlyCompleted",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineSourceRefObjectRequestTypeID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectLineSourceID",
+      "referencesTable": "ObjectLineSource",
+      "referencesColumn": "ObjectLineSourceID"
+    },
+    {
+      "column": "ObjectID",
+      "referencesTable": "Object",
+      "referencesColumn": "ObjectID"
+    },
+    {
+      "column": "ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueBindObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueNameObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueName2ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueHierarchyObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueFilterObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ValueObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    },
+    {
+      "column": "ValueBindObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    },
+    {
+      "column": "ValueNameObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    },
+    {
+      "column": "ValueName2ObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    },
+    {
+      "column": "ValueHierarchyObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    },
+    {
+      "column": "ValueFilterObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    }
+  ]
+}

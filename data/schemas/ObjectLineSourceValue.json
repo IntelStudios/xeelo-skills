@@ -1,0 +1,124 @@
+{
+  "table": "ObjectLineSourceValue",
+  "columns": [
+    {
+      "name": "ObjectLineSourceID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValue",
+      "type": "NVARCHAR(255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueBind",
+      "type": "NVARCHAR(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueName",
+      "type": "NVARCHAR(255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueName2",
+      "type": "NVARCHAR(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueHierarchy",
+      "type": "NVARCHAR(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueFilter",
+      "type": "NVARCHAR(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "UserOrgChartCategoryValue",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceValueOrder",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "RequestCode",
+      "type": "BIGINT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestSubCode",
+      "type": "BIGINT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectLineSourceID",
+      "referencesTable": "ObjectLineSource",
+      "referencesColumn": "ObjectLineSourceID"
+    }
+  ]
+}

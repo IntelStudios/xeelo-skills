@@ -1,0 +1,319 @@
+{
+  "table": "ObjectDefaultLine",
+  "columns": [
+    {
+      "name": "ObjectDefaultID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValue",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValueFilter",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValidationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValidationCondition",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValidationExtHiddenCondition",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValidationExtDisabledCondition",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineValidationExtMandatoryCondition",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineIsDisabled",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectDefaultLineAutoNumberID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineInputMask",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineInputLength",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineClientCalculationTypeID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineClientCalculation",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineCalculationTypeID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineCalculation",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineCalculationHelp",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineClientCalcDelay",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineIsClientCalcConfirm",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectServiceID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineLookupID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineLookupObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineLookupFilterObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineHint",
+      "type": "NVARCHAR(MAX)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineDescMemo",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubPrefillID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubDefaultID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ReportResultID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ReportResultGraphID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultLineIsSaveSupress",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectDefaultLineWhisperer",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectDefaultID",
+      "referencesTable": "ObjectDefault",
+      "referencesColumn": "ObjectDefaultID"
+    },
+    {
+      "column": "ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ObjectDefaultLineClientCalculationTypeID",
+      "referencesTable": "ObjectDefaultLineCalculationType",
+      "referencesColumn": "ObjectDefaultLineCalculationTypeID"
+    },
+    {
+      "column": "ObjectDefaultLineCalculationTypeID",
+      "referencesTable": "ObjectDefaultLineCalculationType",
+      "referencesColumn": "ObjectDefaultLineCalculationTypeID"
+    },
+    {
+      "column": "ObjectDefaultLineValidationID",
+      "referencesTable": "ObjectLineValidation",
+      "referencesColumn": "ObjectLineValidationID"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+---
+description: Read internal/work-mode.md before site work; default project; harvest KB only in project-kb
+alwaysApply: true
+---
+
+# Work mode
+
+**Read** `internal/work-mode.md` before site work (and at the start of a chat when the task is a project). This file is an exception: other `internal/` content is read only when the KB is incomplete. Do not present the file as KB.
+
+Parse the `mode:` line. Allowed: `project` | `project-kb`. Missing `internal/`, missing file, empty, or any other value → **`project`**.
+
+Do **not** rewrite `internal/work-mode.md` unless the user asks to switch.
+
+Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply.
+
+## project (default)
+
+Edit only `projects/<name>/`. **Read** KB (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills, `.cursor/rules/`); do **not** edit it as a side effect of site work. If you hit a KB gap, one sentence at the end — do not fix it.
+
+## project-kb
+
+Same site work, plus harvest repeatable platform facts into `docs/` / `recipes/` / `data/` (enum, recipe step, spec field, Admin/GraphQL behaviour). Do not copy `internal/` paths into those files. Do not put site-specific data or a chat dump into the KB.
+
+Direct KB requests (“fix this recipe”, “what does the KB say…”) are **not** gated — follow them in either mode.
+
+Write extracted facts from `internal/` into the public KB **only** in `project-kb` (or when the user explicitly asks to update the KB).

@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "name": "Combo-box"
+  },
+  {
+    "id": 2,
+    "name": "Combo-box (search)"
+  },
+  {
+    "id": 3,
+    "name": "Text box (1 line)"
+  },
+  {
+    "id": 4,
+    "name": "Text box (multi line)"
+  },
+  {
+    "id": 5,
+    "name": "Sub-grid"
+  },
+  {
+    "id": 6,
+    "name": "Empty space"
+  },
+  {
+    "id": 7,
+    "name": "Check-box (Yes/No)"
+  },
+  {
+    "id": 8,
+    "name": "Date picker"
+  },
+  {
+    "id": 9,
+    "name": "Attachment"
+  },
+  {
+    "id": 10,
+    "name": "Web frame"
+  },
+  {
+    "id": 11,
+    "name": "Memo"
+  },
+  {
+    "id": 12,
+    "name": "Number"
+  },
+  {
+    "id": 13,
+    "name": "Report"
+  },
+  {
+    "id": 14,
+    "name": "Combo-box (server)"
+  },
+  {
+    "id": 15,
+    "name": "Time picker"
+  },
+  {
+    "id": 16,
+    "name": "Description memo"
+  },
+  {
+    "id": 17,
+    "name": "Attachment preview"
+  },
+  {
+    "id": 18,
+    "name": "Button"
+  },
+  {
+    "id": 19,
+    "name": "Radio buttons"
+  },
+  {
+    "id": 20,
+    "name": "Check-box (Multiselect)"
+  }
+]

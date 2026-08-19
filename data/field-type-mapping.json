@@ -1,0 +1,162 @@
+{
+  "text": {
+    "objectLineTypeId": 3,
+    "objectLineTypeName": "Text box (1 line)",
+    "extraColumns": {
+      "ObjectLineTextInputType": "textInputType 0 Default / 1 Bar Code / 2 Location"
+    }
+  },
+  "textarea": {
+    "objectLineTypeId": 4,
+    "objectLineTypeName": "Text box (multi line)",
+    "extraColumns": {}
+  },
+  "number": {
+    "objectLineTypeId": 12,
+    "objectLineTypeName": "Number",
+    "extraColumns": {
+      "ObjectLineNumberPrecision": "precision from spec (default 0)",
+      "ObjectLineNumberSeparator": "numberSeparator",
+      "ObjectLineNumberMin": "numberMin",
+      "ObjectLineNumberMax": "numberMax"
+    }
+  },
+  "combobox": {
+    "objectLineTypeId": 1,
+    "objectLineTypeName": "Combo-box",
+    "extraTables": ["ObjectLineLookup", "ObjectLineLookupValue", "ObjectLineSource", "ObjectLineSourceValue", "ObjectLineSourceRefObject"],
+    "referenceColumn": "ObjectLine.ObjectLineSourceID",
+    "templateColumn": "ObjectDefaultLine.ObjectDefaultLineLookupID",
+    "extraColumns": {
+      "ObjectLineIsReferenceLink": "isReferenceLink"
+    }
+  },
+  "combobox_search": {
+    "objectLineTypeId": 2,
+    "objectLineTypeName": "Combo-box (search)",
+    "extraTables": ["ObjectLineLookup", "ObjectLineLookupValue", "ObjectLineSource", "ObjectLineSourceValue", "ObjectLineSourceRefObject"],
+    "referenceColumn": "ObjectLine.ObjectLineSourceID",
+    "templateColumn": "ObjectDefaultLine.ObjectDefaultLineLookupID",
+    "extraColumns": {
+      "ObjectLineIsReferenceLink": "isReferenceLink"
+    }
+  },
+  "checkbox": {
+    "objectLineTypeId": 7,
+    "objectLineTypeName": "Check-box (Yes/No)",
+    "extraColumns": {}
+  },
+  "date": {
+    "objectLineTypeId": 8,
+    "objectLineTypeName": "Date picker",
+    "extraColumns": {}
+  },
+  "attachment": {
+    "objectLineTypeId": 9,
+    "objectLineTypeName": "Attachment",
+    "extraColumns": {
+      "AttachmentStorageID": "attachmentStorageId (Admin required)",
+      "ObjectLineAttachmentIsOCR": "ocr",
+      "ObjectLineAttachmentOCRLang": "ocrLang",
+      "ObjectLineAttachmentImageResizeMax": "imageResizeMax",
+      "ObjectLineAttachmentMobileIsScan": "mobileScan",
+      "ObjectLineAttachmentMobileIsSignature": "mobileSignature"
+    }
+  },
+  "subgrid": {
+    "objectLineTypeId": 5,
+    "objectLineTypeName": "Sub-grid",
+    "extraTables": ["ObjectSub", "ObjectSubLine", "ObjectSubLineTab", "ObjectSubLineSection"],
+    "extraColumns": {
+      "ObjectSubID": "objectSubId (Admin required)"
+    }
+  },
+  "radio": {
+    "objectLineTypeId": 19,
+    "objectLineTypeName": "Radio buttons",
+    "extraTables": ["ObjectLineLookup", "ObjectLineLookupValue", "ObjectLineSource", "ObjectLineSourceValue", "ObjectLineSourceRefObject"],
+    "referenceColumn": "ObjectLine.ObjectLineSourceID",
+    "templateColumn": "ObjectDefaultLine.ObjectDefaultLineLookupID",
+    "extraColumns": {
+      "ObjectLineNumberColumns": "columnNumbers (Admin required)"
+    }
+  },
+  "button": {
+    "objectLineTypeId": 18,
+    "objectLineTypeName": "Button",
+    "extraColumns": {
+      "ObjectLineButtonSaveAction": "saveAction (Admin required)",
+      "ObjectLineButtonMessage": "buttonMessage",
+      "ObjectLineColorFont": "colorFont",
+      "ObjectLineColorBack": "colorBack"
+    }
+  },
+  "memo": {
+    "objectLineTypeId": 11,
+    "objectLineTypeName": "Memo",
+    "extraColumns": {
+      "ObjectLineHeight": "height"
+    }
+  },
+  "empty_space": {
+    "objectLineTypeId": 6,
+    "objectLineTypeName": "Empty space",
+    "extraColumns": {}
+  },
+  "web_frame": {
+    "objectLineTypeId": 10,
+    "objectLineTypeName": "Web frame",
+    "extraColumns": {
+      "WebFrameTypeID": "webFrameTypeId 1 Offline file … 4 Web iFrame (Admin required)"
+    }
+  },
+  "report": {
+    "objectLineTypeId": 13,
+    "objectLineTypeName": "Report",
+    "extraColumns": {
+      "ObjectLineHeight": "height"
+    }
+  },
+  "combobox_server": {
+    "objectLineTypeId": 14,
+    "objectLineTypeName": "Combo-box (server)",
+    "extraTables": ["ObjectLineLookup", "ObjectLineLookupValue", "ObjectLineSource", "ObjectLineSourceValue", "ObjectLineSourceRefObject"],
+    "referenceColumn": "ObjectLine.ObjectLineSourceID",
+    "templateColumn": "ObjectDefaultLine.ObjectDefaultLineLookupID",
+    "extraColumns": {
+      "ObjectLineIsReferenceLink": "isReferenceLink"
+    }
+  },
+  "time": {
+    "objectLineTypeId": 15,
+    "objectLineTypeName": "Time picker",
+    "extraColumns": {}
+  },
+  "description_memo": {
+    "objectLineTypeId": 16,
+    "objectLineTypeName": "Description memo",
+    "extraColumns": {
+      "ObjectLineDescMemoIsBorder": "descMemoBorder (default false; omit unless a visible box is wanted)",
+      "ObjectLineDescMemoPadding": "descMemoPadding",
+      "ObjectDefaultLineDescMemo": "templates.fields.*.defaultValue (HTML, not ObjectDefaultLineValue)"
+    }
+  },
+  "attachment_preview": {
+    "objectLineTypeId": 17,
+    "objectLineTypeName": "Attachment preview",
+    "extraColumns": {
+      "ObjectLineAttPreviewObjectLineID": "previewField (attachment field code, Admin required)",
+      "ObjectLineAttPreviewIsDownload": "previewDownload"
+    }
+  },
+  "checkbox_multiselect": {
+    "objectLineTypeId": 20,
+    "objectLineTypeName": "Check-box (Multiselect)",
+    "extraTables": ["ObjectLineLookup", "ObjectLineLookupValue", "ObjectLineSource", "ObjectLineSourceValue", "ObjectLineSourceRefObject"],
+    "referenceColumn": "ObjectLine.ObjectLineSourceID",
+    "templateColumn": "ObjectDefaultLine.ObjectDefaultLineLookupID",
+    "extraColumns": {
+      "ObjectLineNumberColumns": "columnNumbers (Admin required)"
+    }
+  }
+}

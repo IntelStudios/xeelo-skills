@@ -1,0 +1,120 @@
+{
+  "table": "ObjectActionCondition",
+  "columns": [
+    {
+      "name": "ObjectActionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectActionConditionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectActionConditionTypeID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectActionConditionParam1",
+      "type": "NVARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectActionConditionParam2",
+      "type": "NVARCHAR (50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ObjectActionID",
+      "referencesTable": "ObjectAction",
+      "referencesColumn": "ObjectActionID"
+    },
+    {
+      "column": "ObjectActionConditionTypeID",
+      "referencesTable": "ObjectActionConditionType",
+      "referencesColumn": "ObjectActionConditionTypeID"
+    }
+  ]
+}

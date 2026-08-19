@@ -1,0 +1,323 @@
+{
+  "table": "Object",
+  "columns": [
+    {
+      "name": "ObjectID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectTypeID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CompanyID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectName",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectCreateCopyType",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "CalendarID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectIsOrgChartView",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectIsInheritOrgChart",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectIsEmptyOrgChartView",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectIsCommentsCopy",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectIsHistoryCopy",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectIsAddActionOwner",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectIsAddActionWatch",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectIsViewByTemplate",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectRelationObjectID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSavePrimaryActionTypeID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectOrder",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectTreeIcon",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectTreeColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectGridPadding",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectGridSortObjectLineID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectGridSortType",
+      "type": "varchar(10)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectDefaultPaging",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "15"
+    },
+    {
+      "name": "ObjectDefaultRequestPriorityID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectGridLineNumberLimit",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "1000"
+    },
+    {
+      "name": "ObjectIsDelegationOverride",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectIsShowGridTab",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectIsDirectCreate",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "RequestTitleObjectLineID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectIsHistoryEnabled",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectRequestProgressColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectRetentionRequestHistory",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectDefaultGridViewType",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectOnGridIsDirectOpen",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectCode",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "CompanyID",
+      "referencesTable": "Company",
+      "referencesColumn": "CompanyID"
+    },
+    {
+      "column": "ObjectTypeID",
+      "referencesTable": "ObjectType",
+      "referencesColumn": "ObjectTypeID"
+    },
+    {
+      "column": "ObjectSavePrimaryActionTypeID",
+      "referencesTable": "ObjectSavePrimaryActionType",
+      "referencesColumn": "ObjectSavePrimaryActionTypeID"
+    }
+  ]
+}

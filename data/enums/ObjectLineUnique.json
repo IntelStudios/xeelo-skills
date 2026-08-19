@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Object level"
+  },
+  {
+    "id": 2,
+    "name": "Object / Template level"
+  },
+  {
+    "id": 3,
+    "name": "Object / Requestor level"
+  },
+  {
+    "id": 4,
+    "name": "Object / Template / Requestor level"
+  }
+]

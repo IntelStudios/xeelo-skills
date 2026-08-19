@@ -1,0 +1,1166 @@
+[
+  {
+    "table": "Export",
+    "column": "ExportOrder",
+    "hintHtml": "<p>Order of export in case multiple exports are generated for one object on one workflow step.</p>",
+    "hintText": "Order of export in case multiple exports are generated for one object on one workflow step."
+  },
+  {
+    "table": "Export",
+    "column": "ExportName",
+    "hintHtml": "<p>Definition of <span style=\"font-weight: bold;\">export name</span>.</p>",
+    "hintText": "Definition of export name ."
+  },
+  {
+    "table": "Object",
+    "column": "IsActive",
+    "hintHtml": "<p>Indicator if object is active. Inactive objects are not shown in the application (Admin, Inbox, Browser, ...).</p>",
+    "hintText": "Indicator if object is active. Inactive objects are not shown in the application (Admin, Inbox, Browser, ...)."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationFormat",
+    "hintHtml": "<p>Format of the required email notification. Reserved words:<span style=\"line-height: 1.42857;\">{ObjectName} - object</span></p><ul><li><span style=\"font-weight: bold;\">{CompanyName}</span> - company</li></ul><ul><li><span style=\"font-weight: bold;\">{ObjectTypeName} </span>- object type</li></ul><ul><li><span style=\"font-weight: bold;\">{idXXXX} </span>- request line data</li></ul><ul><li><span style=\"font-weight: bold;\">{idXXXXp} </span>- request line previous data</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestID} </span>- request id</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestDetail,width} or {RequestDetails,width} </span>- request detail (table)</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestDetailFilter,width} or {RequestDetailsFilter,width}</span> - request detail (table: Create - only entered, Update - only changed)</li></ul><ul><li><span style=\"font-weight: bold;\">{RoleName} </span>- name of new role</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestStatus} </span>- request status</li></ul><ul><li><span style=\"font-weight: bold;\">{NextUserName} </span>- name of new assigned user</li></ul><ul><li><span style=\"font-weight: bold;\">{PrevUserName} </span>- current user name (who pressed action button)</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestorName} </span>- name of the requestor</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestType}</span> - type of request: Create / Update</li></ul><ul><li><span style=\"font-weight: bold;\">(RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...} </span>- table with sub-grid on selected fields</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestComment,width} or {RequestComments,width}</span> - table with request comments of selected width in %</li></ul><ul><li><span style=\"font-weight: bold;\">{RequestWorkflow,width}</span> - table with request workflow history of selected width in %</li></ul>",
+    "hintText": "Format of the required email notification. Reserved words: {ObjectName} - object {CompanyName} - company {ObjectTypeName} - object type {idXXXX} - request line data {idXXXXp} - request line previous data {RequestID} - request id {RequestDetail,width} or {RequestDetails,width} - request detail (table) {RequestDetailFilter,width} or {RequestDetailsFilter,width} - request detail (table: Create - only entered, Update - only changed) {RoleName} - name of new role {RequestStatus} - request status {NextUserName} - name of new assigned user {PrevUserName} - current user name (who pressed action button) {RequestorName} - name of the requestor {RequestType} - type of request: Create / Update (RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...} - table with sub-grid on selected fields {RequestComment,width} or {RequestComments,width} - table with request comments of selected width in % {RequestWorkflow,width} - table with request workflow history of selected width in %"
+  },
+  {
+    "table": "WorkflowStepExport",
+    "column": "RequestTypeID",
+    "hintHtml": "<p>Select request type from the list based on desired action which will be run.<br></p>",
+    "hintText": "Select request type from the list based on desired action which will be run."
+  },
+  {
+    "table": "WorkflowStepActionCondition",
+    "column": "WorkflowStepActionConditionParam1",
+    "hintHtml": "<p>Parameter 1 defines the value (number, text) for selected condition. </p>",
+    "hintText": "Parameter 1 defines the value (number, text) for selected condition."
+  },
+  {
+    "table": "WorkflowStepActionCondition",
+    "column": "WorkflowStepActionConditionParam2",
+    "hintHtml": "<p>Parameter 2 defines the value (number, text) for selected condition. </p>",
+    "hintText": "Parameter 2 defines the value (number, text) for selected condition."
+  },
+  {
+    "table": "Export",
+    "column": "ExportDeliveryID",
+    "hintHtml": "<p>Definition of export delivery.</p><p>Select delivery:</p><ul><li>Download – for download to your computer </li><li>Email – for sendemail. “Email” field is active for definition of email.</li></ul>",
+    "hintText": "Definition of export delivery. Select delivery: Download – for download to your computer Email – for sendemail. “Email” field is active for definition of email."
+  },
+  {
+    "table": "Export",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li>Yes – object is active </li><li>   No – object is inactive   </li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "WorkflowStepActionCondition",
+    "column": "ObjectLineID",
+    "hintHtml": "<p>Under Object line you are able to select which line will be affected to the condition.</p><p>First the Object name has to be selected which defines the object. When it is set, Object line will display list of all available lines.<br></p><p>Select the line.</p>",
+    "hintText": "Under Object line you are able to select which line will be affected to the condition. First the Object name has to be selected which defines the object. When it is set, Object line will display list of all available lines. Select the line."
+  },
+  {
+    "table": "Export",
+    "column": "ExportEmail",
+    "hintHtml": "<p class=\"MsoNormal\">Definition of email. Export will be sent to the specified email address.<o:p></o:p></p><p>  <span lang=\"EN-US\" style=\"font-size:11.0pt;line-height:107%;font-family:&quot;Calibri&quot;,sans-serif; mso-ascii-theme-font:minor-latin;mso-fareast-font-family:Calibri;mso-fareast-theme-font: minor-latin;mso-hansi-theme-font:minor-latin;mso-bidi-font-family:&quot;Times New Roman&quot;; mso-bidi-theme-font:minor-bidi;mso-ansi-language:EN-US;mso-fareast-language: EN-US;mso-bidi-language:AR-SA\">Note: </span><span style=\"font-size:11.0pt; line-height:107%;font-family:&quot;Calibri&quot;,sans-serif;mso-ascii-theme-font:minor-latin; mso-fareast-font-family:Calibri;mso-fareast-theme-font:minor-latin;mso-hansi-theme-font: minor-latin;mso-bidi-font-family:&quot;Times New Roman&quot;;mso-bidi-theme-font:minor-bidi; mso-ansi-language:CS;mso-fareast-language:CS;mso-bidi-language:AR-SA\">Editable when is selected „Delivery“ field as <i>Email</i>.&nbsp;</span><br></p>",
+    "hintText": "Definition of email. Export will be sent to the specified email address. Note: Editable when is selected „Delivery“ field as Email ."
+  },
+  {
+    "table": "Export",
+    "column": "ExportID",
+    "hintHtml": "<p class=\"MsoNormal\">Under Object line you are able to select which <span lang=\"EN-US\">“</span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">Company Name</span><span lang=\"EN-US\">“</span><span lang=\"EN-US\" style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\"> </span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">– </span><span lang=\"EN-US\">“</span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">Object Type</span><span lang=\"EN-US\">“</span><span lang=\"EN-US\" style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\"> </span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">– </span><span lang=\"EN-US\">“</span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">Object Name</span><span lang=\"EN-US\">“</span><span style=\"background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\"> will be exported. </span><span class=\"apple-converted-space\"><span style=\"font-size: 10pt; line-height: 107%; font-family: Arial, sans-serif; color: black; background-image: initial; background-attachment: initial; background-size: initial; background-origin: initial; background-clip: initial; background-position: initial; background-repeat: initial;\">&nbsp;</span></span><o:p></o:p></p>",
+    "hintText": "Under Object line you are able to select which “ Company Name “ – “ Object Type “ – “ Object Name “ will be exported."
+  },
+  {
+    "table": "WorkflowStepActionCondition",
+    "column": "WorkflowStepActionConditionTypeID",
+    "hintHtml": "<p>Under this field, you are able to select the condition.</p><p>Select condition:<br></p><ul><li>{<span style=\"font-weight: bold;\">Contains (Text)</span> } - Condition that will take into account all values with specified text.<br></li><li>{<span style=\"font-weight: bold;\">Does not contain (Text)</span> } - This condition will take into account only values that do not contain specified text.<br></li><li>{<span style=\"font-weight: bold;\">Begins with (Text)</span> } - This condition will take into account all values that begin with specified text.<br></li><li>{<span style=\"font-weight: bold;\">Does not begin with (Text)</span> } - This condition will take into account only values that do not begin with specified text.<br></li><li>{<span style=\"font-weight: bold;\">Ends with (Text)</span> } - This condition will take into account all values that end with specified text.</li><li>{<span style=\"font-weight: bold;\">Does not end with (Text)</span> } - This condition will take into account only values that do not end with specified text.</li><li>{<span style=\"font-weight: bold;\">Greater than (Number) </span>} - This condition will take into account all values that are greater than specified number.<br></li><li>{<span style=\"font-weight: bold;\">Greater than or equal to (Number)</span> } - This condition will take into account all values that are greater than or equal to specified number.</li><li>{<span style=\"font-weight: bold;\">Less than (Number)</span> } -  This condition will take into account all values that are lesser&nbsp; than specified number.</li><li>{<span style=\"font-weight: bold;\">Less than or equal to (Number)</span> } - This condition will take into account all values that are lesser than or equal to specified number.</li><li>{<span style=\"font-weight: bold;\">Between (Number)</span> } - This condition will take into account all values that are between specified numbers.</li><li>{<span style=\"font-weight: bold;\">Not between (Number)</span> } - This condition will take into account all values that are not between specified numbers.</li><li>{<span style=\"font-weight: bold;\">Equals (Text)</span> } - This condition will take into account all values that are equal to specified text.</li><li>{<span style=\"font-weight: bold;\">Does not equal (Text)</span> } - This condition will take into account only values that do not equal to specified text.</li><li>{<span style=\"font-weight: bold;\">Equals (Number)</span> } - This condition will take into account all values that are equal to specified number.</li><li>{<span style=\"font-weight: bold;\">Does not equal (Number)</span> } - This condition will take into account only values that do not equal to specified text.</li></ul>",
+    "hintText": "Under this field, you are able to select the condition. Select condition: { Contains (Text) } - Condition that will take into account all values with specified text. { Does not contain (Text) } - This condition will take into account only values that do not contain specified text. { Begins with (Text) } - This condition will take into account all values that begin with specified text. { Does not begin with (Text) } - This condition will take into account only values that do not begin with specified text. { Ends with (Text) } - This condition will take into account all values that end with specified text. { Does not end with (Text) } - This condition will take into account only values that do not end with specified text. { Greater than (Number) } - This condition will take into account all values that are greater than specified number. { Greater than or equal to (Number) } - This condition will take into account all values that are greater than or equal to specified number. { Less than (Number) } - This condition will take into account all values that are lesser than specified number. { Less than or equal to (Number) } - This condition will take into account all values that are lesser than or equal to specified number. { Between (Number) } - This condition will take into account all values that are between specified numbers. { Not between (Number) } - This condition will take into account all values that are not between specified numbers. { Equals (Text) } - This condition will take into account all values that are equal to specified text. { Does not equal (Text) } - This condition will take into account only values that do not equal to specified text. { Equals (Number) } - This condition will take into account all values that are equal to specified number. { Does not equal (Number) } - This condition will take into account only values that do not equal to specified text."
+  },
+  {
+    "table": "WorkflowStepExport",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li>Yes – object is active </li><li>No – object is inactive   <br></li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – object is active </li><li><span style=\"font-weight: bold;\">No</span> – object is inactive   </li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "Export",
+    "column": "ExportTypeID",
+    "hintHtml": "<p>Definition of export type.</p><p class=\"MsoNormal\"><span style=\"line-height: 1.42857;\">Select type: &nbsp;</span><br></p><ul><li><span style=\"line-height: 1.42857;\">{<span style=\"font-weight: bold;\">CSV (“;”, “UTF-8”) </span>}&nbsp;– for CSV export to UTF-8 code</span><br></li><li>{<span style=\"font-weight: bold;\">CSV (“;”, “ANSI”) </span>}<span style=\"font-weight: bold;\">&nbsp;</span>– for CSV export to ANSI code</li><li>{<span style=\"font-weight: bold;\">XML (“UTF-8”)</span>&nbsp;} – for XML export to UTF-8 code</li><li>{<span style=\"font-weight: bold;\">XML (“ANSI”) </span>}&nbsp;– for XML export to ANSI code</li><li>{<span style=\"font-weight: bold;\">Browser MS Excel</span>}&nbsp;– for MS excel</li><li>{<span style=\"font-weight: bold;\">Execute Insert SQL Statement</span>} – for insert SQL statement. “SQLinsert” field is active for insertion SQL statement.</li><li><span style=\"line-height: 1.42857;\">{</span><span style=\"line-height: 1.42857; font-weight: bold;\">Execute Update SQL statement</span><span style=\"line-height: 1.42857;\">} – for update SQL statement. “SQLinsert” field is active for insertion SQL statement.</span></li></ul>",
+    "hintText": "Definition of export type. Select type: { CSV (“;”, “UTF-8”) } – for CSV export to UTF-8 code { CSV (“;”, “ANSI”) } – for CSV export to ANSI code { XML (“UTF-8”) } – for XML export to UTF-8 code { XML (“ANSI”) } – for XML export to ANSI code { Browser MS Excel } – for MS excel { Execute Insert SQL Statement } – for insert SQL statement. “SQLinsert” field is active for insertion SQL statement. { Execute Update SQL statement } – for update SQL statement. “SQLinsert” field is active for insertion SQL statement."
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "NotificationID",
+    "hintHtml": "<p>Notification for a particular workflow action can be selected, based on notifications created in the system. </p><p>Select it from the list.<br></p>",
+    "hintText": "Notification for a particular workflow action can be selected, based on notifications created in the system. Select it from the list."
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "RequestStatusID",
+    "hintHtml": "<p>Status field displays list of possible statuses defined in the system which will mark a record after particular action. </p><p>For ex.: </p><p>After approving the record (action), it will be marked as \"Completed\" (status).<br></p>",
+    "hintText": "Status field displays list of possible statuses defined in the system which will mark a record after particular action. For ex.: After approving the record (action), it will be marked as \"Completed\" (status)."
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "RoleID",
+    "hintHtml": "<p>Under this field you can select a user role which will do particular action.</p><p>You are able to select user roles which are created in the system.<br></p>",
+    "hintText": "Under this field you can select a user role which will do particular action. You are able to select user roles which are created in the system."
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionIsCommented",
+    "hintHtml": "<p>This field defines if user that will do a particular action must also add a comment.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - adding comment is required</li><li><span style=\"font-weight: bold;\">No</span> - adding comment is not required<br><p><br></p></li></ul>",
+    "hintText": "This field defines if user that will do a particular action must also add a comment. Select option: Yes - adding comment is required No - adding comment is not required"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionIsExclusive",
+    "hintHtml": "<p>This option defines exclusion for a particular WF step. User in particular role, who execute a particular action is excluded from list of assigned users.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - Exclusion is active</li><li><span style=\"font-weight: bold;\">No</span> - Exclusion is inactive<br></li></ul>",
+    "hintText": "This option defines exclusion for a particular WF step. User in particular role, who execute a particular action is excluded from list of assigned users. Select option: Yes - Exclusion is active No - Exclusion is inactive"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionIsOnGrid",
+    "hintHtml": "<p>On grid field enables to activate particular WF action on grid. Under the \"option wheel\", particular WF action will be active.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - WF Action is active on grid</li><li><span style=\"font-weight: bold;\">No</span> - WF Action is inactive on grid<br></li></ul>",
+    "hintText": "On grid field enables to activate particular WF action on grid. Under the \"option wheel\", particular WF action will be active. Select option: Yes - WF Action is active on grid No - WF Action is inactive on grid"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionConfirmMethod",
+    "hintHtml": "<p>This field defines if workflow action must be confirmed.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">QR Code</span> - confirmed by MobileApp QR Code button on top of all pages</li><li><span style=\"font-weight: bold;\">Push Notification</span> - confirmed from Push notification in MobileApp</li><li><span style=\"font-weight: bold;\">TOTP</span> - confirmed by authenticator app code on desktop<br><p><br></p></li></ul>",
+    "hintText": "This field defines if workflow action must be confirmed. Select option: QR Code - confirmed by MobileApp QR Code button on top of all pages Push Notification - confirmed from Push notification in MobileApp TOTP - confirmed by authenticator app code on desktop"
+  },
+  {
+    "table": "Export",
+    "column": "ExportRemoteTable",
+    "hintHtml": "<p>Definition of SQL statement.</p><p>Note: Editable when is selected „Type“ field as <span style=\"font-style: italic;\">Execute Insert SQL Statement</span> or <span style=\"font-style: italic;\">Execute Update SQL Statement</span></p><div><br></div>",
+    "hintText": "Definition of SQL statement. Note: Editable when is selected „Type“ field as Execute Insert SQL Statement or Execute Update SQL Statement"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionIsSpecial",
+    "hintHtml": "<p>Under this field you can define if the WF action can be chosen even when values are not defined right, like mandatory values.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - attribute Special is active</li><li><span style=\"font-weight: bold;\">No</span> - attribute Special is inactive<br></li></ul>",
+    "hintText": "Under this field you can define if the WF action can be chosen even when values are not defined right, like mandatory values. Select option: Yes - attribute Special is active No - attribute Special is inactive"
+  },
+  {
+    "table": "ExportLine",
+    "column": "ExportLineName",
+    "hintHtml": "<p>Definition of export line name<br></p>",
+    "hintText": "Definition of export line name"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionIsUserSelection",
+    "hintHtml": "<p>Under this option you can allow for a particular WF action assignment of a record to specific user. After the WF action, record will be assigned to selected user.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - attribute Selection is active</li><li><span style=\"font-weight: bold;\">No</span> - attribute Selection is inactive<br></li></ul>",
+    "hintText": "Under this option you can allow for a particular WF action assignment of a record to specific user. After the WF action, record will be assigned to selected user. Select option: Yes - attribute Selection is active No - attribute Selection is inactive"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionName",
+    "hintHtml": "<p>Specify the name of a WF action which is being set.<br></p>",
+    "hintText": "Specify the name of a WF action which is being set."
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionOrder",
+    "hintHtml": "<p>Under this field you are able to specify order of created WF actions which are displayed in the WF action list. Good approach is to use decimal numbers, if you need to edit the order, to add additional WF action.<br></p><p>For. ex.: </p><p>1) WF Action 1, order: 10</p><p>2) WF Action 2, order: 20</p><p>3) WF Action 3, order: 30<br></p>",
+    "hintText": "Under this field you are able to specify order of created WF actions which are displayed in the WF action list. Good approach is to use decimal numbers, if you need to edit the order, to add additional WF action. For. ex.: 1) WF Action 1, order: 10 2) WF Action 2, order: 20 3) WF Action 3, order: 30"
+  },
+  {
+    "table": "WorkflowStepAction",
+    "column": "WorkflowStepActionStyleID",
+    "hintHtml": "<p>Select the style of particular WF action from the list of available options.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Positive - green</span></li><li><span style=\"font-weight: bold;\">Negative - red<br></span></li><li><span style=\"font-weight: bold;\">Negative - yellow</span></li></ul><p><br></p>",
+    "hintText": "Select the style of particular WF action from the list of available options. Select option: Positive - green Negative - red Negative - yellow"
+  },
+  {
+    "table": "ExportLine",
+    "column": "ExportLineOrder",
+    "hintHtml": "<p>Order of export line in case multiple export lines are generated for one object. It can be defined of 99 lines.<br></p>",
+    "hintText": "Order of export line in case multiple export lines are generated for one object. It can be defined of 99 lines."
+  },
+  {
+    "table": "WorkflowStepAccess",
+    "column": "IsActive",
+    "hintHtml": "<div>                  <div class=\"relPosition\">                              <p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – object is active </li><li><span style=\"font-weight: bold;\">No</span> – object is inactive   </li></ul>           </div>      </div>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ExportLine",
+    "column": "ExportLineTypeID",
+    "hintHtml": "<p>Definition of export line type.</p><p>Select type: &nbsp;</p><ul><li><span style=\"font-weight: bold;\">Object line&nbsp;</span>– For definition of object line and object sub line which will be displayed in the export. Fields “Object line” and “Object sub line” is active for definition of line.</li><li><span style=\"font-weight: bold;\">Fixed value</span> – For definition of fixed value which will be displayed in the export. Field “Value” is active for definition of value.</li><li><span style=\"font-weight: bold;\">Request ID</span> – Request ID will be displayed in the export.</li><li><span style=\"font-weight: bold;\">Requestor name</span> – Requestor name will be displayed in the export.</li><li><span style=\"font-weight: bold;\">XML begin tag</span> – For definition of XML begin tag which will be displayed in the export. Field “Value” is active for definition of value.</li><li><span style=\"font-weight: bold;\">XML end tag</span> – For definition of XML end tag which will be displayed in the export. Field “Value” is active for definition of value.</li><li><span style=\"font-weight: bold;\">Export date</span> – Export date will be displayed in the export.</li><li><span style=\"font-weight: bold;\">Request type</span> – Request type will be displayed in the export.</li><li><span style=\"font-weight: bold;\">Export batch ID</span> – Export batch ID will be displayed in the export.</li><li><span style=\"font-weight: bold;\">SQL function</span> – For definition of SQL function which will be displayed in the export. Field “Value” is active for definition of value.</li><li><span style=\"font-weight: bold;\">Request code</span> – Request code will be displayed in the export.</li><li><span style=\"font-weight: bold;\">Request status</span> – Request status will be displayed in the export.</li><li><span style=\"font-weight: bold;\">Comments (table)</span> – Comments (table) will be displayed in the export. Comments will be divided to more lines.</li><li><span style=\"font-weight: bold;\">Comments (text) </span>– Comments (text) will be displayed in the export. Comments will be displayed in one line.</li></ul><div><br></div>",
+    "hintText": "Definition of export line type. Select type: Object line – For definition of object line and object sub line which will be displayed in the export. Fields “Object line” and “Object sub line” is active for definition of line. Fixed value – For definition of fixed value which will be displayed in the export. Field “Value” is active for definition of value. Request ID – Request ID will be displayed in the export. Requestor name – Requestor name will be displayed in the export. XML begin tag – For definition of XML begin tag which will be displayed in the export. Field “Value” is active for definition of value. XML end tag – For definition of XML end tag which will be displayed in the export. Field “Value” is active for definition of value. Export date – Export date will be displayed in the export. Request type – Request type will be displayed in the export. Export batch ID – Export batch ID will be displayed in the export. SQL function – For definition of SQL function which will be displayed in the export. Field “Value” is active for definition of value. Request code – Request code will be displayed in the export. Request status – Request status will be displayed in the export. Comments (table) – Comments (table) will be displayed in the export. Comments will be divided to more lines. Comments (text) – Comments (text) will be displayed in the export. Comments will be displayed in one line."
+  },
+  {
+    "table": "ExportLine",
+    "column": "ExportLineUseValue",
+    "hintHtml": "<p>In the case object line type is combobox, combobox (search) or combobox (server) use value for export otherwise use name of reference.</p>",
+    "hintText": "In the case object line type is combobox, combobox (search) or combobox (server) use value for export otherwise use name of reference."
+  },
+  {
+    "table": "WorkflowStepAccess",
+    "column": "WorkflowStepAccessIsVisible",
+    "hintHtml": "All object lines that are visible for specific workflow action.<br><p><br></p><p>Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won&#x27;t be visible)<br></p>",
+    "hintText": "All object lines that are visible for specific workflow action. Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won't be visible)"
+  },
+  {
+    "table": "ExportLine",
+    "column": "ObjectLineID",
+    "hintHtml": "<p>Under Object line you are able to select which “Tab“ – “Section“ – “Field“ will be displayed in the export.<br></p>",
+    "hintText": "Under Object line you are able to select which “Tab“ – “Section“ – “Field“ will be displayed in the export."
+  },
+  {
+    "table": "WorkflowStepAccess",
+    "column": "WorkflowStepAccessIsEditable",
+    "hintHtml": "<p>All object lines that are editable for specific workflow action.</p><p><br></p>Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won&#x27;t be editable)",
+    "hintText": "All object lines that are editable for specific workflow action. Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won't be editable)"
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "IsActive",
+    "hintHtml": "<div>                  <div class=\"relPosition\">                              <p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – object is active </li><li><span style=\"font-weight: bold;\">No</span> – object is inactive   </li></ul>           </div>      </div>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ExportLine",
+    "column": "ObjectSubLineID",
+    "hintHtml": "<div>Under Object sub line you are able to select which “Object sub line“ will be displayed in the export.</div><div><br></div><div>Note: Object sub line can be selected when field “Object line“ is defined as “Tab“ – “Section“ – “Sub grid“.</div><div><br></div>",
+    "hintText": "Under Object sub line you are able to select which “Object sub line“ will be displayed in the export. Note: Object sub line can be selected when field “Object line“ is defined as “Tab“ – “Section“ – “Sub grid“."
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "RequestStatusID",
+    "hintHtml": "<p>This field indicates status of a particular WF step.</p><p>It is automatically assigned by the system.<br></p>",
+    "hintText": "This field indicates status of a particular WF step. It is automatically assigned by the system."
+  },
+  {
+    "table": "ExportLine",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – object is active &nbsp; &nbsp;</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive &nbsp;&nbsp;</li></ul><div><br></div>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "RoleID",
+    "hintHtml": "<p>This field indicates user role of a particular WF step.</p>It is automatically assigned by the system.",
+    "hintText": "This field indicates user role of a particular WF step. It is automatically assigned by the system."
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "WorkflowStepIsUserOrgCharUser",
+    "hintHtml": "<p>Automatically approve all org charts with no users assigned.",
+    "hintText": "Automatically approve all org charts with no users assigned."
+  },
+  {
+    "table": "ExportLine",
+    "column": "FixedValue",
+    "hintHtml": "<p>Definition of value which will be displayed in the export.</p><p>Note: Editable when is selected field „Type“ as <span style=\"font-weight: bold;\">Fixed value, XML begin tag, XML end tag or SQL function.</span></p>",
+    "hintText": "Definition of value which will be displayed in the export. Note: Editable when is selected field „Type“ as Fixed value, XML begin tag, XML end tag or SQL function."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationName",
+    "hintHtml": "<p>Definition of notification name.<br></p>",
+    "hintText": "Definition of notification name."
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "UserOrgChartGroupID",
+    "hintHtml": "<p>Under this field you are able to select Organizational charts created in the system.</p><p>When org. chart is selected, only users that have this org. chart set are allowed to do particular WF step.</p><p><br></p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">None </span>- Org. chart is not set<br></li><li><span style=\"font-weight: bold;\">\"<span style=\"font-style: italic;\">Particular org. chart</span>\"&nbsp; </span>- Particular Org. chart is set<br></li></ul>",
+    "hintText": "Under this field you are able to select Organizational charts created in the system. When org. chart is selected, only users that have this org. chart set are allowed to do particular WF step. Select option: None - Org. chart is not set \" Particular org. chart \" - Particular Org. chart is set"
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "WorkflowStepName",
+    "hintHtml": "<p>Define name of a WF step.</p><p>It is automatically added by the system (\"Added by system\"), but can be changed.<br></p>",
+    "hintText": "Define name of a WF step. It is automatically added by the system (\"Added by system\"), but can be changed."
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "WorkflowStepSuccessMessage",
+    "hintHtml": "<p>Define success message which will appear to user when he moves request into this step. You can use following placeholders: <ul><li><strong>{RequestID}</strong> - Current request ID</li><li><strong>{RoleName}</strong> - Role name (localized)</li><li><strong>{RequestStatusName}</strong> - Status name (localized) </li></ul></p>",
+    "hintText": "Define success message which will appear to user when he moves request into this step. You can use following placeholders: {RequestID} - Current request ID {RoleName} - Role name (localized) {RequestStatusName} - Status name (localized)"
+  },
+  {
+    "table": "WorkflowStep",
+    "column": "WorkflowStepIsSuppressDefaultCalculation",
+    "hintHtml": "<p>Suppress template calculation for specific workflow step in case there are no changes in object lines coming from save of the request.<br></p>",
+    "hintText": "Suppress template calculation for specific workflow step in case there are no changes in object lines coming from save of the request."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationEmailRequestor",
+    "hintHtml": "<p>Under Send to requestor you are able to define if notification will be sent to requestor.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – Notification will be sent to requestor</li><li><span style=\"font-weight: bold;\">No </span>– Notification will not be sent requestor</li></ul>",
+    "hintText": "Under Send to requestor you are able to define if notification will be sent to requestor. Select option: Yes – Notification will be sent to requestor No – Notification will not be sent requestor"
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationEmailRole",
+    "hintHtml": "<p>Under Send to new role you are able to define if notification will be sent to other role than a requestor.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – Notification will be sent to other role than a requestor</li><li><span style=\"font-weight: bold;\">No</span> – Notification will not be sent to other role than a requestor</li></ul>",
+    "hintText": "Under Send to new role you are able to define if notification will be sent to other role than a requestor. Select option: Yes – Notification will be sent to other role than a requestor No – Notification will not be sent to other role than a requestor"
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationEmailUser",
+    "hintHtml": "<p>Under \"Send to current user\" you are able to define if notification will be sent to current user who create current notification.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – Notification will be sent to current user</li><li><span style=\"font-weight: bold;\">No</span> – Notification will not be sent to current user</li></ul><p><br></p>",
+    "hintText": "Under \"Send to current user\" you are able to define if notification will be sent to current user who create current notification. Select option: Yes – Notification will be sent to current user No – Notification will not be sent to current user"
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationToEmailExtra",
+    "hintHtml": "<p>Under \"Send to extra\" you are able to <span style=\"font-weight: bold;\">extra define email</span> wherever notification will be sent.</p>",
+    "hintText": "Under \"Send to extra\" you are able to extra define email wherever notification will be sent."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationCcEmailExtra",
+    "hintHtml": "<p>Under \"Send Cc extra\" you are able to <span style=\"font-weight: bold;\">extra define Cc email</span> wherever notification will be sent.<br></p>",
+    "hintText": "Under \"Send Cc extra\" you are able to extra define Cc email wherever notification will be sent."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationBccEmailExtra",
+    "hintHtml": "<p>Under \"Send Bcc extra\" you are able to <span style=\"font-weight: bold;\">extra define BCc email</span> wherever notification will be sent.<br></p>",
+    "hintText": "Under \"Send Bcc extra\" you are able to extra define BCc email wherever notification will be sent."
+  },
+  {
+    "table": "Notification",
+    "column": "NotificationSubject",
+    "hintHtml": "<p>Under \"Subject\" you are able to define <span style=\"font-weight: bold;\">subject email </span>which will be shown in the email header as the main subject.</p>",
+    "hintText": "Under \"Subject\" you are able to define subject email which will be shown in the email header as the main subject."
+  },
+  {
+    "table": "Notification",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> – object is active</li><li><span style=\"font-weight: bold;\">No</span> – object is inactive</li></ul><div></div>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "Workflow",
+    "column": "ExportFailNotificationID",
+    "hintHtml": "<p>Select particular notification (created in the system) from the list that will be sent to requestor if creation of a record ends in error.</p>",
+    "hintText": "Select particular notification (created in the system) from the list that will be sent to requestor if creation of a record ends in error."
+  },
+  {
+    "table": "Object",
+    "column": "CompanyID",
+    "hintHtml": "<p>Under company you are able to select “Company“ for which object will be set.<br></p>",
+    "hintText": "Under company you are able to select “Company“ for which object will be set."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectTypeID",
+    "hintHtml": "<p>Under object type you are able to select “Object type“ for which object will be set.<br></p>",
+    "hintText": "Under object type you are able to select “Object type“ for which object will be set."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectName",
+    "hintHtml": "<p>Definition of object name.<br></p>",
+    "hintText": "Definition of object name."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectIsOrgChartView",
+    "hintHtml": "<p>Enable/Disable visibility of requests according to assigned OrgChart Category, Owner and Watcher.</p>",
+    "hintText": "Enable/Disable visibility of requests according to assigned OrgChart Category, Owner and Watcher."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectIsEmptyOrgChartView",
+    "hintHtml": "<p>Enable/Disable visibility of requests without OrgChart Category.</p>",
+    "hintText": "Enable/Disable visibility of requests without OrgChart Category."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectIsInheritOrgChart",
+    "hintHtml": "<p>Enable/Disable inheritability of OrgChart Category.</p>",
+    "hintText": "Enable/Disable inheritability of OrgChart Category."
+  },
+  {
+    "table": "Object",
+    "column": "ObjectOnGridIsDirectOpen",
+    "hintHtml": "<p>Enable/Disable user navigation directly to first request from task tree.</p>",
+    "hintText": "Enable/Disable user navigation directly to first request from task tree."
+  },
+  {
+    "table": "Workflow",
+    "column": "ExportFailRequestStatusID",
+    "hintHtml": "<p>Under this field you are able to define status of a record which will be set when export fails.</p>",
+    "hintText": "Under this field you are able to define status of a record which will be set when export fails."
+  },
+  {
+    "table": "Workflow",
+    "column": "ExportFailRoleID",
+    "hintHtml": "<p>Under this field you are able to define a role (created in the system) which will be set for export failed record.&nbsp;</p>",
+    "hintText": "Under this field you are able to define a role (created in the system) which will be set for export failed record."
+  },
+  {
+    "table": "Workflow",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "Workflow",
+    "column": "NotificationID",
+    "hintHtml": "<p>Under this field you are able to select notification (created in the system) which will be sent when record is created.</p>",
+    "hintText": "Under this field you are able to select notification (created in the system) which will be sent when record is created."
+  },
+  {
+    "table": "Workflow",
+    "column": "RecallNotificationID",
+    "hintHtml": "<p>Under this field you are able to select notification (created in the system) which will be sent when record is recalled.</p>",
+    "hintText": "Under this field you are able to select notification (created in the system) which will be sent when record is recalled."
+  },
+  {
+    "table": "Workflow",
+    "column": "RecallRequestStatusID",
+    "hintHtml": "<p>Under this field you are able to define status (created in the system) of a record which will be set when record is recalled.</p>",
+    "hintText": "Under this field you are able to define status (created in the system) of a record which will be set when record is recalled."
+  },
+  {
+    "table": "Workflow",
+    "column": "RecallRoleID",
+    "hintHtml": "<p>Under this field you are able to define a role (created in the system) which will be set for recalled record. More precisely to whom the record will be assigned when it is recalled.</p>",
+    "hintText": "Under this field you are able to define a role (created in the system) which will be set for recalled record. More precisely to whom the record will be assigned when it is recalled."
+  },
+  {
+    "table": "Workflow",
+    "column": "RequestStatusID",
+    "hintHtml": "<p>Under this field you are able to define a status (created in the system) which will be set when record is created.</p>",
+    "hintText": "Under this field you are able to define a status (created in the system) which will be set when record is created."
+  },
+  {
+    "table": "Workflow",
+    "column": "RoleID",
+    "hintHtml": "<p>Under this field you are able to define initial role (created in the system) which will be set for created record.</p>",
+    "hintText": "Under this field you are able to define initial role (created in the system) which will be set for created record."
+  },
+  {
+    "table": "Workflow",
+    "column": "WorkflowName",
+    "hintHtml": "<p>Define name of a Workflow which is being created.</p>",
+    "hintText": "Define name of a Workflow which is being created."
+  },
+  {
+    "table": "UserOrgChartGroup",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserOrgChartGroup",
+    "column": "UserOrgChartGroupName",
+    "hintHtml": "<p>Define name of Organizational chart which is being created.</p>",
+    "hintText": "Define name of Organizational chart which is being created."
+  },
+  {
+    "table": "ObjectDefault",
+    "column": "ObjectDefaultName",
+    "hintHtml": "<p>Definition of object template name.&nbsp;<br></p>",
+    "hintText": "Definition of object template name."
+  },
+  {
+    "table": "UserOrgChartCategory",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "ObjectDefault",
+    "column": "WorkflowID",
+    "hintHtml": "<p>Under workflow name you are able to select “Workflow“ which will affect work flow of object.</p>",
+    "hintText": "Under workflow name you are able to select “Workflow“ which will affect work flow of object."
+  },
+  {
+    "table": "ObjectDefault",
+    "column": "ObjectDefaultOrder",
+    "hintHtml": "<p>Order of template &nbsp;in case multiple templates are generated for one object template on one workflow step.<br></p>",
+    "hintText": "Order of template in case multiple templates are generated for one object template on one workflow step."
+  },
+  {
+    "table": "UserOrgChartCategory",
+    "column": "UserOrgChartCategoryName",
+    "hintHtml": "<p><span style=\"line-height: 18.5714px;\">Define name of a Category which is being created.</span><br></p>",
+    "hintText": "Define name of a Category which is being created."
+  },
+  {
+    "table": "ObjectDefault",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "UserOrgChart",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserOrgChart",
+    "column": "UserID",
+    "hintHtml": "<p>Username is assigned automatically by the system.</p>",
+    "hintText": "Username is assigned automatically by the system."
+  },
+  {
+    "table": "UserOrgChart",
+    "column": "UserOrgChartCategoryID",
+    "hintHtml": "<p>Under this field you are able to select Organizational chart and its category (created in the system) for a specific user.</p>",
+    "hintText": "Under this field you are able to select Organizational chart and its category (created in the system) for a specific user."
+  },
+  {
+    "table": "ObjectDefaultAccess",
+    "column": "ObjectLineIsVisibleCreate",
+    "hintHtml": "<p>All object lines that are visible for specific workflow template action.</p><p>Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won&#x27;t be visible)</p><div><br></div>",
+    "hintText": "All object lines that are visible for specific workflow template action. Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won't be visible)"
+  },
+  {
+    "table": "ObjectDefaultAccess",
+    "column": "ObjectLineIsEditableCreate",
+    "hintHtml": "<p>All object lines that are editable for specific workflow template action.</p><p><br></p><p>Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won&#x27;t be editable)</p><div><br></div>",
+    "hintText": "All object lines that are editable for specific workflow template action. Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won't be editable)"
+  },
+  {
+    "table": "UserLDAP",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAttrEmail",
+    "hintHtml": "<p>LDAP attributes in general define a particular record which is stated in the LDAP directory.</p><p>If you want to include email attributes in LDAP directory , define value: \" <span style=\"font-weight: bold;\">mail</span> \" in field LDAP Email attribute.</p>",
+    "hintText": "LDAP attributes in general define a particular record which is stated in the LDAP directory. If you want to include email attributes in LDAP directory , define value: \" mail \" in field LDAP Email attribute."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAttrFirstName",
+    "hintHtml": "<p>LDAP attributes in general define a particular record which is stated in the LDAP directory.</p><p>If you want to include first name attributes in LDAP directory, define value: \" <span style=\"font-weight: bold;\">givenName</span> \" in field LDAP First name attribute.</p>",
+    "hintText": "LDAP attributes in general define a particular record which is stated in the LDAP directory. If you want to include first name attributes in LDAP directory, define value: \" givenName \" in field LDAP First name attribute."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAttrLastName",
+    "hintHtml": "<p>LDAP attributes in general define a particular record which is stated in the LDAP directory.</p><p>If you want to include last name attributes in LDAP directory, define value: \" <span style=\"font-weight: bold;\">sn</span> \" in field LDAP Last name attribute.</p>",
+    "hintText": "LDAP attributes in general define a particular record which is stated in the LDAP directory. If you want to include last name attributes in LDAP directory, define value: \" sn \" in field LDAP Last name attribute."
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectLineID",
+    "hintHtml": "<p>Under Object line you are able to select which “Tab“ – “Section“ – “Field or Sub grid“ will be affected by the workflow condition and by template lines condition.&nbsp;<br></p>",
+    "hintText": "Under Object line you are able to select which “Tab“ – “Section“ – “Field or Sub grid“ will be affected by the workflow condition and by template lines condition."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAttrLogin",
+    "hintHtml": "<p>LDAP attributes in general define a particular record which is stated in the LDAP directory.</p><p>To include login attributes in LDAP directory, define value in field LDAP Login attribute:</p><ul><li>\" <span style=\"font-weight: bold;\">sAMAccountName </span>\" - this value is for login format <span style=\"font-style: italic; text-decoration: underline;\">domainName \\ username</span></li><li>\" <span style=\"font-weight: bold;\">userPrincipalName</span> \" - this value is for login format <span style=\"text-decoration: underline;\">username@domainName.com</span></li></ul>",
+    "hintText": "LDAP attributes in general define a particular record which is stated in the LDAP directory. To include login attributes in LDAP directory, define value in field LDAP Login attribute: \" sAMAccountName \" - this value is for login format domainName \\ username \" userPrincipalName \" - this value is for login format username@domainName.com"
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPBaseDN",
+    "hintHtml": "<p>Base DN is the starting point of LDAP directory.&nbsp;</p><p>It is defined by attributes:</p><ul><li><span style=\"font-weight: bold;\">o - </span>organization</li><li><span style=\"font-weight: bold;\">ou - &nbsp;</span>organizational unit</li><li><span style=\"font-weight: bold;\">dc - </span>domain component</li><li><span style=\"font-weight: bold;\">uid - </span>user ID</li><li><span style=\"font-weight: bold;\">cn - </span>common name</li><li><span style=\"font-weight: bold;\">...</span></li></ul><p>Define Base DN.&nbsp;</p><p>For example: <span style=\"font-style: italic;\">o=UPS, ou=HeadOffice, dc=ups.eu, dc=local</span></p>",
+    "hintText": "Base DN is the starting point of LDAP directory. It is defined by attributes: o - organization ou - organizational unit dc - domain component uid - user ID cn - common name ... Define Base DN. For example: o=UPS, ou=HeadOffice, dc=ups.eu, dc=local"
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPBindLogin",
+    "hintHtml": "<p>Define LDAP Bind login which is used for authentication of the connection.</p>",
+    "hintText": "Define LDAP Bind login which is used for authentication of the connection."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPBindPassword",
+    "hintHtml": "<p>Define LDAP Bind password which is used for authentication of the connection.</p>",
+    "hintText": "Define LDAP Bind password which is used for authentication of the connection."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPHost",
+    "hintHtml": "<p>Define LDAP server in IP address format or dotted format (port can be also included).</p><p>For example:</p><ul><li><span style=\"font-style: italic;\">ldap.ups.local</span></li><li><span style=\"font-style: italic;\">ldap.ups.local:389</span></li><li><span style=\"font-style: italic;\">192.168.0.1</span></li><li><span style=\"font-style: italic;\">192.168.0.1:389</span></li></ul>",
+    "hintText": "Define LDAP server in IP address format or dotted format (port can be also included). For example: ldap.ups.local ldap.ups.local:389 192.168.0.1 192.168.0.1:389"
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPName",
+    "hintHtml": "<p>Define name of LDAP configuration which is being created.</p>",
+    "hintText": "Define name of LDAP configuration which is being created."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAuthenticationType",
+    "hintHtml": "<p>Specifies the option that is used for binding to the server.</p><p>Select option:</p>\n  <ul>\n    <li><span style=\"font-weight: bold;\">Negotiate</span> - The client is authenticated by using either Kerberos or NTLM. When the user name and password are not provided, the Account Management API binds to the object by using the security context of the calling thread, which is either the security context of the user account under which the application is running or of the client user account that the calling thread represents.</li>\n    <li><span style=\"font-weight: bold;\">Sealing</span> - The data is encrypted by using Kerberos.</li>\n    <li><span style=\"font-weight: bold;\">SecureSocketLayer</span> - The channel is encrypted by using the Secure Sockets Layer (SSL). Active Directory requires that the Certificate Services be installed to support SSL.</li>\n    <li><span style=\"font-weight: bold;\">ServerBind</span> - Specify this flag when you use the domain context type if the application is binding to a specific server name.</li>\n    <li><span style=\"font-weight: bold;\">Signing</span> - The integrity of the data is verified. This flag can only be used with the Negotiate context option and is not available with the simple bind option.</li>\n    <li><span style=\"font-weight: bold;\">SimpleBind</span> - The client is authenticated by using the Basic authentication.</li>\n  </ul>",
+    "hintText": "Specifies the option that is used for binding to the server. Select option: Negotiate - The client is authenticated by using either Kerberos or NTLM. When the user name and password are not provided, the Account Management API binds to the object by using the security context of the calling thread, which is either the security context of the user account under which the application is running or of the client user account that the calling thread represents. Sealing - The data is encrypted by using Kerberos. SecureSocketLayer - The channel is encrypted by using the Secure Sockets Layer (SSL). Active Directory requires that the Certificate Services be installed to support SSL. ServerBind - Specify this flag when you use the domain context type if the application is binding to a specific server name. Signing - The integrity of the data is verified. This flag can only be used with the Negotiate context option and is not available with the simple bind option. SimpleBind - The client is authenticated by using the Basic authentication."
+  },
+  {
+    "table": "UserLDAP",
+    "column": "UserLDAPAuthenticationSearchType",
+    "hintHtml": "<p>Specifies the option that is used for binding to the server during import of LDAP users.</p><p>Select option:</p>\n  <ul>\n    <li><span style=\"font-weight: bold;\">Anonymous</span> - No authentication is performed.</li>\n\t<li><span style=\"font-weight: bold;\">Delegation</span> - Enables Active Directory Services Interface (ADSI) to delegate the user's security context, which is necessary for moving objects across domains.</li>\n    <li><span style=\"font-weight: bold;\">FastBind</span> - Specifies that ADSI will not attempt to query the Active Directory Domain Services objectClass property. Therefore, only the base interfaces that are supported by all ADSI objects will be exposed. Other interfaces that the object supports will not be available. A user can use this option to boost the performance in a series of object manipulations that involve only methods of the base interfaces. However, ADSI does not verify if any of the request objects actually exist on the server.</li>\n    <li><span style=\"font-weight: bold;\">ReadonlyServer</span> - For a WinNT provider, ADSI tries to connect to a domain controller. For Active Directory Domain Services, this flag indicates that a writable server is not required for a serverless binding.</li>\n    <li><span style=\"font-weight: bold;\">Sealing</span> - Encrypts data using Kerberos. The Secure flag must also be set to use sealing.</li>\n    <li><span style=\"font-weight: bold;\">Secure</span> - Requests secure authentication. When this flag is set, the WinNT provider uses NTLM to authenticate the client. Active Directory Domain Services uses Kerberos, and possibly NTLM, to authenticate the client. When the user name and password are a null reference (Nothing in Visual Basic), ADSI binds to the object using the security context of the calling thread, which is either the security context of the user account under which the application is running or of the client user account that the calling thread is impersonating.</li>\n\t<li><span style=\"font-weight: bold;\">SecureSocketsLayer</span> - Attaches a cryptographic signature to the message that both identifies the sender and ensures that the message has not been modified in transit. Active Directory Domain Services requires the Certificate Server be installed to support Secure Sockets Layer (SSL) encryption.</li>\n\t<li><span style=\"font-weight: bold;\">ServerBind</span> - If your ADsPath includes a server name, specify this flag when using the LDAP provider. Do not use this flag for paths that include a domain name or for serverless paths. Specifying a server name without also specifying this flag results in unnecessary network traffic.</li>\n\t<li><span style=\"font-weight: bold;\">Signing</span> - Verifies data integrity to ensure that the data received is the same as the data sent. The Secure flag must also be set to use signing.</li>\n  </ul>",
+    "hintText": "Specifies the option that is used for binding to the server during import of LDAP users. Select option: Anonymous - No authentication is performed. Delegation - Enables Active Directory Services Interface (ADSI) to delegate the user's security context, which is necessary for moving objects across domains. FastBind - Specifies that ADSI will not attempt to query the Active Directory Domain Services objectClass property. Therefore, only the base interfaces that are supported by all ADSI objects will be exposed. Other interfaces that the object supports will not be available. A user can use this option to boost the performance in a series of object manipulations that involve only methods of the base interfaces. However, ADSI does not verify if any of the request objects actually exist on the server. ReadonlyServer - For a WinNT provider, ADSI tries to connect to a domain controller. For Active Directory Domain Services, this flag indicates that a writable server is not required for a serverless binding. Sealing - Encrypts data using Kerberos. The Secure flag must also be set to use sealing. Secure - Requests secure authentication. When this flag is set, the WinNT provider uses NTLM to authenticate the client. Active Directory Domain Services uses Kerberos, and possibly NTLM, to authenticate the client. When the user name and password are a null reference (Nothing in Visual Basic), ADSI binds to the object using the security context of the calling thread, which is either the security context of the user account under which the application is running or of the client user account that the calling thread is impersonating. SecureSocketsLayer - Attaches a cryptographic signature to the message that both identifies the sender and ensures that the message has not been modified in transit. Active Directory Domain Services requires the Certificate Server be installed to support Secure Sockets Layer (SSL) encryption. ServerBind - If your ADsPath includes a server name, specify this flag when using the LDAP provider. Do not use this flag for paths that include a domain name or for serverless paths. Specifying a server name without also specifying this flag results in unnecessary network traffic. Signing - Verifies data integrity to ensure that the data received is the same as the data sent. The Secure flag must also be set to use signing."
+  },
+  {
+    "table": "UserDelegation",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserDelegation",
+    "column": "FromUserID",
+    "hintHtml": "<p>Under this field you are able to specify a user who is giving the delegation to another user.</p>",
+    "hintText": "Under this field you are able to specify a user who is giving the delegation to another user."
+  },
+  {
+    "table": "UserDelegation",
+    "column": "ToUserID",
+    "hintHtml": "<p>Under this field you are able to specify a user to whom the delegation is being created.</p><p>Select it from the list (from users created in the system).</p>",
+    "hintText": "Under this field you are able to specify a user to whom the delegation is being created. Select it from the list (from users created in the system)."
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineValue",
+    "hintHtml": "Definition of default value which will be displayed in the field according selected object line.<div><br></div><div>You are able to define values according object line type:</div><div><br></div><ul><li>Combo-box - Default values defined according reference values</li><li>Combo-box&nbsp;<span style=\"line-height: 18.5714px;\">(search)&nbsp;</span>- Default values defined according reference values</li><li>Text box (1 line) - any value</li><li>Text box (multi line) - any value</li><li>Sub-grid - not definable</li><li>Empty space - not definable</li><li>Check-box (yes/no) - value 0 or 1</li><li>Data picker - value of format data picker</li><li>Attachment - not definable</li><li>Web frame - not definable</li></ul>",
+    "hintText": "Definition of default value which will be displayed in the field according selected object line. You are able to define values according object line type: Combo-box - Default values defined according reference values Combo-box (search) - Default values defined according reference values Text box (1 line) - any value Text box (multi line) - any value Sub-grid - not definable Empty space - not definable Check-box (yes/no) - value 0 or 1 Data picker - value of format data picker Attachment - not definable Web frame - not definable"
+  },
+  {
+    "table": "UserDelegation",
+    "column": "UserDelegationIsChaining",
+    "hintHtml": "<p>This field defines if the delegation which is being created can be chained.</p><p>For ex.:</p><p>1. Object&nbsp;<span style=\"font-weight: bold;\">A</span> delegates to Object&nbsp;<span style=\"font-weight: bold;\">B</span></p><p>2.<span style=\"font-weight: bold;\">&nbsp;</span>Object<span style=\"font-weight: bold;\"> B</span> delegates to Object&nbsp;<span style=\"font-weight: bold;\">C</span>&nbsp;&gt;&gt; Object&nbsp;<span style=\"font-weight: bold;\">C</span> then can do operations for Object&nbsp;<span style=\"font-weight: bold;\">B</span>&nbsp;and also for Object&nbsp;<span style=\"font-weight: bold;\">A</span>.</p>",
+    "hintText": "This field defines if the delegation which is being created can be chained. For ex.: 1. Object A delegates to Object B 2. Object B delegates to Object C >> Object C then can do operations for Object B and also for Object A ."
+  },
+  {
+    "table": "UserDelegation",
+    "column": "UserDelegationValidFrom",
+    "hintHtml": "<p>Select a date from which the delegation will be valid.</p><p>Select it from the window or type it in format: \" <span style=\"font-style: italic;\">15-December-2015</span> \".</p>",
+    "hintText": "Select a date from which the delegation will be valid. Select it from the window or type it in format: \" 15-December-2015 \"."
+  },
+  {
+    "table": "UserDelegation",
+    "column": "UserDelegationValidTo",
+    "hintHtml": "<p>Select a date by which the delegation will be valid.</p><p>Select it from the window or type it in format: \" <span style=\"font-style: italic;\">18-December-2015</span> \".&nbsp;</p>",
+    "hintText": "Select a date by which the delegation will be valid. Select it from the window or type it in format: \" 18-December-2015 \"."
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "CompanyID",
+    "hintHtml": "<p>Select Company ID (created in the system) from the list which will be taken into account for user special access. This field is &nbsp;accessible only if in Level field \" <span style=\"font-style: italic;\">Company</span> \" is selected.</p>",
+    "hintText": "Select Company ID (created in the system) from the list which will be taken into account for user special access. This field is accessible only if in Level field \" Company \" is selected."
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "ObjectID",
+    "hintHtml": "<p>Select Object ID (created in the system) from the list which will be taken into account for user special access. This field is accessible only if in Level field \" <span style=\"font-style: italic;\">Object </span>\" is selected.</p>",
+    "hintText": "Select Object ID (created in the system) from the list which will be taken into account for user special access. This field is accessible only if in Level field \" Object \" is selected."
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "ObjectTypeID",
+    "hintHtml": "<p>Select Object type ID (created in the system) from the list which will be taken into account for user special access. This field is accessible only if in Level field \" <span style=\"font-style: italic;\">Object type</span> \" is selected.</p>",
+    "hintText": "Select Object type ID (created in the system) from the list which will be taken into account for user special access. This field is accessible only if in Level field \" Object type \" is selected."
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "UserAccessSpecialID",
+    "hintHtml": "<p>Select Type of special access (section) available for particular user.</p><p>Based on the setup, select one of these options:</p><ul><li><span style=\"font-weight: bold;\">Administration</span> - special access will be used only for Administration section</li><li><span style=\"font-weight: bold;\">Export data </span>- special access will be used only for Export data section</li><li><span style=\"font-weight: bold;\">Object browser</span> - special access will be used only for Object browser section</li><li><span style=\"font-weight: bold;\">User management</span> - special access will be used only for User management section</li><li><span style=\"font-weight: bold;\">MyRequest</span> - special access will be used only for MyRequest section</li></ul>",
+    "hintText": "Select Type of special access (section) available for particular user. Based on the setup, select one of these options: Administration - special access will be used only for Administration section Export data - special access will be used only for Export data section Object browser - special access will be used only for Object browser section User management - special access will be used only for User management section MyRequest - special access will be used only for MyRequest section"
+  },
+  {
+    "table": "UserAccessSpecial",
+    "column": "userAccessSpecialLevelID",
+    "hintHtml": "<p>Based on selected Type of special access, you are able to select a level for this access.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Global</span> - this level of special access contains all objects for selected type of special access.</li><li><span style=\"font-weight: bold;\">Company</span> - this level of special access is restricted to a particular Company</li><li><span style=\"font-weight: bold;\">Object type</span> - this level of special access is restricted to a particular Object type</li><li><span style=\"font-weight: bold;\">Object</span> - this level of special access is restricted to a particular Object</li></ul>",
+    "hintText": "Based on selected Type of special access, you are able to select a level for this access. Select option: Global - this level of special access contains all objects for selected type of special access. Company - this level of special access is restricted to a particular Company Object type - this level of special access is restricted to a particular Object type Object - this level of special access is restricted to a particular Object"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineValidationID",
+    "hintHtml": "<p>Under Object line validation you are able to select validation which will affect object line.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Mandatory </span>– Object line (field) is mandatory</li><li><span style=\"font-weight: bold;\">Optional </span>– Object line (field) is optional</li><li><span style=\"font-weight: bold;\">Mandatory (conditional)</span> – Object line (field) is mandatory if condition will be fulfilled</li><li><span style=\"font-weight: bold;\">Disabled / mandatory (conditional)</span> – Object line (field) is mandatory if condition will not be fulfilled</li><li><span style=\"font-weight: bold;\">Disabled / optional (conditional)</span> – Object line (field) is optional if condition will not be fulfilled</li><li><span style=\"font-weight: bold;\">Hidden / mandatory (conditional)</span> – Object line (field) is hidden if condition will be fulfilled otherwise is mandatory</li><li><span style=\"font-weight: bold;\">Hidden / optional (conditional)</span> – Object line (field) is hidden if condition will be fulfilled otherwise is optional</li><li><span style=\"font-weight: bold;\">Extended validations</span> – Object line (field) is hidden, disabled, mandatory if one of condition will be fulfilled</li><ul><li>Hidden condition</li><li>Disabled condition</li><li>Mandatory condition</li></ul></ul>",
+    "hintText": "Under Object line validation you are able to select validation which will affect object line. Select option: Mandatory – Object line (field) is mandatory Optional – Object line (field) is optional Mandatory (conditional) – Object line (field) is mandatory if condition will be fulfilled Disabled / mandatory (conditional) – Object line (field) is mandatory if condition will not be fulfilled Disabled / optional (conditional) – Object line (field) is optional if condition will not be fulfilled Hidden / mandatory (conditional) – Object line (field) is hidden if condition will be fulfilled otherwise is mandatory Hidden / optional (conditional) – Object line (field) is hidden if condition will be fulfilled otherwise is optional Extended validations – Object line (field) is hidden, disabled, mandatory if one of condition will be fulfilled Hidden condition Disabled condition Mandatory condition"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineAutoNumberID",
+    "hintHtml": "<p>Under &nbsp;autonumber you are able to select “Autonumber” which defines format and autonumber in the field.&nbsp;</p><p>Note: Autonumber is defined in the Admin / Objects section / Autonumber</p>",
+    "hintText": "Under autonumber you are able to select “Autonumber” which defines format and autonumber in the field. Note: Autonumber is defined in the Admin / Objects section / Autonumber"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineInputMask",
+    "hintHtml": "<p>Under input mask you are able to change mask behaviour. Together with input mask we will be able to define also length of the field.</p><p>Input mask is possible only for object type: \"Text-box (1 line)\", \"Text – box (multiline)\" and \"Number\" if autonumber is not selected.</p><p>Below table described the possible characters. If in the input mask should be defined fixed text it have to be put into square brackets [text] otherwise should be ignored and removed from input mask in request details.</p><table class=\"table table-bordered\"><tbody><tr><td><br></td><td style=\"text-align: center;\"><span style=\"font-weight: bold;\">Mandatory</span></td><td style=\"text-align: center;\"><span style=\"font-weight: bold;\">Optional</span></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Number [0-9]</span></td><td style=\"text-align: center;\">9</td><td style=\"text-align: center;\">#</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Lower case [a-z]</span></td><td style=\"text-align: center;\">a</td><td style=\"text-align: center;\">b</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Upper case [A-Z]</span></td><td style=\"text-align: center;\">A</td><td style=\"text-align: center;\">B</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Alfanumeric [a-zA-Z0-9]</span></td><td style=\"text-align: center;\">w</td><td style=\"text-align: center;\">x</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Any character</span></td><td style=\"text-align: center;\">*</td><td style=\"text-align: center;\">%</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Email</span></td><td style=\"text-align: center;\">email</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">IBAN</span></td><td style=\"text-align: center;\">iban</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">IP Address (v4)</span></td><td style=\"text-align: center;\">ipv4</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Decimal</span></td><td style=\"text-align: center;\"><br></td><td style=\"text-align: center;\">#.##</td></tr></tbody></table><p>Mandatory means that characted have to be entered and Optional means that it can be skipped. Couple of examples:</p><ul><li><span style=\"line-height: 1.42857;\">Mask: [ABC]999</span></li></ul><p style=\"margin-left: 50px;\">Valid input: ABC123, ABC456</p><p style=\"margin-left: 50px;\">Invalid input: ABC1__, ABC25_</p><ul><li>Mask: [ABC]99###</li></ul><p style=\"margin-left: 50px;\">Valid input: ABC124, ABC45687</p><p style=\"margin-left: 50px;\">Invalid input: ABC1_</p><ul><li><span style=\"line-height: 1.42857;\">Mask: wwwwwxxx</span></li></ul><p style=\"margin-left: 50px;\">Valid input: tomas, tomasbe</p><p style=\"margin-left: 50px;\">Invalid input: toma_, tomasbelak (should not be possible to enter)</p><ul><li>Mask: ####.##</li></ul><p style=\"margin-left: 50px;\">Valid input: any number between -9999.99 to 9999.99</p><ul><li>Mask: ##</li></ul><p style=\"margin-left: 50px;\">Valid: any number between -99 to 99</p><p>Note: \"Any character\" can be any printable character as space, asterix, or any other special char.</p><div><br></div><p style=\"margin-left: 50px;\"><br></p>",
+    "hintText": "Under input mask you are able to change mask behaviour. Together with input mask we will be able to define also length of the field. Input mask is possible only for object type: \"Text-box (1 line)\", \"Text – box (multiline)\" and \"Number\" if autonumber is not selected. Below table described the possible characters. If in the input mask should be defined fixed text it have to be put into square brackets [text] otherwise should be ignored and removed from input mask in request details. Mandatory Optional Number [0-9] 9 # Lower case [a-z] a b Upper case [A-Z] A B Alfanumeric [a-zA-Z0-9] w x Any character * % Email email IBAN iban IP Address (v4) ipv4 Decimal #.## Mandatory means that characted have to be entered and Optional means that it can be skipped. Couple of examples: Mask: [ABC]999 Valid input: ABC123, ABC456 Invalid input: ABC1__, ABC25_ Mask: [ABC]99### Valid input: ABC124, ABC45687 Invalid input: ABC1_ Mask: wwwwwxxx Valid input: tomas, tomasbe Invalid input: toma_, tomasbelak (should not be possible to enter) Mask: ####.## Valid input: any number between -9999.99 to 9999.99 Mask: ## Valid: any number between -99 to 99 Note: \"Any character\" can be any printable character as space, asterix, or any other special char."
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineInputLength",
+    "hintHtml": "<p>Defines maximum length of input.</p>",
+    "hintText": "Defines maximum length of input."
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineHint",
+    "hintHtml": "<p>Under &nbsp;hint &nbsp;you are able to define description of field. &nbsp;<br></p>",
+    "hintText": "Under hint you are able to define description of field."
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineClientCalcDelay",
+    "hintHtml": "<p>Override default <strong>250ms</strong> delay for triggering client calculations referring to this line</p>",
+    "hintText": "Override default 250ms delay for triggering client calculations referring to this line"
+  },
+  {
+    "table": "ObjectDefaultLine",
+    "column": "ObjectDefaultLineIsClientCalcConfirm",
+    "hintHtml": "<p>Force user to click additional \"Refresh\" button in order to trigger client calculations referring to this line.</p><p>Select option:</p><ul><li><strong>Yes</strong> - User has to confirm executing client calculations referring to this line</li><li><strong>No</strong> - Client calculations are executed when this line changes it's value</li></ul>",
+    "hintText": "Force user to click additional \"Refresh\" button in order to trigger client calculations referring to this line. Select option: Yes - User has to confirm executing client calculations referring to this line No - Client calculations are executed when this line changes it's value"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineValidationID",
+    "hintHtml": "<p>Under Line validation you are able to select validation which will affect line.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Mandatory </span> – line (field) is mandatory</li><li><span style=\"font-weight: bold;\">Optional </span> – line (field) is optional</li><li><span style=\"font-weight: bold;\">Mandatory (conditional)</span> – line (field) is mandatory if condition will be fulfilled</li><li><span style=\"font-weight: bold;\">Disabled / mandatory (conditional)</span> – line (field) is mandatory if condition will not be fulfilled</li><li><span style=\"font-weight: bold;\">Disabled / optional (conditional)</span> – line (field) is optional if condition will not be fulfilled</li></ul>",
+    "hintText": "Under Line validation you are able to select validation which will affect line. Select option: Mandatory – line (field) is mandatory Optional – line (field) is optional Mandatory (conditional) – line (field) is mandatory if condition will be fulfilled Disabled / mandatory (conditional) – line (field) is mandatory if condition will not be fulfilled Disabled / optional (conditional) – line (field) is optional if condition will not be fulfilled"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineAutoNumberID",
+    "hintHtml": "<p>Under &nbsp;autonumber you are able to select “Autonumber” which defines format and autonumber in the field.&nbsp;</p><p>Note: Autonumber is defined in the Admin / Objects section / Autonumber</p>",
+    "hintText": "Under autonumber you are able to select “Autonumber” which defines format and autonumber in the field. Note: Autonumber is defined in the Admin / Objects section / Autonumber"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineInputMask",
+    "hintHtml": "<p>Under input mask you are able to change mask behaviour. Together with input mask we will be able to define also length of the field.</p><p>Input mask is possible only for type: \"Text-box (1 line)\", \"Text – box (multiline)\" and \"Number\" if autonumber is not selected.</p><p>Below table described the possible characters. If in the input mask should be defined fixed text it have to be put into square brackets [text] otherwise should be ignored and removed from input mask in request details.</p><table class=\"table table-bordered\"><tbody><tr><td><br></td><td style=\"text-align: center;\"><span style=\"font-weight: bold;\">Mandatory</span></td><td style=\"text-align: center;\"><span style=\"font-weight: bold;\">Optional</span></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Number [0-9]</span></td><td style=\"text-align: center;\">9</td><td style=\"text-align: center;\">#</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Lower case [a-z]</span></td><td style=\"text-align: center;\">a</td><td style=\"text-align: center;\">b</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Upper case [A-Z]</span></td><td style=\"text-align: center;\">A</td><td style=\"text-align: center;\">B</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Alfanumeric [a-zA-Z0-9]</span></td><td style=\"text-align: center;\">w</td><td style=\"text-align: center;\">x</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Any character</span></td><td style=\"text-align: center;\">*</td><td style=\"text-align: center;\">%</td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Email</span></td><td style=\"text-align: center;\">email</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">IBAN</span></td><td style=\"text-align: center;\">iban</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">IP Address (v4)</span></td><td style=\"text-align: center;\">ipv4</td><td style=\"text-align: center;\"><br></td></tr><tr><td style=\"text-align: left;\"><span style=\"font-weight: bold;\">Decimal</span></td><td style=\"text-align: center;\"><br></td><td style=\"text-align: center;\">#.##</td></tr></tbody></table><p>Mandatory means that characted have to be entered and Optional means that it can be skipped. Couple of examples:</p><ul><li><span style=\"line-height: 1.42857;\">Mask: [ABC]999</span></li></ul><p style=\"margin-left: 50px;\">Valid input: ABC123, ABC456</p><p style=\"margin-left: 50px;\">Invalid input: ABC1__, ABC25_</p><ul><li>Mask: [ABC]99###</li></ul><p style=\"margin-left: 50px;\">Valid input: ABC124, ABC45687</p><p style=\"margin-left: 50px;\">Invalid input: ABC1_</p><ul><li><span style=\"line-height: 1.42857;\">Mask: wwwwwxxx</span></li></ul><p style=\"margin-left: 50px;\">Valid input: tomas, tomasbe</p><p style=\"margin-left: 50px;\">Invalid input: toma_, tomasbelak (should not be possible to enter)</p><ul><li>Mask: ####.##</li></ul><p style=\"margin-left: 50px;\">Valid input: any number between -9999.99 to 9999.99</p><ul><li>Mask: ##</li></ul><p style=\"margin-left: 50px;\">Valid: any number between -99 to 99</p><p>Note: \"Any character\" can be any printable character as space, asterix, or any other special char.</p><div><br></div><p style=\"margin-left: 50px;\"><br></p>",
+    "hintText": "Under input mask you are able to change mask behaviour. Together with input mask we will be able to define also length of the field. Input mask is possible only for type: \"Text-box (1 line)\", \"Text – box (multiline)\" and \"Number\" if autonumber is not selected. Below table described the possible characters. If in the input mask should be defined fixed text it have to be put into square brackets [text] otherwise should be ignored and removed from input mask in request details. Mandatory Optional Number [0-9] 9 # Lower case [a-z] a b Upper case [A-Z] A B Alfanumeric [a-zA-Z0-9] w x Any character * % Email email IBAN iban IP Address (v4) ipv4 Decimal #.## Mandatory means that characted have to be entered and Optional means that it can be skipped. Couple of examples: Mask: [ABC]999 Valid input: ABC123, ABC456 Invalid input: ABC1__, ABC25_ Mask: [ABC]99### Valid input: ABC124, ABC45687 Invalid input: ABC1_ Mask: wwwwwxxx Valid input: tomas, tomasbe Invalid input: toma_, tomasbelak (should not be possible to enter) Mask: ####.## Valid input: any number between -9999.99 to 9999.99 Mask: ## Valid: any number between -99 to 99 Note: \"Any character\" can be any printable character as space, asterix, or any other special char."
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineInputLength",
+    "hintHtml": "<p>Defines maximum length of input.</p>",
+    "hintText": "Defines maximum length of input."
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the line is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– line is active</li><li><span style=\"font-weight: bold;\">No </span>– line is inactive</li></ul>",
+    "hintText": "Active field in general defines if the line is active or inactive. Select option: Yes – line is active No – line is inactive"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineHint",
+    "hintHtml": "<p>Under &nbsp;hint &nbsp;you are able to define description of field. &nbsp;<br></p>",
+    "hintText": "Under hint you are able to define description of field."
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineClientCalcDelay",
+    "hintHtml": "<p>Override default <strong>250ms</strong> delay for triggering client calculations referring to this line</p>",
+    "hintText": "Override default 250ms delay for triggering client calculations referring to this line"
+  },
+  {
+    "table": "ObjectSubDefaultLine",
+    "column": "ObjectSubDefaultLineIsClientCalcConfirm",
+    "hintHtml": "<p>Force user to click additional \"Refresh\" button in order to trigger client calculations referring to this line.</p><p>Select option:</p><ul><li><strong>Yes</strong> - User has to confirm executing client calculations referring to this line</li><li><strong>No</strong> - Client calculations are executed when this line changes it's value</li></ul>",
+    "hintText": "Force user to click additional \"Refresh\" button in order to trigger client calculations referring to this line. Select option: Yes - User has to confirm executing client calculations referring to this line No - Client calculations are executed when this line changes it's value"
+  },
+  {
+    "table": "UserAccess",
+    "column": "CompanyID",
+    "hintHtml": "<p>Select Company ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" <span style=\"font-style: italic;\">Company</span> \" is selected.</p>",
+    "hintText": "Select Company ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" Company \" is selected."
+  },
+  {
+    "table": "UserAccess",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "UserAccess",
+    "column": "ObjectID",
+    "hintHtml": "<p>Select Object ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" <span style=\"font-style: italic;\">Object</span> \" is selected.</p>",
+    "hintText": "Select Object ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" Object \" is selected."
+  },
+  {
+    "table": "UserAccess",
+    "column": "ObjectTypeID",
+    "hintHtml": "<p>Select Object type ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" <span style=\"font-style: italic;\">Object type</span> \" is selected.</p>",
+    "hintText": "Select Object type ID (created in the system) from the list which will be taken into account for user access. This field is accessible only if in Level field \" Object type \" is selected."
+  },
+  {
+    "table": "ObjectDefaultUserList",
+    "column": "ObjectDefaultUserListIsAllowed",
+    "hintHtml": "<p>All users can create workflow template who are visible in this „Is allowed“ section.</p><p>Click on user to move it to „Is allowed“ table (user could create template) or to „Not allowed“ (user could not create template)&nbsp;</p>",
+    "hintText": "All users can create workflow template who are visible in this „Is allowed“ section. Click on user to move it to „Is allowed“ table (user could create template) or to „Not allowed“ (user could not create template)"
+  },
+  {
+    "table": "UserAccess",
+    "column": "RoleID",
+    "hintHtml": "<p>Select a role (created in the system) for a particular user. Following values selected will be applied for this role.</p>",
+    "hintText": "Select a role (created in the system) for a particular user. Following values selected will be applied for this role."
+  },
+  {
+    "table": "ObjectLineAutoNumber",
+    "column": "ObjectLineAutoNumberDescription",
+    "hintHtml": "<p>Definition of autonumber name.&nbsp;</p><p>Note: According this description you are able to define autonumber in the Object template lines (Administration / Object detail section / Templates / Lines)</p>",
+    "hintText": "Definition of autonumber name. Note: According this description you are able to define autonumber in the Object template lines (Administration / Object detail section / Templates / Lines)"
+  },
+  {
+    "table": "UserAccess",
+    "column": "UserAccessLevelID",
+    "hintHtml": "<p>Under this field you are able to select a level for user access.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Global</span> - this level of user access contains all objects for selected type of user access</li><li><span style=\"font-weight: bold;\">Company</span> - this level of user access is restricted to a particular Company</li><li><span style=\"font-weight: bold;\">Object type</span> - this level of user access is restricted to a particular Object type</li><li><span style=\"font-weight: bold;\">Object</span> - this level of user access is restricted to a particular Object</li></ul>",
+    "hintText": "Under this field you are able to select a level for user access. Select option: Global - this level of user access contains all objects for selected type of user access Company - this level of user access is restricted to a particular Company Object type - this level of user access is restricted to a particular Object type Object - this level of user access is restricted to a particular Object"
+  },
+  {
+    "table": "ObjectLineAutoNumber",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ObjectLineAutoNumber",
+    "column": "ObjectLineAutoNumberFormat",
+    "hintHtml": "<p>Under Format you are able to define format with mask behaviour. Together with input mask we will be able to define also length of the field. Below table describe the possible character for mask of number.</p><table class=\"table table-bordered\"><tbody><tr><td><br></td><td><p style=\"text-align: center; \"><span style=\"font-weight: bold;\">Character</span></p></td></tr><tr><td><span style=\"font-weight: bold;\">Number [0-9]</span></td><td style=\"text-align: center;\">#</td></tr></tbody></table><p>Couple of examples:</p><ul><li>Mask: TEST###</li></ul><p style=\"margin-left: 50px;\">Valid input: TEST123, TEST006</p><ul><li>Mask: ###TEST</li></ul><p style=\"margin-left: 50px;\">Valid input: 124TEST, 006TEST</p>",
+    "hintText": "Under Format you are able to define format with mask behaviour. Together with input mask we will be able to define also length of the field. Below table describe the possible character for mask of number. Character Number [0-9] # Couple of examples: Mask: TEST### Valid input: TEST123, TEST006 Mask: ###TEST Valid input: 124TEST, 006TEST"
+  },
+  {
+    "table": "ObjectLineAutoNumber",
+    "column": "ObjectLineAutoNumberNext",
+    "hintHtml": "<p>Under Next number you are able to define next number in the order which will be generated in the saved record. Next number will be automatically increased by one.</p>",
+    "hintText": "Under Next number you are able to define next number in the order which will be generated in the saved record. Next number will be automatically increased by one."
+  },
+  {
+    "table": "ObjectType",
+    "column": "ObjectTypeName",
+    "hintHtml": "<p>Definition of object type.</p><p>Note: Object type is selected in the Object Details (Admin / Objects section / Object Details). Object type more determines type company.</p>",
+    "hintText": "Definition of object type. Note: Object type is selected in the Object Details (Admin / Objects section / Object Details). Object type more determines type company."
+  },
+  {
+    "table": "ObjectType",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ObjectLineTab",
+    "column": "ObjectLineTabName",
+    "hintHtml": "<p>Definition of tab name.<br></p>",
+    "hintText": "Definition of tab name."
+  },
+  {
+    "table": "ObjectLineTab",
+    "column": "ObjectLineTabPlacement",
+    "hintHtml": "<p>Under placement you are able to define where tab will be located.</p><p>Select type:</p><ul><li><span style=\"font-weight: bold;\">Left </span>– Tab will be located on the left side</li><li><span style=\"font-weight: bold;\">Right </span>– Tab will be located on the right side</li></ul>",
+    "hintText": "Under placement you are able to define where tab will be located. Select type: Left – Tab will be located on the left side Right – Tab will be located on the right side"
+  },
+  {
+    "table": "ObjectLineTab",
+    "column": "ObjectLineTabOrder",
+    "hintHtml": "<p>Order of tab in case multiple tabs are defined for one object.<br></p>",
+    "hintText": "Order of tab in case multiple tabs are defined for one object."
+  },
+  {
+    "table": "ObjectLineTab",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "User",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active</li><li><span style=\"font-weight: bold;\">No</span> - object is inactive<br></li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "User",
+    "column": "UserAuthTypeID",
+    "hintHtml": "<p>Under this field you are able to define Authentication type for user access.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Local application</span> - this authentication type uses access based on local (Xeelo) authentication values (username,password).<br></li><li><span style=\"font-weight: bold;\">External LDAP</span> (login/password) - this authentication type uses access based on LDAP attributes which are defined in the system<br></li><li><span style=\"font-weight: bold;\">External LDAP</span> (session) - this authentication type uses access based on session IDs.<br></li></ul>",
+    "hintText": "Under this field you are able to define Authentication type for user access. Select option: Local application - this authentication type uses access based on local (Xeelo) authentication values (username,password). External LDAP (login/password) - this authentication type uses access based on LDAP attributes which are defined in the system External LDAP (session) - this authentication type uses access based on session IDs."
+  },
+  {
+    "table": "User",
+    "column": "UserEmail",
+    "hintHtml": "<p>Define email for a particular user who is being created. This email will be used for sending notifications, sending new passwords etc.<br></p>",
+    "hintText": "Define email for a particular user who is being created. This email will be used for sending notifications, sending new passwords etc."
+  },
+  {
+    "table": "User",
+    "column": "UserLDAPID",
+    "hintHtml": "Select LDAP Name (created in the system) from the list which defines External LDAP authentication.<br>",
+    "hintText": "Select LDAP Name (created in the system) from the list which defines External LDAP authentication."
+  },
+  {
+    "table": "User",
+    "column": "UserLogin",
+    "hintHtml": "<p>Define login for a particular user who is being created. This login (Local application authentication) will be used when user wants to access Xeelo application.<br></p>",
+    "hintText": "Define login for a particular user who is being created. This login (Local application authentication) will be used when user wants to access Xeelo application."
+  },
+  {
+    "table": "User",
+    "column": "UserName",
+    "hintHtml": "<p>Define name of a particular user who is being created.<br></p>",
+    "hintText": "Define name of a particular user who is being created."
+  },
+  {
+    "table": "User",
+    "column": "UserIsChangeDetails",
+    "hintHtml": "<p>Allow User to update his personal information (Name, Email). </p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - user can update his personal information<br></li><li><span style=\"font-weight: bold;\">No</span> - user cannot update his personal information<br></li></ul>",
+    "hintText": "Allow User to update his personal information (Name, Email). Select option: Yes - user can update his personal information No - user cannot update his personal information"
+  },
+  {
+    "table": "User",
+    "column": "UserIsChangeDelegation",
+    "hintHtml": "<p>Allow User to create or update delegations. </p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - user can manage delegations<br></li><li><span style=\"font-weight: bold;\">No</span> - user cannot manage delegations<br></li></ul>",
+    "hintText": "Allow User to create or update delegations. Select option: Yes - user can manage delegations No - user cannot manage delegations"
+  },
+  {
+    "table": "User",
+    "column": "UserIsChangeNotification",
+    "hintHtml": "<p>Allow User to manage notifications. </p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - user can manage notifications<br></li><li><span style=\"font-weight: bold;\">No</span> - user cannot manage notifications<br></li></ul>",
+    "hintText": "Allow User to manage notifications. Select option: Yes - user can manage notifications No - user cannot manage notifications"
+  },
+  {
+    "table": "User",
+    "column": "UserIsChangeMobileDevice",
+    "hintHtml": "<p>Allow User to register and deactivate his mobile devices. </p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - user can register and deactivate his mobile devices<br></li><li><span style=\"font-weight: bold;\">No</span> - user cannot register and deactivate his mobile devices<br></li></ul>",
+    "hintText": "Allow User to register and deactivate his mobile devices. Select option: Yes - user can register and deactivate his mobile devices No - user cannot register and deactivate his mobile devices"
+  },
+  {
+    "table": "User",
+    "column": "UserNotificationIsAllowed",
+    "hintHtml": "<p>Under this field you are able to activate / deactivate sending notifications to a particular user. </p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - sending notification is active<br></li><li><span style=\"font-weight: bold;\">No</span> - sending notification is inactive<br></li></ul>",
+    "hintText": "Under this field you are able to activate / deactivate sending notifications to a particular user. Select option: Yes - sending notification is active No - sending notification is inactive"
+  },
+  {
+    "table": "ObjectSub",
+    "column": "ObjectSubName",
+    "hintHtml": "<p>Definition of object sub grid name.</p>",
+    "hintText": "Definition of object sub grid name."
+  },
+  {
+    "table": "SettingsSystem",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active<br></li><li><span style=\"font-weight: bold;\">No</span> - object is inactive<br></li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "ObjectSub",
+    "column": "ObjectSubWidth",
+    "hintHtml": "<p>Under object sub grid width you are able to define width of field in %. It is necessary to define values more than 50 % and less than 100%.<br></p>",
+    "hintText": "Under object sub grid width you are able to define width of field in %. It is necessary to define values more than 50 % and less than 100%."
+  },
+  {
+    "table": "ObjectSub",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ObjectUpdateAccess",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active<br></li><li><span style=\"font-weight: bold;\">No</span> - object is inactive<br></li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactive"
+  },
+  {
+    "table": "ObjectUpdateAccess",
+    "column": "ObjectLineIsVisibleUpdate",
+    "hintHtml": "<p>All object lines that are visible for a particular Workflow.</p><p>Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won&#x27;t be visible)<br></p>",
+    "hintText": "All object lines that are visible for a particular Workflow. Click on Object line to move it to Visible table (line will be visible) or to Object line table (line won't be visible)"
+  },
+  {
+    "table": "ObjectSubPrefill",
+    "column": "ObjectSubPrefillName",
+    "hintHtml": "<p>Definition of prefill name.<br></p>",
+    "hintText": "Definition of prefill name."
+  },
+  {
+    "table": "ObjectUpdateAccess",
+    "column": "ObjectLineIsEditableUpdate",
+    "hintHtml": "<p>All object lines that are editable for a particular Workflow.</p><p>Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won&#x27;t be editable)<br></p>",
+    "hintText": "All object lines that are editable for a particular Workflow. Click on Object line to move it to Editable table (line will be editable) or to Object line table (line won't be editable)"
+  },
+  {
+    "table": "ObjectSubPrefill",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes </span>– object is active</li><li><span style=\"font-weight: bold;\">No </span>– object is inactive</li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes – object is active No – object is inactive"
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "column": "IsActive",
+    "hintHtml": "<p>Active field in general defines if the object is active or inactive.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Yes</span> - object is active<br></li><li><span style=\"font-weight: bold;\">No</span> - object is inactie<br></li></ul>",
+    "hintText": "Active field in general defines if the object is active or inactive. Select option: Yes - object is active No - object is inactie"
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "column": "ObjectUpdateActionName",
+    "hintHtml": "<p>Define name of a partiular update action.<br></p>",
+    "hintText": "Define name of a partiular update action."
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "column": "ObjectUpdateActionIsQuick",
+    "hintHtml": "<p>When enabled, this action will be processed immediately - without user having possibility to save request data</p>",
+    "hintText": "When enabled, this action will be processed immediately - without user having possibility to save request data"
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "column": "ObjectUpdateActionOrder",
+    "hintHtml": "<p>Under this field you are able to specify order of created update actions. Good approach is to use decimal numbers, if you need to edit the order, to add aditional Update action.</p><p>For ex.:</p><p>1) Update action 1, order: 10</p><p>2) Update action 2, order: 20</p><p>3) Update action 3, order: 30<br></p>",
+    "hintText": "Under this field you are able to specify order of created update actions. Good approach is to use decimal numbers, if you need to edit the order, to add aditional Update action. For ex.: 1) Update action 1, order: 10 2) Update action 2, order: 20 3) Update action 3, order: 30"
+  },
+  {
+    "table": "ObjectUpdateAction",
+    "column": "WorkflowID",
+    "hintHtml": "<p>Select Workflow name (created in the system) form the list which will be used when the update action is made.<br></p>",
+    "hintText": "Select Workflow name (created in the system) form the list which will be used when the update action is made."
+  },
+  {
+    "table": "Job",
+    "column": "JobCRON",
+    "hintHtml": "<p>Setup scheduling period for task</p><table class=\"table\"><thead><tr><th><strong>Expression</strong></th><th><strong>Meaning</strong></th></tr></thead><tbody><tr><td>0/30 * * * * ?</td><td>Fire every 30 seconds</td></tr><tr><td>0 0/2 * * * ?</td><td>Fire every 2 minutes</td></tr><tr><td>0 0 12 * * ?</td><td>Fire at 12pm (noon) every day</td></tr><tr><td>0 15 10 * * ?</td><td>Fire at 10:15am every day</td></tr><tr><td>0 15 10 15 * ?</td><td>Fire at 10:15am on the 15th day of every month</td></tr></tbody></table><p>For more examples see <a target=\"_blank\" href=\"https://www.quartz-scheduler.net/documentation/quartz-3.x/tutorial/crontrigger.html\">Documentation</a></p>",
+    "hintText": "Setup scheduling period for task Expression Meaning 0/30 * * * * ? Fire every 30 seconds 0 0/2 * * * ? Fire every 2 minutes 0 0 12 * * ? Fire at 12pm (noon) every day 0 15 10 * * ? Fire at 10:15am every day 0 15 10 15 * ? Fire at 10:15am on the 15th day of every month For more examples see Documentation"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineTextInputType",
+    "hintHtml": "<p>Select input type in Mobile Application</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Default </span>– using keyboard</li><li><span style=\"font-weight: bold;\">Bar Code </span>– using BarCode/QR Code scanner</li><li><span style=\"font-weight: bold;\">Location </span>– using current geo-location</li></ul>",
+    "hintText": "Select input type in Mobile Application Select option: Default – using keyboard Bar Code – using BarCode/QR Code scanner Location – using current geo-location"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineTextInputType",
+    "hintHtml": "<p>Select input type in Mobile Application</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Default </span>– using keyboard</li><li><span style=\"font-weight: bold;\">Bar Code </span>– using BarCode/QR Code scanner</li><li><span style=\"font-weight: bold;\">Location </span>– using current geo-location</li></ul>",
+    "hintText": "Select input type in Mobile Application Select option: Default – using keyboard Bar Code – using BarCode/QR Code scanner Location – using current geo-location"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentImageResizeMax",
+    "hintHtml": "<p>Maximum size (MB) for image attachments. Larger images will be scaled down to match limit</p>",
+    "hintText": "Maximum size (MB) for image attachments. Larger images will be scaled down to match limit"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentImageResizeMax",
+    "hintHtml": "<p>Maximum size (MB) for image attachments. Larger images will be scaled down to match limit</p>",
+    "hintText": "Maximum size (MB) for image attachments. Larger images will be scaled down to match limit"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentFileTypeList",
+    "hintHtml": "<p>Comma separated supported file extensions (.gif, .jpg, .png, .doc)</p>",
+    "hintText": "Comma separated supported file extensions (.gif, .jpg, .png, .doc)"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentFileTypeList",
+    "hintHtml": "<p>Comma separated supported file extensions (.gif, .jpg, .png, .doc)</p>",
+    "hintText": "Comma separated supported file extensions (.gif, .jpg, .png, .doc)"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentMaxFileSize",
+    "hintHtml": "<p>Maximum size (MB) for attachments</p>",
+    "hintText": "Maximum size (MB) for attachments"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentMaxFileSize",
+    "hintHtml": "<p>Maximum size (MB) for attachments</p>",
+    "hintText": "Maximum size (MB) for attachments"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentMobileIsScan",
+    "hintHtml": "<p>If enabled, Mobile app will use Scanner instead of regular camera. Scanner allows to auto-detect receipt (iOS only) and image cropping</p>",
+    "hintText": "If enabled, Mobile app will use Scanner instead of regular camera. Scanner allows to auto-detect receipt (iOS only) and image cropping"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentMobileIsSignature",
+    "hintHtml": "<p>If enabled, Mobile app will allow signature input option and disable other input methods</p>",
+    "hintText": "If enabled, Mobile app will allow signature input option and disable other input methods"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentMobileIsScan",
+    "hintHtml": "<p>If enabled, Mobile app will use Scanner instead of regular camera. Scanner allows to auto-detect receipt (iOS only) and image cropping</p>",
+    "hintText": "If enabled, Mobile app will use Scanner instead of regular camera. Scanner allows to auto-detect receipt (iOS only) and image cropping"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentMobileIsSignature",
+    "hintHtml": "<p>If enabled, Mobile app will allow signature input option and disable other input methods</p>",
+    "hintText": "If enabled, Mobile app will allow signature input option and disable other input methods"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineAttachmentMobileScanOutputFormat",
+    "hintHtml": "<p>Select Attachment output format when using scanner in Mobile application.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Image</span> - Scanner will output image (JPG)</li><li><span style=\"font-weight: bold;\">PDF (multi-page)</span> - Scanner will output PDF file. In this mode, users will use simple editor to create multi-page PDF. <strong>Max Size</strong> setting (if set) will apply for each PDF page.</li></ul>",
+    "hintText": "Select Attachment output format when using scanner in Mobile application. Select option: Image - Scanner will output image (JPG) PDF (multi-page) - Scanner will output PDF file. In this mode, users will use simple editor to create multi-page PDF. Max Size setting (if set) will apply for each PDF page."
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineAttachmentMobileScanOutputFormat",
+    "hintHtml": "<p>Select Attachment output format when using scanner in Mobile application.</p><p>Select option:</p><ul><li><span style=\"font-weight: bold;\">Image</span> - Scanner will output image (JPG)</li><li><span style=\"font-weight: bold;\">PDF (multi-page)</span> - Scanner will output PDF file. In this mode, users will use simple editor to create multi-page PDF. <strong>Max Size</strong> setting (if set) will apply for each PDF page.</li></ul>",
+    "hintText": "Select Attachment output format when using scanner in Mobile application. Select option: Image - Scanner will output image (JPG) PDF (multi-page) - Scanner will output PDF file. In this mode, users will use simple editor to create multi-page PDF. Max Size setting (if set) will apply for each PDF page."
+  },
+  {
+    "table": "Scheduler",
+    "column": "SchedulerCRON",
+    "hintHtml": "<p>Setup scheduling period for task</p><table class=\"table\"><thead><tr><th><strong>Expression</strong></th><th><strong>Meaning</strong></th></tr></thead><tbody><tr><td>0/30 * * * * ?</td><td>Fire every 30 seconds</td></tr><tr><td>0 0/2 * * * ?</td><td>Fire every 2 minutes</td></tr><tr><td>0 0 12 * * ?</td><td>Fire at 12pm (noon) every day</td></tr><tr><td>0 15 10 * * ?</td><td>Fire at 10:15am every day</td></tr><tr><td>0 15 10 15 * ?</td><td>Fire at 10:15am on the 15th day of every month</td></tr></tbody></table><p>For more examples see <a target=\"_blank\" href=\"https://www.quartz-scheduler.net/documentation/quartz-3.x/tutorial/crontrigger.html\">Documentation</a></p>",
+    "hintText": "Setup scheduling period for task Expression Meaning 0/30 * * * * ? Fire every 30 seconds 0 0/2 * * * ? Fire every 2 minutes 0 0 12 * * ? Fire at 12pm (noon) every day 0 15 10 * * ? Fire at 10:15am every day 0 15 10 15 * ? Fire at 10:15am on the 15th day of every month For more examples see Documentation"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineIsHorizontal",
+    "hintHtml": "<p>Set object line mode to horizontal</p><ul><li><span style=\"font-weight: bold;\">true </span>– when object line has IsLabel flag set, label is show left to the object line content (except SubGrid line - label is always show in the header place of SubGrid)</li><li><span style=\"font-weight: bold;\">false </span>– when object line has IsLabel flag set, label is show above the object line content (except SubGrid line - label is always show in the header place of SubGrid)</li></ul><p><i>When all lines in one row has set this flag to <span style=\"font-weight: bold;\">true</span> there is no empty space show above this lines</i></p>",
+    "hintText": "Set object line mode to horizontal true – when object line has IsLabel flag set, label is show left to the object line content (except SubGrid line - label is always show in the header place of SubGrid) false – when object line has IsLabel flag set, label is show above the object line content (except SubGrid line - label is always show in the header place of SubGrid) When all lines in one row has set this flag to true there is no empty space show above this lines"
+  },
+  {
+    "table": "ObjectLine",
+    "column": "ObjectLineHeight",
+    "hintHtml": "<p>Set height of object line. If unset or 0, height is unlimited</p>",
+    "hintText": "Set height of object line. If unset or 0, height is unlimited"
+  },
+  {
+    "table": "ObjectSubLine",
+    "column": "ObjectSubLineHeight",
+    "hintHtml": "<p>Set height of object line. If unset or 0, height is unlimited</p>",
+    "hintText": "Set height of object line. If unset or 0, height is unlimited"
+  },
+  {
+    "table": "ObjectService",
+    "column": "ObjectServiceHeader",
+    "hintHtml": "<p>Additional request header for request in format \"headerName1:headerValue1|headerName2:headerValue2|...\"</p>",
+    "hintText": "Additional request header for request in format \"headerName1:headerValue1|headerName2:headerValue2|...\""
+  },
+  {
+    "table": "ObjectWebhook",
+    "column": "ObjectWebhookWait",
+    "hintHtml": "<p>If enabled, webhook will be executed synchronously, otherwise asynchronously</p>",
+    "hintText": "If enabled, webhook will be executed synchronously, otherwise asynchronously"
+  },
+  {
+    "table": "ObjectWebhook",
+    "column": "ObjectWebhookLink",
+    "hintHtml": "<p>Webhook endpoint URL exposing HTTP POST method</p>",
+    "hintText": "Webhook endpoint URL exposing HTTP POST method"
+  }
+]

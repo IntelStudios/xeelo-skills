@@ -1,0 +1,14 @@
+[
+  {
+    "id": 0,
+    "name": "Default"
+  },
+  {
+    "id": 1,
+    "name": "Bar Code"
+  },
+  {
+    "id": 2,
+    "name": "Location"
+  }
+]

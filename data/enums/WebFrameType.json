@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "Offline file"
+  },
+  {
+    "id": 2,
+    "name": "Online file"
+  },
+  {
+    "id": 3,
+    "name": "Web link"
+  },
+  {
+    "id": 4,
+    "name": "Web iFrame"
+  }
+]

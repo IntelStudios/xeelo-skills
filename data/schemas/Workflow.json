@@ -1,0 +1,221 @@
+{
+  "table": "Workflow",
+  "columns": [
+    {
+      "name": "WorkflowID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "WorkflowName",
+      "type": "NVARCHAR (255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RoleID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ExportFailRoleID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ExportFailRequestStatusID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ExportFailNotificationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowFailRoleID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowFailRequestStatusID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowFailNotificationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RecallRoleID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RecallRequestStatusID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RecallNotificationID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "RequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "RoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    },
+    {
+      "column": "NotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    },
+    {
+      "column": "ExportFailRequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "ExportFailRoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    },
+    {
+      "column": "ExportFailNotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    },
+    {
+      "column": "RecallRequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "RecallRoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    },
+    {
+      "column": "RecallNotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    },
+    {
+      "column": "WorkflowFailRequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "WorkflowFailRoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    },
+    {
+      "column": "WorkflowFailNotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    }
+  ]
+}

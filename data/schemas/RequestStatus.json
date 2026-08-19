@@ -1,0 +1,111 @@
+{
+  "table": "RequestStatus",
+  "columns": [
+    {
+      "name": "RequestStatusID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "RequestStatusName",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusIsCompleted",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "RequestStatusIsCanceled",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "RequestStatusTagNew",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusTagOverdue",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusOrder",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": []
+}

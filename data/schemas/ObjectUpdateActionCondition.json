@@ -1,0 +1,12 @@
+{
+  "table": "ObjectUpdateActionCondition",
+  "columns": [
+    {"name": "ObjectUpdateActionID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionConditionID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionConditionTypeID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionConditionParam1", "type": "NVARCHAR(50)", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionConditionParam2", "type": "NVARCHAR(50)", "nullable": true, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ]
+}

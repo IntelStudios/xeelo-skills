@@ -1,0 +1,5 @@
+# Spec / transfer tooling
+pyyaml>=6.0
+# Admin DB-transfer download (token refresh + WebSocket + AdminTempFile)
+httpx>=0.27
+websockets>=12.0

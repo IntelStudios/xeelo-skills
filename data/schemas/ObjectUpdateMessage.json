@@ -1,0 +1,10 @@
+{
+  "table": "ObjectUpdateMessage",
+  "columns": [
+    {"name": "ObjectUpdateMessageID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectUpdateActionID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateMessageIsVisible", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ]
+}

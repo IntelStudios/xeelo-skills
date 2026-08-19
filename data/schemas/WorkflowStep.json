@@ -1,0 +1,237 @@
+{
+  "table": "WorkflowStep",
+  "columns": [
+    {
+      "name": "WorkflowID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepName",
+      "type": "VARCHAR (50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RoleID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "RequestStatusID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepIsRoleAll",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "UserOrgChartGroupID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WorkflowStepIsUserOrgCharUser",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepIsOrgChartAll",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepIsHistory",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsComments",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsRelations",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionRecall",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionPriority",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionOwner",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionWatcher",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionExportPDF",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionExportExcel",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsActionRelation",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "WorkflowStepIsSuppressDefaultCalculation",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepIsSuppressSave",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "WorkflowStepSuccessMessage",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "WorkflowID",
+      "referencesTable": "Workflow",
+      "referencesColumn": "WorkflowID"
+    },
+    {
+      "column": "RoleID",
+      "referencesTable": "Role",
+      "referencesColumn": "RoleID"
+    },
+    {
+      "column": "RequestStatusID",
+      "referencesTable": "RequestStatus",
+      "referencesColumn": "RequestStatusID"
+    },
+    {
+      "column": "UserOrgChartGroupID",
+      "referencesTable": "UserOrgChartGroup",
+      "referencesColumn": "UserOrgChartGroupID"
+    }
+  ]
+}

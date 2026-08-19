@@ -1,0 +1,16 @@
+{
+  "table": "ObjectUpdateAction",
+  "columns": [
+    {"name": "ObjectID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectDefaultID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "WorkflowID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionOrder", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionReopenTypeID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectUpdateActionIsQuick", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectLineTabFocusLeftID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectLineTabFocusRightID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ]
+}

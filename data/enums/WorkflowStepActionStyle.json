@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Positive - green"
+  },
+  {
+    "id": 2,
+    "name": "Negative - red"
+  },
+  {
+    "id": 3,
+    "name": "Negative - yellow"
+  },
+  {
+    "id": 10,
+    "name": "Positive - green (no offline icon)"
+  },
+  {
+    "id": 20,
+    "name": "Negative - red (no offline icon)"
+  },
+  {
+    "id": 30,
+    "name": "Negative - yellow (no offline icon)"
+  }
+]

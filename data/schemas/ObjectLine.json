@@ -1,0 +1,578 @@
+{
+  "table": "ObjectLine",
+  "columns": [
+    {
+      "name": "ObjectID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSectionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSlot",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineName",
+      "type": "NVARCHAR(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOrder",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineTypeID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "AttachmentStorageID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineNumberPrecision",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineNumberSeparator",
+      "type": "VARCHAR(1)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineNumberMin",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineNumberMax",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineTypeWidth",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineSourceFilterObjectLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridIsAllowed",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineOnGridRow",
+      "type": "CHAR (1)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridPosition",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridLength",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridName",
+      "type": "nvarchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridIsLabel",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineOnGridIsTag",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsUnique",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineUniqueID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "WebFrameTypeID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineWebFrameExpValue",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineWebFrameHeight",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineIsHorizontal",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsVersionHistory",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsLastHistory",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineIsLabel",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineIsSearch",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineSearchValueFilter",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridIsSearch",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsIndex",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsHidden",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineAttachmentIsOCR",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineAttachmentOCRLang",
+      "type": "varchar(5)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineAttachmentImageResizeMax",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineAttachmentFileTypeList",
+      "type": "varchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineAttachmentMaxFileSize",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineAttachmentMobileIsScan",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineAttachmentMobileIsSignature",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineAttachmentMobileScanOutputFormat",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineAttPreviewObjectLineID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineIsReferenceLink",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineDescMemoIsBorder",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineDescMemoPadding",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "DataClassificationID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineColorFont",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineColorBack",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineButtonMessage",
+      "type": "nvarchar(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineButtonSaveAction",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineAlignmentID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineOnGridIsTotal",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineTextInputType",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineTextIsBarCode",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineNumberColumns",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineOnGridLabelFontColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridLabelBackColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridValueFontColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridValueBackColor",
+      "type": "varchar(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineOnGridValueIsBold",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectLineOnGridAlignmentID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineHeight",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineIsHistoryEnabled",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineAttPreviewIsDownload",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineCode",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineGraphQL",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectID",
+      "referencesTable": "Object",
+      "referencesColumn": "ObjectID"
+    },
+    {
+      "column": "ObjectLineSectionID",
+      "referencesTable": "ObjectLineSection",
+      "referencesColumn": "ObjectLineSectionID"
+    },
+    {
+      "column": "ObjectLineTypeID",
+      "referencesTable": "ObjectLineType",
+      "referencesColumn": "ObjectLineTypeID"
+    },
+    {
+      "column": "ObjectLineUniqueID",
+      "referencesTable": "ObjectLineUnique",
+      "referencesColumn": "ObjectLineUniqueID"
+    },
+    {
+      "column": "WebFrameTypeID",
+      "referencesTable": "WebFrameType",
+      "referencesColumn": "WebFrameTypeID"
+    }
+  ]
+}
