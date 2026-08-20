@@ -16,8 +16,24 @@ Root form definition. Belongs to Company + ObjectType.
 | `CompanyID` | Owning company |
 | `ObjectTypeID` | Category |
 | `ObjectCode` | Optional unique code |
+| `ObjectTreeIcon` | Font Awesome 6.5.1 class string (`fa-{id} fa-{variant} fa-fw`). Spec: `object.icon` |
+| `ObjectTreeColor` | Treeview icon color = `CustomColor.CustomColorCode` (not HEX). Spec: `object.color` |
 | `RequestTitleObjectLineID` | ObjectLine whose value is the **request title** in GUI (inbox, header, links). Spec: `object.requestTitleField` |
 | `IsActive` | Inactive = hidden from Admin, Inbox, Browser |
+
+## Company and ObjectType (tree)
+
+**Company** (`company.name`, optional `company.icon` → `CompanyTreeIcon`) groups objects. `CompanyTreeColor` still exists in SQL/Admin as **Color (obsolete)** — User GUI company tabs use the icon only; do not put it in spec.
+
+**ObjectType** name stays `object.objectType`. Tree visuals are a sibling block:
+
+| Spec | Column | Notes |
+|------|--------|-------|
+| `objectType.icon` | `ObjectTypeTreeIcon` | FA 6.5.1 class string |
+| `objectType.color` | `ObjectTypeTreeColorBack` | Live Admin “Icon Color”; treeview CSS |
+| — | `ObjectTypeTreeColorFont` | **obsolete** — do not spec |
+
+Palette: [`data/enums/CustomColor.json`](../data/enums/CustomColor.json). Search icons: `python scripts/search-fa-icons.py --query bank` ([`data/fontawesome-icons.json`](../data/fontawesome-icons.json)). Full spec: [spec-format.md](../transfer/spec-format.md#tree-icons-and-colors).
 
 ## Layout: Tab → Section → Line
 
@@ -89,7 +105,7 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML** |
 | `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 — [object-line-types.md](object-line-types.md#client-calculations) |
 | `ObjectDefaultLineClientCalculation` | Math/String expr without `1#`/`2#` prefix — [xeelo-grammar.md](xeelo-grammar.md) |
-| `ObjectDefaultLineHint` | Runtime hint text for users |
+| `ObjectDefaultLineHint` | Runtime hint for users (plain or HTML). Spec: `templates.fields.<code>.hint`. All types except empty space (6). Subgrid sibling `ObjectSubDefaultLineHint` is not in spec yet. |
 | `ObjectDefaultLineAutoNumberID` | Bind to a catalog autonumber (sequence) — [Autonumber](#autonumber) |
 
 Which template capabilities apply depends on the line type. Combo / radio / multi always need a **reference** on `ObjectLine`. A **lookup** on the template line may sit on the same field — it fills the value from another line.

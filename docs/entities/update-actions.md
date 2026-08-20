@@ -84,7 +84,7 @@ Condition types (seed): None, Contains, Equals, Between, Is empty, … — see `
 
 ## ObjectUpdateMessage
 
-Links `ObjectMessage` rows to an update action with visibility flag.
+Links `ObjectMessage` rows to an update action (`ObjectUpdateMessageIsVisible`). The message itself (HTML, style, conditions) is **ObjectMessage** — [object-messages.md](object-messages.md). User shows a Cancel/Continue modal on save of the new update version.
 
 ## Runtime flow
 
@@ -98,7 +98,7 @@ Links `ObjectMessage` rows to an update action with visibility flag.
    - Inserts new `Request` with same `RequestCode`, copies `RequestData*`
 6. UI opens in **EditableUpdate**; previous values shown for diff.
 
-GraphQL: `createType: UPDATE | UPDATE_EMPTY`, `updateAction: Int`.
+GraphQL: `createType: UPDATE | UPDATE_EMPTY`, `updateAction: Int` (`ObjectUpdateActionID` from env `ids.explicit.updateActions.<key>`). Same `spRequestInsert` as the UI. From Node.js, batch `{ requestId, createType: "UPDATE", updateAction }` with **no** `lines` when Last on the **new** version must see copied data (retag, tags). `withRefresh: true` on the completed `requestId` does **not** start this flow. `UPDATE_EMPTY` copies header only. Each `UPDATE` creates a **new request version**. Pattern: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests).
 
 ## Admin setup
 
@@ -114,7 +114,7 @@ GraphQL: `createType: UPDATE | UPDATE_EMPTY`, `updateAction: Int`.
 
 - **`ObjectUpdateAction.WorkflowID`** — workflow assigned to the **new request version** (not the completed version’s current step).
 - **`RefreshWorkflowToObjectView`** unions workflows from `ObjectDefault` and `ObjectUpdateAction`.
-- Template workflow (`ObjectDefault.WorkflowID`) is fallback when action has no workflow.
+- Template workflow (`ObjectDefault.WorkflowID`) is fallback when action has no workflow. When adding an update action, **ask** which workflow to use; the default choice is that template workflow (omit `updateActions[].workflow`). See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow) and [add-update-action.md](../recipes/add-update-action.md).
 
 ## Planned: M:N with WorkflowStepAction
 

@@ -1,0 +1,274 @@
+"""Tests for Xeelo GraphQL connection, XML helpers, and transfer client."""
+
+from __future__ import annotations
+
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+from zipfile import ZIP_DEFLATED, ZipFile
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from ot_builder.graphql_client import (  # noqa: E402
+    AUTH_HINT,
+    ConnectionConfig,
+    GraphqlAuthError,
+    GraphqlError,
+    MUTATION_PROCESS,
+    MUTATION_UPLOAD,
+    XeeloGraphqlClient,
+    collect_transfer_paths,
+    decode_transfer_xml_bytes,
+    packages_from_loop,
+    push_object_transfer,
+    transfer_path_to_xml,
+    xml_to_utf16_le_bytes,
+)
+
+
+class _FakeResponse:
+    def __init__(self, status_code: int, payload: dict | str):
+        self.status_code = status_code
+        self._payload = payload
+        self.text = payload if isinstance(payload, str) else json.dumps(payload)
+
+    def json(self) -> dict:
+        if isinstance(self._payload, dict):
+            return self._payload
+        raise ValueError("not json")
+
+
+class _FakeHttp:
+    def __init__(self, responses: list[_FakeResponse]):
+        self.responses = list(responses)
+        self.posts: list[dict] = []
+
+    def post(self, url, json=None):
+        self.posts.append({"url": url, "json": json})
+        return self.responses.pop(0)
+
+    def get(self, url):
+        return _FakeResponse(503, "down")
+
+    def close(self) -> None:
+        return None
+
+
+class ConnectionConfigTests(unittest.TestCase):
+    def _write(self, payload: dict) -> Path:
+        tmp = Path(tempfile.mkdtemp()) / ".xeelo-connection.json"
+        tmp.write_text(json.dumps(payload), encoding="utf-8")
+        return tmp
+
+    def test_loads_xeelo_url_and_token(self) -> None:
+        path = self._write(
+            {"xeeloUrl": "https://lz.xeelo.online/", "token": "secret-admin"}
+        )
+        config = ConnectionConfig.load(path)
+        self.assertEqual(config.xeelo_url, "https://lz.xeelo.online")
+        self.assertEqual(config.token, "secret-admin")
+        self.assertEqual(config.graphql_url, "https://lz.xeelo.online/graphql")
+        self.assertEqual(config.health_url, "https://lz.xeelo.online/graphql-api/health")
+
+    def test_rejects_url_alias(self) -> None:
+        path = self._write({"url": "https://demo.xeelo.online", "token": "t"})
+        with self.assertRaisesRegex(ValueError, "missing xeeloUrl"):
+            ConnectionConfig.load(path)
+
+    def test_rejects_legacy_admin_format(self) -> None:
+        path = self._write(
+            {
+                "adminBaseUrl": "https://lz.xeeloadmin.online/",
+                "siteId": 8,
+                "credentials": {"access_token": "old"},
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "xeeloUrl and token"):
+            ConnectionConfig.load(path)
+
+    def test_rejects_mixed_admin_keys(self) -> None:
+        path = self._write(
+            {
+                "xeeloUrl": "https://lz.xeelo.online/",
+                "token": "t",
+                "siteId": 8,
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "no longer supported"):
+            ConnectionConfig.load(path)
+
+    def test_rejects_empty_token(self) -> None:
+        path = self._write({"xeeloUrl": "https://lz.xeelo.online/", "token": ""})
+        with self.assertRaisesRegex(ValueError, "missing token"):
+            ConnectionConfig.load(path)
+
+
+class XmlHelperTests(unittest.TestCase):
+    def test_utf16_roundtrip_with_bom(self) -> None:
+        xml = "<XMLData><TransferInfo/></XMLData>"
+        data = xml_to_utf16_le_bytes(xml)
+        self.assertEqual(data[:2], b"\xff\xfe")
+        self.assertEqual(decode_transfer_xml_bytes(data), xml)
+
+    def test_transfer_path_from_xml_and_zip(self) -> None:
+        xml = "<XMLData>ok</XMLData>"
+        tmp = Path(tempfile.mkdtemp())
+        xml_path = tmp / "account-object-transfer.xml"
+        xml_path.write_bytes(xml_to_utf16_le_bytes(xml))
+        name, text = transfer_path_to_xml(xml_path)
+        self.assertEqual(name, "account-object-transfer.xml")
+        self.assertEqual(text, xml)
+
+        zip_path = tmp / "account-object-transfer.zip"
+        with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
+            zf.writestr("object-transfer.xml", xml_to_utf16_le_bytes(xml))
+        name, text = transfer_path_to_xml(zip_path)
+        self.assertEqual(name, "object-transfer.xml")
+        self.assertEqual(text, xml)
+
+    def test_packages_from_loop_prefers_xml(self) -> None:
+        loop = Path(tempfile.mkdtemp())
+        output = loop / "output"
+        output.mkdir()
+        xml_path = output / "account-object-transfer.xml"
+        zip_path = output / "account-object-transfer.zip"
+        xml_path.write_text("<XMLData/>", encoding="utf-8")
+        zip_path.write_bytes(b"unused")
+        self.assertEqual(packages_from_loop(loop), [xml_path])
+        self.assertEqual(
+            collect_transfer_paths(loop=loop),
+            [xml_path],
+        )
+
+
+class GraphqlClientTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.config = ConnectionConfig(
+            xeelo_url="https://lz.xeelo.online",
+            token="admin-token",
+        )
+
+    def test_request_maps_graphql_errors(self) -> None:
+        fake = _FakeHttp(
+            [_FakeResponse(200, {"errors": [{"message": "boom"}]})]
+        )
+        client = XeeloGraphqlClient(self.config)
+        client._client = fake  # type: ignore[method-assign]
+        with self.assertRaisesRegex(GraphqlError, "boom"):
+            client.request("query { health }")
+
+    def test_request_maps_auth_errors(self) -> None:
+        fake = _FakeHttp(
+            [
+                _FakeResponse(
+                    200,
+                    {
+                        "errors": [
+                            {
+                                "message": "ACCESS_DENIED: This operation requires an admin GraphQL access token"
+                            }
+                        ]
+                    },
+                )
+            ]
+        )
+        client = XeeloGraphqlClient(self.config)
+        client._client = fake  # type: ignore[method-assign]
+        with self.assertRaises(GraphqlAuthError) as ctx:
+            client.request("query { health }")
+        self.assertIn(AUTH_HINT, str(ctx.exception))
+
+    def test_request_maps_http_401(self) -> None:
+        fake = _FakeHttp([_FakeResponse(401, "nope")])
+        client = XeeloGraphqlClient(self.config)
+        client._client = fake  # type: ignore[method-assign]
+        with self.assertRaises(GraphqlAuthError):
+            client.request("query { health }")
+
+
+class PushObjectTransferTests(unittest.TestCase):
+    def test_upload_then_process_with_is_test_only(self) -> None:
+        tmp = Path(tempfile.mkdtemp())
+        xml_path = tmp / "account-object-transfer.xml"
+        xml_path.write_bytes(xml_to_utf16_le_bytes("<XMLData>ot</XMLData>"))
+        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        calls: list[tuple[str, dict | None]] = []
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                calls.append((document, variables))
+                if document == MUTATION_UPLOAD:
+                    return {"Mutate_admin_transfer_upload": {"objectSetupXmlId": 17}}
+                if document == MUTATION_PROCESS:
+                    return {
+                        "Mutate_admin_transfer_process": {
+                            "success": True,
+                            "messages": [],
+                        }
+                    }
+                raise AssertionError(document)
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            result = push_object_transfer(config, xml_path, only_test=True)
+
+        self.assertEqual(result.object_setup_xml_id, 17)
+        self.assertTrue(result.only_test)
+        self.assertEqual(calls[1][1], {"id": 17, "isTestOnly": True})
+
+        calls.clear()
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            push_object_transfer(config, xml_path, only_test=False)
+        self.assertEqual(calls[1][1], {"id": 17, "isTestOnly": False})
+
+    def test_process_failure_raises(self) -> None:
+        tmp = Path(tempfile.mkdtemp())
+        xml_path = tmp / "account-object-transfer.xml"
+        xml_path.write_bytes(xml_to_utf16_le_bytes("<XMLData>ot</XMLData>"))
+        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                if document == MUTATION_UPLOAD:
+                    return {"Mutate_admin_transfer_upload": {"objectSetupXmlId": 1}}
+                return {
+                    "Mutate_admin_transfer_process": {
+                        "success": False,
+                        "messages": [
+                            {
+                                "procedure": "dbo.spAdminObjectSetupXMLProcess",
+                                "msgType": "DANGER",
+                                "msgText": "bad row",
+                            }
+                        ],
+                    }
+                }
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            with self.assertRaisesRegex(GraphqlError, "bad row"):
+                push_object_transfer(config, xml_path, only_test=True)
+
+
+if __name__ == "__main__":
+    unittest.main()

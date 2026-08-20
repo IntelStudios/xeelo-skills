@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from datetime import date
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
 from ot_builder.language_table import extract_language_table
+from ot_builder.ongrid import layout_id_key
 from ot_builder.parse import TransferIndex, collect_table_max_ids, find_object_row, load_transfer
 from ot_builder.object_actions import (
     condition_registry_key,
@@ -16,12 +19,19 @@ from ot_builder.object_actions import (
     param_spec_value,
     step_link_registry_key,
 )
+from ot_builder.object_messages import (
+    condition_registry_key as object_message_condition_registry_key,
+    html_from_row,
+    message_key,
+    style_slug,
+)
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
     REFERENCE_FIELD_TYPES,
     template_access_registry_key,
     template_field_spec_from_line,
+    template_line_key,
     template_slug_from_name,
 )
 from ot_builder.update_actions import (
@@ -40,6 +50,7 @@ MINIMAL_STEP_NAMES = ("Draft", "Active")
 MINIMAL_ACTION_NAMES = ("Submit", "Complete")
 
 
+@lru_cache(maxsize=1)
 def _load_field_mapping() -> dict:
     return json.loads((DATA / "field-type-mapping.json").read_text(encoding="utf-8"))
 
@@ -56,6 +67,16 @@ def _int(val: Any) -> int | None:
 
 def _boolish(val: Any) -> bool:
     return str(val) in ("1", "True", "true")
+
+
+def _nonempty_str(row: dict[str, Any] | None, column: str) -> str | None:
+    if not row:
+        return None
+    val = row.get(column)
+    if val is None:
+        return None
+    text = str(val).strip()
+    return text or None
 
 
 def _object_line_code(index: TransferIndex, line_id: int | None) -> str | None:
@@ -146,6 +167,21 @@ def _apply_extracted_line_extras(
 def _slug(name: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "_", name.strip().lower()).strip("_")
     return slug or "item"
+
+
+def _disambiguate_key(used: set[str], name: str, row_id: int, *, colliding: bool) -> str:
+    """Keep unique display names as keys; suffix ``_{row_id}`` when names collide."""
+    if not colliding:
+        used.add(name)
+        return name
+    base = _slug(name)
+    key = f"{base}_{row_id}"
+    suffix = row_id
+    while key in used:
+        suffix += 1
+        key = f"{base}_{suffix}"
+    used.add(key)
+    return key
 
 
 def _assign_keys(
@@ -278,35 +314,32 @@ REF_OBJECT_LINE_ROLES = {
 def _line_code_for_object(index: TransferIndex, object_id: int, line_id: int | None) -> str | None:
     if line_id is None:
         return None
-    for row in index.rows.get("ObjectLine", []):
-        if int(row["ObjectLineID"]) == int(line_id) and int(row.get("ObjectID", 0)) == int(object_id):
-            return row.get("ObjectLineCode") or f"LINE_{line_id}"
+    row = index.row_by_id("ObjectLine", int(line_id))
+    if row and int(row.get("ObjectID", 0)) == int(object_id):
+        return row.get("ObjectLineCode") or f"LINE_{line_id}"
     return f"LINE_{line_id}"
 
 
 def _source_values(index: TransferIndex, source_id: int) -> list[dict]:
     values = []
-    for row in index.rows.get("ObjectLineSourceValue", []):
-        if row.get("ObjectLineSourceID") == source_id:
-            entry: dict[str, Any] = {
-                "value": row.get("ObjectLineSourceValue", ""),
-                "label": row.get("ObjectLineSourceValueName", ""),
-            }
-            bind = row.get("ObjectLineSourceValueBind")
-            if bind and bind != entry["value"]:
-                entry["bind"] = bind
-            order = row.get("ObjectLineSourceValueOrder")
-            if order is not None and int(order) != 0:
-                entry["order"] = int(order)
-            values.append(entry)
+    for row in index.rows_for("ObjectLineSourceValue", "ObjectLineSourceID", source_id):
+        entry: dict[str, Any] = {
+            "value": row.get("ObjectLineSourceValue", ""),
+            "label": row.get("ObjectLineSourceValueName", ""),
+        }
+        bind = row.get("ObjectLineSourceValueBind")
+        if bind and bind != entry["value"]:
+            entry["bind"] = bind
+        order = row.get("ObjectLineSourceValueOrder")
+        if order is not None and int(order) != 0:
+            entry["order"] = int(order)
+        values.append(entry)
     values.sort(key=lambda item: item.get("order", 0))
     return values
 
 
 def _source_ref_object(index: TransferIndex, source_id: int) -> dict | None:
-    for row in index.rows.get("ObjectLineSourceRefObject", []):
-        if row.get("ObjectLineSourceID") != source_id:
-            continue
+    for row in index.rows_for("ObjectLineSourceRefObject", "ObjectLineSourceID", source_id):
         if not _boolish(row.get("IsActive", 1)):
             continue
         object_id = int(row["ObjectID"])
@@ -360,17 +393,15 @@ def _build_sources(
             spec_entry["styleId"] = int(row["ObjectLineSourceStyleID"])
         if values:
             spec_entry["values"] = values
-            for value_row in index.rows.get("ObjectLineSourceValue", []):
-                if value_row.get("ObjectLineSourceID") != source_id:
-                    continue
+            for value_row in index.rows_for("ObjectLineSourceValue", "ObjectLineSourceID", source_id):
                 explicit_source_values[str(value_row["ObjectLineSourceValue"])] = int(
                     value_row["ObjectLineSourceValueID"]
                 )
         if ref_object:
             spec_entry["refObject"] = ref_object
-            for ref_row in index.rows.get("ObjectLineSourceRefObject", []):
-                if ref_row.get("ObjectLineSourceID") != source_id:
-                    continue
+            for ref_row in index.rows_for(
+                "ObjectLineSourceRefObject", "ObjectLineSourceID", source_id
+            ):
                 object_id = int(ref_row["ObjectID"])
                 for column in REF_OBJECT_LINE_ROLES:
                     line_id = _int(ref_row.get(column))
@@ -384,10 +415,9 @@ def _build_sources(
     sources, explicit_sources = _assign_keys(source_items)
     explicit_ref_objects_by_source_key: dict[str, int] = {}
     for source_id, key in ((v, k) for k, v in explicit_sources.items()):
-        for ref_row in index.rows.get("ObjectLineSourceRefObject", []):
-            if ref_row.get("ObjectLineSourceID") == source_id:
-                explicit_ref_objects_by_source_key[key] = int(ref_row["ObjectLineSourceRefObjectID"])
-                break
+        for ref_row in index.rows_for("ObjectLineSourceRefObject", "ObjectLineSourceID", source_id):
+            explicit_ref_objects_by_source_key[key] = int(ref_row["ObjectLineSourceRefObjectID"])
+            break
 
     return sources, explicit_sources, explicit_source_values, explicit_ref_objects_by_source_key, explicit_ref_lines
 
@@ -402,11 +432,7 @@ def _collect_subtree_ids(index: TransferIndex, object_id: int) -> dict[str, dict
 
 
 def _default_template(index: TransferIndex, object_id: int) -> dict | None:
-    defaults = [
-        row
-        for row in index.rows.get("ObjectDefault", [])
-        if row.get("ObjectID") == object_id
-    ]
+    defaults = list(index.rows_for("ObjectDefault", "ObjectID", object_id))
     if not defaults:
         return None
     for row in defaults:
@@ -418,16 +444,13 @@ def _default_template(index: TransferIndex, object_id: int) -> dict | None:
 def _template_lines(index: TransferIndex, template_id: int) -> dict[int, dict]:
     return {
         int(row["ObjectLineID"]): row
-        for row in index.rows.get("ObjectDefaultLine", [])
-        if row.get("ObjectDefaultID") == template_id
+        for row in index.rows_for("ObjectDefaultLine", "ObjectDefaultID", template_id)
     }
 
 
 def _lookup_values(index: TransferIndex, lookup_id: int) -> list[dict]:
     values = []
-    for row in index.rows.get("ObjectLineLookupValue", []):
-        if row.get("ObjectLineLookupID") != lookup_id:
-            continue
+    for row in index.rows_for("ObjectLineLookupValue", "ObjectLineLookupID", lookup_id):
         entry: dict[str, Any] = {
             "source": row.get("ObjectLineLookupSourceValue", ""),
             "return": row.get("ObjectLineLookupReturnValue", ""),
@@ -475,12 +498,11 @@ def _build_lookups(
     lookups, explicit_lookups = _assign_keys(items)
     explicit_lookup_values: dict[str, int] = {}
     key_by_id = {row_id: key for key, row_id in explicit_lookups.items()}
-    for row in index.rows.get("ObjectLineLookupValue", []):
-        lookup_id = _int(row.get("ObjectLineLookupID"))
-        if lookup_id is None or lookup_id not in key_by_id:
-            continue
-        key = key_by_id[lookup_id]
-        explicit_lookup_values[_lookup_value_id_key(key, row)] = int(row["ObjectLineLookupValueID"])
+    for lookup_id, key in key_by_id.items():
+        for row in index.rows_for("ObjectLineLookupValue", "ObjectLineLookupID", lookup_id):
+            explicit_lookup_values[_lookup_value_id_key(key, row)] = int(
+                row["ObjectLineLookupValueID"]
+            )
     return lookups, explicit_lookups, explicit_lookup_values
 
 
@@ -528,7 +550,7 @@ def _build_layout(
     for row in index.rows.get("ObjectLineSection", []):
         sections_by_id[int(row["ObjectLineSectionID"])] = row
 
-    lines = [row for row in index.rows.get("ObjectLine", []) if row.get("ObjectID") == object_id]
+    lines = list(index.rows_for("ObjectLine", "ObjectID", object_id))
     lines.sort(key=lambda r: (r.get("ObjectLineTabID") or 0, r.get("ObjectLineOrder", 0)))
 
     tab_layout: dict[int, dict] = {}
@@ -707,40 +729,41 @@ def _build_ongrid(
     field_codes: dict[int, str],
 ) -> tuple[dict | None, dict[str, int]]:
     og_fields: dict[str, dict] = {}
-    for line in index.rows.get("ObjectLine", []):
-        if line.get("ObjectID") != object_id:
-            continue
+    for line in index.rows_for("ObjectLine", "ObjectID", object_id):
         line_id = int(line["ObjectLineID"])
         code = line.get("ObjectLineCode") or f"LINE_{line_id}"
-        if not _boolish(line.get("ObjectLineOnGridIsAllowed")):
+        allowed = _boolish(line.get("ObjectLineOnGridIsAllowed"))
+        is_tag = _boolish(line.get("ObjectLineOnGridIsTag"))
+        is_search = _boolish(line.get("ObjectLineOnGridIsSearch"))
+        if not (allowed or is_tag or is_search):
             continue
-        entry: dict[str, Any] = {"allowed": True}
+        entry: dict[str, Any] = {"allowed": allowed}
         if line.get("ObjectLineOnGridName"):
             entry["name"] = line["ObjectLineOnGridName"]
         if "ObjectLineOnGridIsTag" in line:
-            entry["isTag"] = _boolish(line["ObjectLineOnGridIsTag"])
-        if _boolish(line.get("ObjectLineOnGridIsSearch")):
+            entry["isTag"] = is_tag
+        if is_search:
             entry["isSearch"] = True
         og_fields[str(code)] = entry
 
     layouts_map: dict[tuple, dict] = {}
     explicit_ongrid: dict[str, int] = {}
 
-    for og in index.rows.get("ObjectLineOnGrid", []):
-        if og.get("ObjectID") != object_id:
-            continue
+    for og in index.rows_for("ObjectLineOnGrid", "ObjectID", object_id):
         line_id = _int(og.get("ObjectLineID"))
         if line_id is None:
+            continue
+        ol = index.row_by_id("ObjectLine", line_id)
+        if ol is not None and not _boolish(ol.get("ObjectLineOnGridIsAllowed")):
             continue
         code = field_codes.get(line_id)
         if not code:
             continue
         og_id = int(og["ObjectLineOnGridID"])
-        explicit_ongrid[str(code)] = og_id
-
         size = og.get("ObjectLineOnGridSize", "Large")
         grid_type = og.get("ObjectLineOnGridType", "Grid")
         module = og.get("ObjectLineOnGridModule", "Items")
+        explicit_ongrid[layout_id_key(size, grid_type, module, str(code))] = og_id
         key = (size, grid_type, module)
         layout = layouts_map.setdefault(
             key,
@@ -797,14 +820,14 @@ def _build_workflow(
     if not wf_row:
         return None, {}, {}, {}
 
-    steps = [row for row in index.rows.get("WorkflowStep", []) if row.get("WorkflowID") == wf_id]
+    steps = list(index.rows_for("WorkflowStep", "WorkflowID", wf_id))
     steps.sort(key=lambda r: r.get("WorkflowStepOrder", r.get("WorkflowStepID", 0)))
 
+    actions_grouped = index.group_by("WorkflowStepAction", "WorkflowStepID")
     actions_by_step: dict[int, list[dict]] = {}
-    for row in index.rows.get("WorkflowStepAction", []):
-        step_id = _int(row.get("WorkflowStepID"))
-        if step_id is not None:
-            actions_by_step.setdefault(step_id, []).append(row)
+    for step in steps:
+        sid = int(step["WorkflowStepID"])
+        actions_by_step[sid] = list(actions_grouped.get(sid, []))
 
     role_ids, status_ids = _collect_role_status_ids(wf_row, steps, actions_by_step)
     roles, statuses, explicit_roles, explicit_statuses = _build_roles_statuses(
@@ -818,10 +841,28 @@ def _build_workflow(
     explicit_step_access: dict[str, int] = {}
     step_specs = []
 
+    step_name_counts = Counter(
+        str(step.get("WorkflowStepName") or f"Step_{step['WorkflowStepID']}") for step in steps
+    )
+    action_name_counts: Counter[str] = Counter()
+    for step in steps:
+        for action in actions_by_step.get(int(step["WorkflowStepID"]), []):
+            action_name_counts[
+                str(action.get("WorkflowStepActionName") or f"Action_{action['WorkflowStepActionID']}")
+            ] += 1
+
+    used_step_keys: set[str] = set()
+    used_action_keys: set[str] = set()
+    step_id_to_key: dict[int, str] = {}
+
     for step in steps:
         step_id = int(step["WorkflowStepID"])
-        step_name = step.get("WorkflowStepName", f"Step_{step_id}")
-        explicit_steps[step_name] = step_id
+        step_name = str(step.get("WorkflowStepName") or f"Step_{step_id}")
+        step_key = _disambiguate_key(
+            used_step_keys, step_name, step_id, colliding=step_name_counts[step_name] > 1
+        )
+        step_id_to_key[step_id] = step_key
+        explicit_steps[step_key] = step_id
 
         actions = actions_by_step.get(step_id, [])
         actions.sort(key=lambda r: r.get("WorkflowStepActionOrder", 10))
@@ -829,21 +870,28 @@ def _build_workflow(
         action_specs = []
         for action in actions:
             action_id = int(action["WorkflowStepActionID"])
-            action_name = action.get("WorkflowStepActionName", f"Action_{action_id}")
-            explicit_actions[action_name] = action_id
+            action_name = str(action.get("WorkflowStepActionName") or f"Action_{action_id}")
+            action_key = _disambiguate_key(
+                used_action_keys,
+                action_name,
+                action_id,
+                colliding=action_name_counts[action_name] > 1,
+            )
+            explicit_actions[action_key] = action_id
             role_key = role_id_to_key.get(int(action["RoleID"]))
             status_key = status_id_to_key.get(int(action["RequestStatusID"]))
             if role_key is None or status_key is None:
                 continue
-            action_specs.append(
-                {
-                    "name": action_name,
-                    "role": role_key,
-                    "status": status_key,
-                    "styleId": action.get("WorkflowStepActionStyleID", 1),
-                    "order": action.get("WorkflowStepActionOrder", 10),
-                }
-            )
+            action_spec: dict[str, Any] = {
+                "name": action_name,
+                "role": role_key,
+                "status": status_key,
+                "styleId": action.get("WorkflowStepActionStyleID", 1),
+                "order": action.get("WorkflowStepActionOrder", 10),
+            }
+            if action_key != action_name:
+                action_spec["key"] = action_key
+            action_specs.append(action_spec)
 
         step_role = role_id_to_key.get(int(step["RoleID"]))
         step_status = status_id_to_key.get(int(step["RequestStatusID"]))
@@ -855,8 +903,10 @@ def _build_workflow(
             "status": step_status,
             "actions": action_specs,
         }
+        if step_key != step_name:
+            step_spec["key"] = step_key
         access_specs = _workflow_step_access_specs(
-            index, step_id, step_name, field_id_to_code or {}, explicit_step_access
+            index, step_id, step_key, field_id_to_code or {}, explicit_step_access
         )
         if access_specs:
             step_spec["access"] = access_specs
@@ -907,9 +957,7 @@ def _workflow_step_access_specs(
     explicit_step_access: dict[str, int],
 ) -> list[dict[str, Any]]:
     access_specs: list[dict[str, Any]] = []
-    for access in index.rows.get("WorkflowStepAccess", []):
-        if int(access.get("WorkflowStepID", 0)) != step_id:
-            continue
+    for access in index.rows_for("WorkflowStepAccess", "WorkflowStepID", step_id):
         if not _boolish(access.get("IsActive", 1)):
             continue
         if not step_access_differs_from_default(access):
@@ -958,8 +1006,8 @@ def _build_update_actions(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     actions_rows = [
         row
-        for row in index.rows.get("ObjectUpdateAction", [])
-        if int(row.get("ObjectID", 0)) == object_id and _boolish(row.get("IsActive", 1))
+        for row in index.rows_for("ObjectUpdateAction", "ObjectID", object_id)
+        if _boolish(row.get("IsActive", 1))
     ]
     if not actions_rows:
         return [], {}
@@ -968,8 +1016,7 @@ def _build_update_actions(
 
     default_by_id = {
         int(row["ObjectDefaultID"]): row.get("ObjectDefaultName", f"template_{row['ObjectDefaultID']}")
-        for row in index.rows.get("ObjectDefault", [])
-        if int(row.get("ObjectID", 0)) == object_id
+        for row in index.rows_for("ObjectDefault", "ObjectID", object_id)
     }
     workflow_by_id = {
         int(row["WorkflowID"]): row.get("WorkflowName", f"workflow_{row['WorkflowID']}")
@@ -1021,9 +1068,7 @@ def _build_update_actions(
             spec_action["tabFocus"] = {"left": left, "right": right}
 
         access_specs = []
-        for access in index.rows.get("ObjectUpdateAccess", []):
-            if int(access.get("ObjectUpdateActionID", 0)) != action_id:
-                continue
+        for access in index.rows_for("ObjectUpdateAccess", "ObjectUpdateActionID", action_id):
             if not _boolish(access.get("IsActive", 1)):
                 continue
             if not access_differs_from_default(access):
@@ -1048,9 +1093,9 @@ def _build_update_actions(
             spec_action["access"] = access_specs
 
         condition_specs = []
-        for cond in index.rows.get("ObjectUpdateActionCondition", []):
-            if int(cond.get("ObjectUpdateActionID", 0)) != action_id:
-                continue
+        for cond in index.rows_for(
+            "ObjectUpdateActionCondition", "ObjectUpdateActionID", action_id
+        ):
             if not _boolish(cond.get("IsActive", 1)):
                 continue
             type_slug = condition_slug(int(cond.get("ObjectUpdateActionConditionTypeID", 0)))
@@ -1073,14 +1118,12 @@ def _build_update_actions(
             spec_action["conditions"] = condition_specs
 
         message_specs = []
-        for msg_row in index.rows.get("ObjectUpdateMessage", []):
-            if int(msg_row.get("ObjectUpdateActionID", 0)) != action_id:
-                continue
+        for msg_row in index.rows_for("ObjectUpdateMessage", "ObjectUpdateActionID", action_id):
             if not _boolish(msg_row.get("IsActive", 1)):
                 continue
             om_id = int(msg_row["ObjectMessageID"])
             om = index.row_by_id("ObjectMessage", om_id)
-            msg_key = slugify(str(om.get("ObjectMessageName", f"message_{om_id}"))) if om else f"message_{om_id}"
+            msg_key = message_key(om, om_id)
             explicit.setdefault("objectMessages", {})[msg_key] = om_id
             msg_id = int(msg_row["ObjectUpdateMessageID"])
             reg_key = f"{key}/{msg_key}"
@@ -1099,11 +1142,74 @@ def _build_update_actions(
     return update_actions, explicit
 
 
+def _build_object_messages(
+    index: TransferIndex,
+    object_id: int,
+    field_id_to_code: dict[int, str],
+) -> tuple[list[dict], dict[str, Any]]:
+    rows = [
+        row
+        for row in index.rows_for("ObjectMessage", "ObjectID", object_id)
+        if _boolish(row.get("IsActive", 1))
+    ]
+    if not rows:
+        return [], {}
+
+    rows.sort(key=lambda r: (r.get("ObjectMessageOrder", 0), r.get("ObjectMessageID", 0)))
+    used_keys: set[str] = set()
+    messages: list[dict[str, Any]] = []
+    explicit: dict[str, Any] = {"objectMessages": {}, "objectMessageConditions": {}}
+
+    for row in rows:
+        om_id = int(row["ObjectMessageID"])
+        base_key = message_key(row, om_id)
+        key = base_key
+        n = 2
+        while key in used_keys:
+            key = f"{base_key}_{n}"
+            n += 1
+        used_keys.add(key)
+        explicit["objectMessages"][key] = om_id
+        spec_msg: dict[str, Any] = {
+            "key": key,
+            "name": row.get("ObjectMessageName", key),
+            "style": style_slug(int(row.get("ObjectMessageStyleID", 1))),
+            "order": row.get("ObjectMessageOrder", 10),
+            "html": html_from_row(row),
+        }
+        conditions = []
+        for cond in index.rows_for("ObjectMessageCondition", "ObjectMessageID", om_id):
+            if not _boolish(cond.get("IsActive", 1)):
+                continue
+            type_slug = condition_slug(int(cond.get("ObjectMessageConditionTypeID", 0)))
+            if not type_slug:
+                continue
+            line_id = int(cond["ObjectLineID"])
+            field_code = _line_field_code(index, line_id, field_id_to_code)
+            if not field_code:
+                continue
+            cond_id = int(cond["ObjectMessageConditionID"])
+            explicit["objectMessageConditions"][
+                object_message_condition_registry_key(key, field_code, type_slug)
+            ] = cond_id
+            entry: dict[str, Any] = {"field": field_code, "type": type_slug}
+            if cond.get("ObjectMessageConditionParam1") is not None:
+                entry["param1"] = cond["ObjectMessageConditionParam1"]
+            if cond.get("ObjectMessageConditionParam2") is not None:
+                entry["param2"] = cond["ObjectMessageConditionParam2"]
+            conditions.append(entry)
+        if conditions:
+            spec_msg["conditions"] = conditions
+        messages.append(spec_msg)
+
+    return messages, explicit
+
+
 def _all_templates(index: TransferIndex, object_id: int) -> list[dict]:
     defaults = [
         row
-        for row in index.rows.get("ObjectDefault", [])
-        if int(row.get("ObjectID", 0)) == object_id and _boolish(row.get("IsActive", 1))
+        for row in index.rows_for("ObjectDefault", "ObjectID", object_id)
+        if _boolish(row.get("IsActive", 1))
     ]
     defaults.sort(
         key=lambda r: (
@@ -1130,6 +1236,8 @@ def _template_has_extended(row: dict) -> bool:
         return True
     if row.get("ObjectDefaultLineAutoNumberID"):
         return True
+    if row.get("ObjectDefaultLineHint"):
+        return True
     return any(
         row.get(col)
         for col in (
@@ -1145,12 +1253,11 @@ def _used_autonumber_ids(index: TransferIndex, object_id: int) -> set[int]:
         int(row["ObjectDefaultID"]) for row in _all_templates(index, object_id)
     }
     used: set[int] = set()
-    for tl in index.rows.get("ObjectDefaultLine", []):
-        if int(tl.get("ObjectDefaultID", 0)) not in template_ids:
-            continue
-        autonumber_id = _int(tl.get("ObjectDefaultLineAutoNumberID"))
-        if autonumber_id:
-            used.add(autonumber_id)
+    for tid in template_ids:
+        for tl in index.rows_for("ObjectDefaultLine", "ObjectDefaultID", tid):
+            autonumber_id = _int(tl.get("ObjectDefaultLineAutoNumberID"))
+            if autonumber_id:
+                used.add(autonumber_id)
     return used
 
 
@@ -1207,9 +1314,7 @@ def _build_templates_spec(
             spec_tmpl["externalLink"] = row["ObjectDefaultExternalLink"]
 
         fields_spec: dict[str, Any] = {}
-        for tl in index.rows.get("ObjectDefaultLine", []):
-            if int(tl.get("ObjectDefaultID", 0)) != template_id:
-                continue
+        for tl in index.rows_for("ObjectDefaultLine", "ObjectDefaultID", template_id):
             if not _boolish(tl.get("IsActive", 1)):
                 continue
             line_id = int(tl["ObjectLineID"])
@@ -1218,7 +1323,9 @@ def _build_templates_spec(
                 continue
             if _template_has_extended(tl):
                 any_extended = True
-            explicit["objectDefaultLines"][f"{key}/{field_code}"] = int(tl["ObjectDefaultLineID"])
+            explicit["objectDefaultLines"][
+                template_line_key(key, field_code, legacy=legacy)
+            ] = int(tl["ObjectDefaultLineID"])
             field_cfg = template_field_spec_from_line(
                 tl, field_id_to_code, sources_spec, autonumber_id_to_key
             )
@@ -1228,9 +1335,7 @@ def _build_templates_spec(
             spec_tmpl["fields"] = fields_spec
 
         access_specs: list[dict[str, Any]] = []
-        for access in index.rows.get("ObjectDefaultAccess", []):
-            if int(access.get("ObjectDefaultID", 0)) != template_id:
-                continue
+        for access in index.rows_for("ObjectDefaultAccess", "ObjectDefaultID", template_id):
             if not _boolish(access.get("IsActive", 1)):
                 continue
             if not template_access_differs_from_default(access):
@@ -1267,20 +1372,18 @@ def _build_object_actions(
     index: TransferIndex,
     object_id: int,
     field_id_to_code: dict[int, str],
+    step_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     actions_rows = [
         row
-        for row in index.rows.get("ObjectAction", [])
-        if int(row.get("ObjectID", 0)) == object_id and _boolish(row.get("IsActive", 1))
+        for row in index.rows_for("ObjectAction", "ObjectID", object_id)
+        if _boolish(row.get("IsActive", 1))
     ]
     if not actions_rows:
         return [], {}
 
     actions_rows.sort(key=lambda r: (r.get("ObjectActionOrder", 10), r.get("ObjectActionID", 0)))
-    step_name_by_id = {
-        int(row["WorkflowStepID"]): row.get("WorkflowStepName", f"step_{row['WorkflowStepID']}")
-        for row in index.rows.get("WorkflowStep", [])
-    }
+    step_key_by_id = dict(step_id_to_key or {})
 
     used_keys: set[str] = set()
     object_actions: list[dict[str, Any]] = []
@@ -1310,9 +1413,7 @@ def _build_object_actions(
         }
 
         params: dict[str, Any] = {}
-        for param in index.rows.get("ObjectActionParam", []):
-            if int(param.get("ObjectActionID", 0)) != action_id:
-                continue
+        for param in index.rows_for("ObjectActionParam", "ObjectActionID", action_id):
             if not _boolish(param.get("IsActive", 1)):
                 continue
             param_code = str(param.get("ObjectActionTypeParamCode") or "")
@@ -1327,9 +1428,7 @@ def _build_object_actions(
             spec_action["params"] = params
 
         conditions = []
-        for cond in index.rows.get("ObjectActionCondition", []):
-            if int(cond.get("ObjectActionID", 0)) != action_id:
-                continue
+        for cond in index.rows_for("ObjectActionCondition", "ObjectActionID", action_id):
             if not _boolish(cond.get("IsActive", 1)):
                 continue
             type_slug = condition_slug(int(cond.get("ObjectActionConditionTypeID", 0)))
@@ -1351,18 +1450,21 @@ def _build_object_actions(
             spec_action["conditions"] = conditions
 
         step_names = []
-        for link in index.rows.get("WorkflowStepObjectAction", []):
-            if int(link.get("ObjectActionID", 0)) != action_id:
-                continue
+        for link in index.rows_for("WorkflowStepObjectAction", "ObjectActionID", action_id):
             if not _boolish(link.get("IsActive", 1)):
                 continue
             step_id = int(link["WorkflowStepID"])
-            step_name = step_name_by_id.get(step_id)
-            if not step_name:
+            step_key = step_key_by_id.get(step_id)
+            if not step_key:
+                wf_step = index.row_by_id("WorkflowStep", step_id)
+                if wf_step:
+                    step_key = str(wf_step.get("WorkflowStepName") or f"step_{step_id}")
+                    step_key_by_id[step_id] = step_key
+            if not step_key:
                 continue
             link_id = int(link["WorkflowStepObjectActionID"])
-            explicit["workflowStepObjectActions"][step_link_registry_key(key, step_name)] = link_id
-            step_names.append(step_name)
+            explicit["workflowStepObjectActions"][step_link_registry_key(key, step_key)] = link_id
+            step_names.append(step_key)
         if step_names:
             spec_action["workflowSteps"] = step_names
 
@@ -1371,19 +1473,16 @@ def _build_object_actions(
     return object_actions, explicit
 
 
-def extract_spec(
-    path: Path,
+def extract_spec_from_index(
+    index: TransferIndex,
+    obj: dict,
     *,
-    object_id: int | None = None,
-    object_code: str | None = None,
-    object_name: str | None = None,
+    source_path: Path | str,
     merge: dict | None = None,
+    include_subtree_ids: bool = True,
+    table_max_ids: dict[str, int] | None = None,
 ) -> dict:
-    parsed = load_transfer(path)
-    obj = find_object_row(parsed, object_id=object_id, object_code=object_code, object_name=object_name)
     oid = int(obj["ObjectID"])
-    index = TransferIndex.from_parsed(parsed)
-
     mapping = _load_field_mapping()
     type_map = _type_id_to_spec(mapping)
 
@@ -1401,16 +1500,22 @@ def extract_spec(
         index, template, merge=merge, field_id_to_code=field_id_to_code
     )
     update_actions, ua_explicit = _build_update_actions(index, oid, field_id_to_code)
+    object_messages, om_explicit = _build_object_messages(index, oid, field_id_to_code)
     templates, tmpl_explicit, emit_templates = _build_templates_spec(
         index, oid, field_id_to_code, sources_spec, autonumber_id_to_key
     )
-    object_actions, oa_explicit = _build_object_actions(index, oid, field_id_to_code)
+    object_actions, oa_explicit = _build_object_actions(
+        index,
+        oid,
+        field_id_to_code,
+        step_id_to_key={int(v): k for k, v in (wf_explicit.get("workflowSteps") or {}).items()},
+    )
 
     ot_id = int(obj["ObjectTypeID"])
     ot_row = index.row_by_id("ObjectType", ot_id)
     object_type_name = ot_row.get("ObjectTypeName", "General") if ot_row else "General"
 
-    by_table = _collect_subtree_ids(index, oid)
+    by_table = _collect_subtree_ids(index, oid) if include_subtree_ids else {}
     company_id = int(obj.get("CompanyID", 1))
     company_row = index.row_by_id("Company", company_id)
     if company_row and company_row.get("CompanyName"):
@@ -1425,6 +1530,7 @@ def extract_spec(
         **layout_explicit,
         **wf_explicit,
         **ua_explicit,
+        **om_explicit,
         **oa_explicit,
         "objectLineOnGrid": ongrid_explicit,
     }
@@ -1445,6 +1551,7 @@ def extract_spec(
         ):
             field.pop("mandatory", None)
 
+    base_ids = table_max_ids if table_max_ids is not None else collect_table_max_ids(index)
     spec: dict[str, Any] = {
         "version": 2,
         "kind": "create_object",
@@ -1457,18 +1564,39 @@ def extract_spec(
         "company": {"name": company_name},
         "layout": {"tabs": tabs},
         "ids": {
-            "base": collect_table_max_ids(index) or 9000,
+            "base": base_ids or 9000,
             "explicit": explicit,
             "byTable": by_table,
         },
-        "transferVersion": parsed.get("transferInfo", {}).get("Version", "1.3.0"),
+        "transferVersion": (index.transfer_info or {}).get("Version", "1.3.0"),
         "source": {
-            "transfer": str(path),
+            "transfer": str(source_path),
             "objectId": oid,
             "objectCode": obj.get("ObjectCode"),
             "extractedAt": date.today().isoformat(),
         },
     }
+
+    obj_icon = _nonempty_str(obj, "ObjectTreeIcon")
+    if obj_icon:
+        spec["object"]["icon"] = obj_icon
+    obj_color = _nonempty_str(obj, "ObjectTreeColor")
+    if obj_color:
+        spec["object"]["color"] = obj_color
+
+    object_type_spec: dict[str, Any] = {}
+    ot_icon = _nonempty_str(ot_row, "ObjectTypeTreeIcon")
+    if ot_icon:
+        object_type_spec["icon"] = ot_icon
+    ot_color = _nonempty_str(ot_row, "ObjectTypeTreeColorBack")
+    if ot_color:
+        object_type_spec["color"] = ot_color
+    if object_type_spec:
+        spec["objectType"] = object_type_spec
+
+    company_icon = _nonempty_str(company_row, "CompanyTreeIcon")
+    if company_icon:
+        spec["company"]["icon"] = company_icon
 
     title_line_id = _int(obj.get("RequestTitleObjectLineID"))
     if title_line_id is not None:
@@ -1492,6 +1620,8 @@ def extract_spec(
         spec["workflow"] = workflow
     if update_actions:
         spec["updateActions"] = update_actions
+    if object_messages:
+        spec["objectMessages"] = object_messages
     if emit_templates:
         spec["templates"] = templates
     if object_actions:
@@ -1509,6 +1639,20 @@ def extract_spec(
     return spec
 
 
+def extract_spec(
+    path: Path,
+    *,
+    object_id: int | None = None,
+    object_code: str | None = None,
+    object_name: str | None = None,
+    merge: dict | None = None,
+) -> dict:
+    parsed = load_transfer(path)
+    obj = find_object_row(parsed, object_id=object_id, object_code=object_code, object_name=object_name)
+    index = TransferIndex.from_parsed(parsed)
+    return extract_spec_from_index(index, obj, source_path=path, merge=merge)
+
+
 def _merge_spec(base: dict, extracted: dict) -> dict:
     merged = dict(base)
     for key in (
@@ -1516,6 +1660,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "onGrid",
         "workflow",
         "updateActions",
+        "objectMessages",
         "objectActions",
         "templates",
         "objectDefault",
@@ -1527,6 +1672,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "autonumbers",
         "languageTable",
         "object",
+        "objectType",
         "company",
         "ids",
         "source",

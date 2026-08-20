@@ -86,6 +86,28 @@ def step_access_registry_key(step_name: str, field_code: str, subline_id: int | 
     return f"{step_name}/{field_code}"
 
 
+def workflow_step_key(step: dict) -> str:
+    return str(step.get("key") or step["name"])
+
+
+def workflow_step_action_key(action: dict) -> str:
+    return str(action.get("key") or action["name"])
+
+
+def require_workflow_step_action_id(registry: Any, action: dict) -> int:
+    """Reuse WorkflowStepAction IDs from extract (unique name or ``{slug}_{id}``)."""
+    preferred = workflow_step_action_key(action)
+    known = registry.get("workflowStepActions", preferred)
+    if known is not None:
+        return known
+    name = str(action.get("name") or "")
+    if name and name != preferred:
+        known = registry.get("workflowStepActions", name)
+        if known is not None:
+            return known
+    return registry.require("workflowStepActions", preferred)
+
+
 def step_access_differs_from_default(row: dict[str, Any]) -> bool:
     editable = bool(row.get("WorkflowStepAccessIsEditable", 0))
     visible = bool(row.get("WorkflowStepAccessIsVisible", 1))

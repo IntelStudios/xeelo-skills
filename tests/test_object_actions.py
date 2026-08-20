@@ -16,6 +16,7 @@ from ot_builder.rows import build_rows  # noqa: E402
 from ot_builder.templates import (  # noqa: E402
     compile_extended_condition,
     decompile_extended_condition,
+    require_template_line_id,
 )
 from ot_builder.xml import build_object_transfer_xml  # noqa: E402
 from ot_builder.hierarchy import build_object_map, dedupe_edges  # noqa: E402
@@ -843,6 +844,17 @@ class RequestTitleAndHiddenFlagsTests(unittest.TestCase):
         self.assertTrue(scratch_field["alwaysHidden"])
         bank = extracted["templates"][0]
         self.assertTrue(bank["fields"]["TITLE"]["alwaysDisabled"])
+
+
+class TemplateLineIdTests(unittest.TestCase):
+    def test_legacy_accepts_composite_extract_key(self) -> None:
+        registry = IdRegistry(
+            {"ids": {"explicit": {"objectDefaultLines": {"default/amount": 145}}}}
+        )
+        self.assertEqual(
+            require_template_line_id(registry, "default", "amount", legacy=True),
+            145,
+        )
 
 
 if __name__ == "__main__":

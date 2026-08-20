@@ -1,0 +1,13 @@
+{
+  "table": "ObjectMessage",
+  "columns": [
+    {"name": "ObjectMessageID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectMessageName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageFromat", "type": "NVARCHAR(MAX)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageStyleID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageOrder", "type": "INT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "notes": "DB column ObjectMessageFromat is the HTML body. LanguageTable and User precompile cache use ColumnName ObjectMessageFormat."
+}

@@ -43,7 +43,14 @@ CATEGORY_TARGETS: dict[str, tuple[str, str, str]] = {
 }
 
 KNOWN_TYPES = frozenset(
-    {*SCALAR_TARGETS, *CATEGORY_TARGETS, "lines", "stepActions"}
+    {
+        *SCALAR_TARGETS,
+        *CATEGORY_TARGETS,
+        "lines",
+        "stepActions",
+        "objectMessages",
+        "templateHints",
+    }
 )
 
 
@@ -66,7 +73,7 @@ def _lang_map(entry: Any) -> dict[str, str]:
         return {}
     out: dict[str, str] = {}
     for code, text in entry.items():
-        if code == "onGrid":
+        if code in ("onGrid", "html"):
             continue
         if not isinstance(text, str):
             continue
@@ -112,6 +119,19 @@ def _emit_langs(
                 "ChildTableRowID": lt_id,
             }
         )
+
+
+def _template_hint_parent_id(registry: IdRegistry, template_key: str, field_code: str) -> int:
+    composite = f"{template_key}/{field_code}"
+    known = registry.get("objectDefaultLines", composite)
+    if known is not None:
+        return known
+    known = registry.get("objectDefaultLines", str(field_code))
+    if known is not None:
+        return known
+    raise ValueError(
+        f"languageTable.templateHints: unknown template line {template_key}/{field_code}"
+    )
 
 
 def _require_parent(registry: IdRegistry, category: str, key: str, *, kind: str) -> int:
@@ -197,6 +217,65 @@ def emit_language_table(spec: dict, registry: IdRegistry, result: Any) -> None:
                         langs=grid_langs,
                     )
             continue
+        if kind == "templateHints":
+            if not isinstance(body, dict):
+                raise ValueError("languageTable.templateHints must be a mapping")
+            for template_key, fields in body.items():
+                if not isinstance(fields, dict):
+                    raise ValueError(
+                        f"languageTable.templateHints.{template_key}: expected mapping"
+                    )
+                for field_code, entry in fields.items():
+                    if not isinstance(entry, dict):
+                        raise ValueError(
+                            f"languageTable.templateHints.{template_key}.{field_code}: expected mapping"
+                        )
+                    langs = _lang_map(entry)
+                    if not langs:
+                        continue
+                    parent_id = _template_hint_parent_id(
+                        registry, str(template_key), str(field_code)
+                    )
+                    _emit_langs(
+                        result,
+                        registry,
+                        parent_table="ObjectDefaultLine",
+                        parent_id=parent_id,
+                        column="ObjectDefaultLineHint",
+                        entity_key=f"{template_key}/{field_code}",
+                        langs=langs,
+                    )
+            continue
+        if kind == "objectMessages":
+            if not isinstance(body, dict):
+                raise ValueError("languageTable.objectMessages must be a mapping")
+            for key, entry in body.items():
+                if not isinstance(entry, dict):
+                    raise ValueError(f"languageTable.objectMessages.{key}: expected mapping")
+                parent_id = _require_parent(registry, "objectMessages", str(key), kind="objectMessages")
+                langs = _lang_map(entry)
+                if langs:
+                    _emit_langs(
+                        result,
+                        registry,
+                        parent_table="ObjectMessage",
+                        parent_id=parent_id,
+                        column="ObjectMessageName",
+                        entity_key=str(key),
+                        langs=langs,
+                    )
+                html_langs = _lang_map(entry.get("html") if isinstance(entry.get("html"), dict) else {})
+                if html_langs:
+                    _emit_langs(
+                        result,
+                        registry,
+                        parent_table="ObjectMessage",
+                        parent_id=parent_id,
+                        column="ObjectMessageFormat",
+                        entity_key=f"{key}/html",
+                        langs=html_langs,
+                    )
+            continue
         if kind == "stepActions":
             if not isinstance(body, dict):
                 raise ValueError("languageTable.stepActions must be a mapping")
@@ -259,11 +338,10 @@ def _translations_for(
     return dict(by_parent.get((table, column, row_id)) or {})
 
 
-def extract_language_table(
-    index: Any,
-    explicit: dict[str, Any],
-) -> tuple[dict[str, Any], dict[str, int]]:
-    """Build spec languageTable + ids.explicit.languageTables from transfer rows."""
+def _language_row_maps(index: Any) -> tuple[dict, dict]:
+    cached = getattr(index, "_xeelo_lt_maps", None)
+    if cached is not None:
+        return cached
     by_parent: dict[tuple[str, str, int], dict[str, str]] = {}
     lt_ids: dict[tuple[str, str, int, str], int] = {}
     for row in index.rows.get("LanguageTable") or []:
@@ -280,6 +358,20 @@ def extract_language_table(
         by_parent.setdefault((table, column, row_id), {})[lang] = text
         if lt_id is not None:
             lt_ids[(table, column, row_id, lang)] = lt_id
+    maps = (by_parent, lt_ids)
+    try:
+        index._xeelo_lt_maps = maps
+    except Exception:
+        pass
+    return maps
+
+
+def extract_language_table(
+    index: Any,
+    explicit: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, int]]:
+    """Build spec languageTable + ids.explicit.languageTables from transfer rows."""
+    by_parent, lt_ids = _language_row_maps(index)
 
     language_table: dict[str, Any] = {}
     explicit_lt: dict[str, int] = {}
@@ -351,27 +443,77 @@ def extract_language_table(
         language_table["lines"] = lines_bucket
 
     step_rev = _rev(explicit.get("workflowStepActions"))
+    step_key_by_id = _rev(explicit.get("workflowSteps"))
     step_name_by_id = {
         int(row["WorkflowStepID"]): str(row.get("WorkflowStepName") or f"Step_{row['WorkflowStepID']}")
         for row in index.rows.get("WorkflowStep") or []
         if row.get("WorkflowStepID") is not None
     }
     step_actions: dict[str, Any] = {}
-    for row_id, action_name in step_rev.items():
+    for row_id, action_key in step_rev.items():
         langs = _translations_for(by_parent, "WorkflowStepAction", "WorkflowStepActionName", row_id)
         if not langs:
             continue
         wsa = index.row_by_id("WorkflowStepAction", row_id)
-        step_name = action_name
+        entity_key = str(action_key)
         if wsa and wsa.get("WorkflowStepID") is not None:
-            step_name = step_name_by_id.get(int(wsa["WorkflowStepID"]), action_name)
-            action_label = str(wsa.get("WorkflowStepActionName") or action_name)
-            entity_key = f"{step_name}/{action_label}"
-        else:
-            entity_key = str(action_name)
+            sid = int(wsa["WorkflowStepID"])
+            step_key = step_key_by_id.get(sid) or step_name_by_id.get(sid) or str(action_key)
+            action_label = str(action_key)
+            entity_key = f"{step_key}/{action_label}"
         step_actions[entity_key] = dict(langs)
         record("WorkflowStepAction", "WorkflowStepActionName", entity_key, row_id, langs)
     if step_actions:
         language_table["stepActions"] = step_actions
+
+    om_bucket: dict[str, Any] = {}
+    for row_id, key in _rev(explicit.get("objectMessages")).items():
+        name_langs = _translations_for(by_parent, "ObjectMessage", "ObjectMessageName", row_id)
+        html_langs = _translations_for(by_parent, "ObjectMessage", "ObjectMessageFormat", row_id)
+        if not html_langs:
+            html_langs = _translations_for(by_parent, "ObjectMessage", "ObjectMessageFromat", row_id)
+        if not name_langs and not html_langs:
+            continue
+        entry: dict[str, Any] = {}
+        if name_langs:
+            _put_langs(entry, name_langs)
+            record("ObjectMessage", "ObjectMessageName", key, row_id, name_langs)
+        if html_langs:
+            entry["html"] = dict(html_langs)
+            col = "ObjectMessageFormat"
+            if ("ObjectMessage", "ObjectMessageFromat", row_id) in by_parent and (
+                "ObjectMessage",
+                "ObjectMessageFormat",
+                row_id,
+            ) not in by_parent:
+                col = "ObjectMessageFromat"
+            record("ObjectMessage", col, f"{key}/html", row_id, html_langs)
+        om_bucket[key] = entry
+    if om_bucket:
+        language_table["objectMessages"] = om_bucket
+
+    templates_map = explicit.get("templates") or {}
+    single_template_key = next(iter(templates_map), "default") if len(templates_map) <= 1 else None
+    hint_bucket: dict[str, Any] = {}
+    for row_id, key in _rev(explicit.get("objectDefaultLines")).items():
+        langs = _translations_for(by_parent, "ObjectDefaultLine", "ObjectDefaultLineHint", row_id)
+        if not langs:
+            continue
+        if "/" in str(key):
+            template_key, field_code = str(key).split("/", 1)
+        elif single_template_key is not None:
+            template_key, field_code = str(single_template_key), str(key)
+        else:
+            continue
+        hint_bucket.setdefault(template_key, {})[field_code] = dict(langs)
+        record(
+            "ObjectDefaultLine",
+            "ObjectDefaultLineHint",
+            f"{template_key}/{field_code}",
+            row_id,
+            langs,
+        )
+    if hint_bucket:
+        language_table["templateHints"] = hint_bucket
 
     return language_table, explicit_lt

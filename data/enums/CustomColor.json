@@ -1,0 +1,257 @@
+[
+  {
+    "code": "base-green-back",
+    "hex": "#D8EBD8",
+    "isDefault": true
+  },
+  {
+    "code": "base-green-back-hover",
+    "hex": "#A0CFA0",
+    "isDefault": true
+  },
+  {
+    "code": "base-green-font",
+    "hex": "#158915",
+    "isDefault": true
+  },
+  {
+    "code": "base-orange-back",
+    "hex": "#F9DFC2",
+    "isDefault": true
+  },
+  {
+    "code": "base-orange-back-hover",
+    "hex": "#F5CB9A",
+    "isDefault": true
+  },
+  {
+    "code": "base-orange-font",
+    "hex": "#E87E04",
+    "isDefault": true
+  },
+  {
+    "code": "base-red-back",
+    "hex": "#F7CCD0",
+    "isDefault": true
+  },
+  {
+    "code": "base-red-back-hover",
+    "hex": "#F2ABB1",
+    "isDefault": true
+  },
+  {
+    "code": "base-red-font",
+    "hex": "#DF303E",
+    "isDefault": true
+  },
+  {
+    "code": "base-blue-back",
+    "hex": "#D2DDEF",
+    "isDefault": true
+  },
+  {
+    "code": "base-blue-back-hover",
+    "hex": "#B4C7E4",
+    "isDefault": true
+  },
+  {
+    "code": "base-blue-font",
+    "hex": "#4674BE",
+    "isDefault": true
+  },
+  {
+    "code": "base-dark",
+    "hex": "#2B3642",
+    "isDefault": true
+  },
+  {
+    "code": "base-white",
+    "hex": "#FFFFFF",
+    "isDefault": true
+  },
+  {
+    "code": "blue",
+    "hex": "#3598dc",
+    "isDefault": false
+  },
+  {
+    "code": "blue-hoki",
+    "hex": "#67809f",
+    "isDefault": false
+  },
+  {
+    "code": "blue-steel",
+    "hex": "#4b77be",
+    "isDefault": false
+  },
+  {
+    "code": "blue-madison",
+    "hex": "#578ebe",
+    "isDefault": false
+  },
+  {
+    "code": "blue-chamray",
+    "hex": "#2c3e50",
+    "isDefault": false
+  },
+  {
+    "code": "blue-ebonyclay",
+    "hex": "#22313f",
+    "isDefault": false
+  },
+  {
+    "code": "green",
+    "hex": "#32c5d2",
+    "isDefault": false
+  },
+  {
+    "code": "green-meadow",
+    "hex": "#1bbc9b",
+    "isDefault": false
+  },
+  {
+    "code": "green-seagreen",
+    "hex": "#1ba39c",
+    "isDefault": false
+  },
+  {
+    "code": "green-turquoise",
+    "hex": "#36d7b7",
+    "isDefault": false
+  },
+  {
+    "code": "green-haze",
+    "hex": "#44b6ae",
+    "isDefault": false
+  },
+  {
+    "code": "green-jungle",
+    "hex": "#26c281",
+    "isDefault": false
+  },
+  {
+    "code": "red",
+    "hex": "#e7505a",
+    "isDefault": false
+  },
+  {
+    "code": "red-pink",
+    "hex": "#e08283",
+    "isDefault": false
+  },
+  {
+    "code": "red-sunglo",
+    "hex": "#e26a6a",
+    "isDefault": false
+  },
+  {
+    "code": "red-intense",
+    "hex": "#e35b5a",
+    "isDefault": false
+  },
+  {
+    "code": "red-thunderbird",
+    "hex": "#d91e18",
+    "isDefault": false
+  },
+  {
+    "code": "red-flamingo",
+    "hex": "#ef4836",
+    "isDefault": false
+  },
+  {
+    "code": "yellow",
+    "hex": "#c49f47",
+    "isDefault": false
+  },
+  {
+    "code": "yellow-gold",
+    "hex": "#e87e04",
+    "isDefault": false
+  },
+  {
+    "code": "yellow-casablanca",
+    "hex": "#f2784b",
+    "isDefault": false
+  },
+  {
+    "code": "yellow-crusta",
+    "hex": "#f3c200",
+    "isDefault": false
+  },
+  {
+    "code": "yellow-lemon",
+    "hex": "#f7ca18",
+    "isDefault": false
+  },
+  {
+    "code": "yellow-saffron",
+    "hex": "#f4d03f",
+    "isDefault": false
+  },
+  {
+    "code": "purple",
+    "hex": "#8e44ad",
+    "isDefault": false
+  },
+  {
+    "code": "purple-plum",
+    "hex": "#8775a7",
+    "isDefault": false
+  },
+  {
+    "code": "purple-medium",
+    "hex": "#bf55ec",
+    "isDefault": false
+  },
+  {
+    "code": "purple-studio",
+    "hex": "#8e44ad",
+    "isDefault": false
+  },
+  {
+    "code": "purple-wisteria",
+    "hex": "#9b59b6",
+    "isDefault": false
+  },
+  {
+    "code": "purple-seance",
+    "hex": "#9a12b3",
+    "isDefault": false
+  },
+  {
+    "code": "grey",
+    "hex": "#e5e5e5",
+    "isDefault": false
+  },
+  {
+    "code": "grey-cascade",
+    "hex": "#95a5a6",
+    "isDefault": false
+  },
+  {
+    "code": "grey-sliver",
+    "hex": "#bfbfbf",
+    "isDefault": false
+  },
+  {
+    "code": "grey-steel",
+    "hex": "#e9edef",
+    "isDefault": false
+  },
+  {
+    "code": "grey-carara",
+    "hex": "#fafafa",
+    "isDefault": false
+  },
+  {
+    "code": "grey-gallery",
+    "hex": "#555",
+    "isDefault": false
+  },
+  {
+    "code": "white",
+    "hex": "#ffffff",
+    "isDefault": false
+  }
+]

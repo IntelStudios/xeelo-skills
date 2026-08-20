@@ -10,7 +10,7 @@ JSON Schema (merged spec): [`schema/xeelo-spec.schema.json`](../../schema/xeelo-
 projects/account-object/
   xeelo-spec.yaml       # metadata + includes
   spec/
-    object.yaml         # object, company, layout, onGrid
+    object.yaml         # object, objectType, company, layout, onGrid
     references.yaml     # numberedníky (optional)
     lookups.yaml        # dotazovací mapy (optional)
     language-table.yaml # LanguageTable translations (optional)
@@ -75,11 +75,13 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`) |
-| `company` | yes | Company row in transfer (`name`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`, `icon`, `color`) |
+| `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
+| `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid display + placement (typically in `object.yaml`) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
+| `objectMessages` | no | HTML modals — [`spec/object-messages.yaml`](#object-messages-specobject-messagesyaml) |
 | `workflow` | no | Defaults to minimal 2-step flow |
 | `ids.base` | no | Per-table max PK for **new** rows (`ObjectLine: 9112` → next is 9113). Omit for greenfield (default 9000 per table). Legacy: a single integer is the default for tables not in the map. |
 | `ids.explicit` | no | Stable IDs from site / transfer (see below) |
@@ -88,6 +90,42 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `transferVersion` | no | `OT_Version` — default `1.3.0` |
 
 Generator **always** creates `Company`, `ObjectType`, `Role`, and `RequestStatus` rows from spec definitions and `ids.explicit`.
+
+## Tree icons and colors
+
+Inbox tree icons and colors sit on the entity that owns them — `object`, `objectType`, and `company` are siblings in `spec/object.yaml`. Do not put ObjectType color on `object`.
+
+```yaml
+object:
+  name: Account
+  objectType: Finance                        # type name (unchanged)
+  icon: "fa-university fa-solid fa-fw"       # ObjectTreeIcon
+  color: blue                                # ObjectTreeColor = CustomColorCode
+objectType:
+  icon: "fa-coins fa-solid fa-fw"            # ObjectTypeTreeIcon
+  color: blue-steel                          # ObjectTypeTreeColorBack
+company:
+  name: KB
+  icon: "fa-building fa-solid fa-fw"         # CompanyTreeIcon
+```
+
+All of `icon` / `color` are optional, max 50 characters. Empty values are omitted from Object Transfer (existing site values stay).
+
+**Icons** are Font Awesome **6.5.1** class strings as Admin stores them: `fa-{id} fa-{variant} fa-fw` (`solid` / `regular` / `light` / `thin` / `brands`). Xeelo User GUI ships 6.5.1 — icons from a newer FA release will not render. When choosing an icon, search the local catalog: `python scripts/search-fa-icons.py --query bank` ([`data/fontawesome-icons.json`](../../data/fontawesome-icons.json)).
+
+**Colors** are `CustomColor.CustomColorCode` (e.g. `blue`), **not** HEX. Seed palette: [`data/enums/CustomColor.json`](../../data/enums/CustomColor.json). Site extras after DB extract: `env/shared/custom-colors.yaml`. The generator writes the code onto Company/Object/ObjectType; it does **not** emit `CustomColor` rows.
+
+| Spec | Column | Live? |
+|------|--------|-------|
+| `object.icon` | `ObjectTreeIcon` | yes |
+| `object.color` | `ObjectTreeColor` | yes (treeview icon color) |
+| `objectType.icon` | `ObjectTypeTreeIcon` | yes |
+| `objectType.color` | `ObjectTypeTreeColorBack` | yes (Admin “Icon Color”) |
+| `company.icon` | `CompanyTreeIcon` | yes |
+| — | `ObjectTypeTreeColorFont` | **obsolete** (Admin “Font Color (obsolete)”) — not in spec |
+| — | `CompanyTreeColor` | **obsolete** (Admin “Color (obsolete)”) — not in spec |
+
+`ObjectTypeTreeColor` is not a SQL column (stale Admin model only).
 
 ## Layout: tabs → sections → fields
 
@@ -197,9 +235,13 @@ languageTable:
   lines:
     ACCOUNT_NUMBER:
       cs: Číslo účtu
+  templateHints:
+    default:
+      ACCOUNT_NUMBER:
+        cs: Zadejte IBAN bez mezer
 ```
 
-Generator emits `LanguageTable` rows and parent→`LanguageTable` ObjectSetup edges. Extract writes this fragment only when translations exist. After `/push`, **/publish** so User GUI picks up labels.
+Generator emits `LanguageTable` rows and parent→`LanguageTable` ObjectSetup edges. Extract writes this fragment only when translations exist. After `/publish` (or `/precompile` if the OT is already applied) so User GUI picks up labels.
 
 Do not put Czech (or other languages) into `object.yaml` `name` fields. Site rules (always `cs`, onGrid stays English): `projects/<name>/conventions.md`.
 
@@ -369,8 +411,11 @@ ids:
     objectDefaultAccessOwnerLevel: 0
     objectDefaultIsExternal: 0
     objectLineOnGrid:
-      ACCOUNT_NUMBER: 9024
+      Large/Grid/Items/ACCOUNT_NUMBER: 9024
+      Small/Grid/Items/ACCOUNT_NUMBER: 9025
 ```
+
+Key is `{size}/{type}/{module}/{field code}`. Older specs that keyed only by field code still work for the **first** layout that uses that field.
 
 Section keys use `{tabName}/{sectionName}`.
 
@@ -428,6 +473,15 @@ workflow:
 ```
 
 Keys are required when two statuses share the same `name` (e.g. two `Saved` rows on site). Optional `isActive: false` preserves site inactive rows on refactor.
+
+`workflow.steps[].name` is the display label (`WorkflowStepName`) and is **not** unique. When two steps share a name, extract emits `key` (`added_by_system_3698`) and `ids.explicit.workflowSteps` maps that key. Generate uses `step.key` or `step.name`. Same for `steps[].actions[].key` when button names collide. Unique names (`Draft`) stay as today — no `key` field.
+
+```yaml
+- key: added_by_system_3698
+  name: Added by system
+  role: requestor
+  status: saved
+```
 
 ## Workflow modes
 
@@ -517,6 +571,46 @@ Condition `type` slugs match platform seed (`contains`, `equals_text`, `is_empty
 
 **Not in spec v1:** `ObjectUpdateActionUserList` (User admin only).
 
+## Object messages (`spec/object-messages.yaml`)
+
+Optional fragment for **ObjectMessage** (HTML modal). See [entities/object-messages.md](../entities/object-messages.md). Attach to an update action with `updateActions[].messages`.
+
+```yaml
+# xeelo-spec.yaml
+includes:
+  - spec/object.yaml
+  - spec/object-messages.yaml
+  - spec/update-actions.yaml
+  - spec/language-table.yaml
+  - spec/ids.yaml
+```
+
+```yaml
+objectMessages:
+  - key: retag_payments
+    name: Retag payments
+    style: warning          # information | warning | error
+    order: 10
+    html: |
+      <p>Saving this label will retag all payments that currently have it assigned.</p>
+    # conditions:            # optional; same slugs as update-action conditions
+    #   - field: NAME
+    #     type: is_not_empty
+```
+
+```yaml
+languageTable:
+  objectMessages:
+    retag_payments:
+      cs: Přestítkovat platby
+      html:
+        cs: <p>Uložením tohoto štítku se přestítkují všechny platby, které ho mají přiřazený.</p>
+```
+
+**IDs:** `ids.explicit.objectMessages`, `objectMessageConditions` (`{key}/{field}/{type}`), plus `objectUpdateMessages` on the update-action link.
+
+Canonical HTML is English on `html:` (OT column `ObjectMessageFromat`). Translations use LanguageTable ColumnName `ObjectMessageFormat`. Style **Error** disables Continue on the new/update form; **Warning** lets the user Cancel or Continue.
+
 ## Templates (`spec/templates.yaml`)
 
 Optional fragment for multiple **ObjectDefault** rows. Omit it to keep a single default template (current behaviour; field `mandatory` applies there).
@@ -555,6 +649,7 @@ templates:
 | `access[]` | **ObjectDefaultAccess** create-form visible/editable. Refresh seeds **both true**; list only hide/lock exceptions. Same `{field, editable, visible, sublineId?}` shape as `workflow.steps[].access` and `updateActions[].access`. Not `hidden` / `alwaysDisabled`. |
 | `clientCalculation.type` / `expr` | Client-Math (`math`) / Client-String (`string`) — stored **without** `1#`/`2#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-math-vs-client-string). Client-UserInfo (`user_info`) / Client-DeviceInfo (`device_info`) — `expr` is a required `{Placeholder}` without `7#`/`8#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-userinfo--client-deviceinfo) |
 | `defaultValue` | `ObjectDefaultLineValue`, except **`description_memo`**: HTML into `ObjectDefaultLineDescMemo` |
+| `hint` | `ObjectDefaultLineHint` — runtime field hint (plain or HTML). All types except `empty_space`. Canonical English; translations in `languageTable.templateHints.<templateKey>.<code>`. Not `defaultValue` on description memo. |
 | `autonumber` | Catalog key from `spec/autonumbers.yaml` → `ObjectDefaultLineAutoNumberID`. Text (3) only. Mutually exclusive with input mask. |
 
 Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
@@ -562,7 +657,7 @@ Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 - `id{FIELD_CODE}` → `id{ObjectLineID}`
 - `{sourceKey.valueKey}` → **`ObjectLineSourceValueBind`** of that source value (not `value`, not the row ID). Numeric bind stays unquoted (`id123 != 2`); any other bind is a STRING with **single quotes** (`id9108 != 'FIO'`). Double quotes are invalid. Full grammar: [xeelo-grammar.md](../entities/xeelo-grammar.md).
 
-**IDs:** `ids.explicit.templates`, `objectDefaultLines` keys `{template}/{field}` when more than one template (single template keeps field-only keys), optional `objectDefaultAccess` (`{template}/{field}` or field-only when a single template), optional `objectDefaultExternalLinks`.
+**IDs:** `ids.explicit.templates`, `objectDefaultLines` keys `{template}/{field}` when more than one template (single template keeps field-only keys; generator also accepts `{template}/{field}` from extract). Optional `objectDefaultAccess` (`{template}/{field}` or field-only when a single template), optional `objectDefaultExternalLinks`.
 
 ## Object actions (`spec/object-actions.yaml`)
 
@@ -639,23 +734,38 @@ onGrid:
       isTag: true
 ```
 
-`CATEGORY` must be `type: text` or `textarea`. Extract emits `onGrid.fields` only for lines with `allowed`. After deploy, **/publish** so the tag cache SQL is rebuilt.
+`CATEGORY` must be `type: text` or `textarea`. Extract emits `onGrid.fields` when `allowed`, `isTag`, or `isSearch` is set (tag-only helpers: `allowed: false`, `isTag: true`). After deploy, **/publish** so the tag cache SQL is rebuilt.
+
+Inbox cells parse `[badge:{CustomColorCode}_{text}]` as a colored chip (`.xe-badge-{code}`). Do **not** store badge tokens on an `isTag` line — use a separate display text line (`isTag: false`). Combo cannot be `isTag`. See [object-line-types.md](../entities/object-line-types.md#on-grid-badge).
 
 ### `onGrid.layouts`
 
-Creates **ObjectLineOnGrid** rows — placement per layout variant:
+Creates **ObjectLineOnGrid** rows — placement per layout variant. A variant is **`size` + `type`** (`Grid` / `Table`) + `module`. The same field may appear in several layouts; each variant is its own row (`ids.explicit.objectLineOnGrid` key `{size}/{type}/{module}/{code}`).
 
 | Spec key | DB column |
 |----------|-----------|
-| `size` | `ObjectLineOnGridSize` |
-| `type` | `ObjectLineOnGridType` |
-| `module` | `ObjectLineOnGridModule` |
-| `placements[].row` | `ObjectLineOnGridRow` |
+| `size` | `ObjectLineOnGridSize` — `Small` (mobile), `Medium` (tablet), `Large` (desktop) |
+| `type` | `ObjectLineOnGridType` — `Grid` or `Table` |
+| `module` | `ObjectLineOnGridModule` — `Items` or `Tasks` |
+| `placements[].row` | `ObjectLineOnGridRow` — `T`, `A`–`E` (spec “pseudo-rows”; see Grid vs Table) |
 | `placements[].columns[].field` | resolves to `ObjectLineID` |
 | `position` | `ObjectLineOnGridPosition` — start column in percent (0–99) |
 | `length` | `ObjectLineOnGridLength` — column span in percent (1–100); row columns should sum to 100 |
-| `valueWidth` | `ObjectLineOnGridValueWidth` |
-| `labelType` | `ObjectLineOnGridLabelType` |
+| `valueWidth` | `ObjectLineOnGridValueWidth` — percent of the cell for the **value**. `0` = auto. **`100` + Horizontal = hide the column label** (Admin ValueWidthLabelHidden). |
+| `labelType` | `ObjectLineOnGridLabelType` — **1 Horizontal** (default), **2 Vertical**. SQL also has `0` None; Admin does not offer it — do not spec `0`. |
+
+Omit a size to keep the platform default for that breakpoint. Add `Small` when the inbox on a phone should show fewer columns than desktop `Large`.
+
+To show chips without a column title on **Grid**, set `labelType: 1` and `valueWidth: 100`.
+
+**Grid vs Table**
+
+| `type` | How `placements[].row` renders |
+|--------|--------------------------------|
+| **Grid** | Each letter (`T`, `A`–`E`) is a visual row; cards wrap/stack. |
+| **Table** | Always **one** visual row. Pseudo-rows from the spec **do not wrap** — columns stay on a single line and the table **scrolls horizontally**. |
+
+Use **Grid** when the inbox card should stack (typical mobile `Small`). Use **Table** when the inbox is a spreadsheet-like list and overflow should scroll right, not wrap.
 
 ## Generate
 

@@ -84,4 +84,6 @@ git push -u origin main
 
 ## Site conventions
 
-`projects/<name>/conventions.md` holds **site-specific** rules (language, naming, other). The agent reads it at the start of site work. Template defaults: English canonical `name`, always Czech in `spec/language-table.yaml`, inbox/`onGrid` names stay English. Edit per site; do not put these rules into the public KB.
+`projects/<name>/conventions.md` holds **site-specific** rules (language, naming, agent loop, other). The agent reads it at the start of site work. Template defaults: English canonical `name`, always Czech in `spec/language-table.yaml`, inbox/`onGrid` names stay English, **Agent loop** `ask` for `/publish` and `/download-db`. Edit per site; do not put these rules into the public KB.
+
+**Agent loop** keys (`ask` | `auto`; missing = `ask`): **Publish after dry-run**, **Download-db after publish**. After a successful dry-run the agent offers `/publish` (and after publish `/download-db`) including “remember for this site”. Remember writes `auto` into that file. See [AGENT.md](../AGENT.md#agent-loop-in-conventions).

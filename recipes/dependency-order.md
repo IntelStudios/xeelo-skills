@@ -25,6 +25,9 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber? |
 | 18 | `ObjectUpdateAction` | Object |
 | 19 | `ObjectUpdateAccess` | ObjectUpdateAction, ObjectLine |
+| 19a | `ObjectMessage` | Object |
+| 19b | `ObjectMessageCondition` | ObjectMessage, ObjectLine |
+| 19c | `ObjectUpdateMessage` | ObjectUpdateAction, ObjectMessage |
 | 20 | `ObjectAction` | Object |
 | 21 | `ObjectActionParam` | ObjectAction |
 | 22 | `ObjectActionCondition` | ObjectAction, ObjectLine |

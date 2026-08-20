@@ -9,12 +9,19 @@ Read this file before creating or editing objects for this site.
 
 ## Localization
 
-- Always add Czech in `spec/language-table.yaml` for user-visible labels: `object`, `tabs`, `sections`, `lines`, `workflow`, `roles`, `statuses`, `stepActions`, `objectActions`, `updateActions`, `templates`.
+- Always add Czech in `spec/language-table.yaml` for user-visible labels: `object`, `tabs`, `sections`, `lines`, `workflow`, `roles`, `statuses`, `stepActions`, `objectActions`, `updateActions`, `objectMessages`, `templates`.
 - Inbox / `onGrid` column titles stay **English** — do not set `lines.<code>.onGrid` unless the user asks.
 - Extra languages only when the user asks.
-- After `/push` of translations, **/publish**.
+- After `/publish` of translations (or `/precompile` if the OT is already applied).
 
 Platform details: parent XeeloKB [docs/entities/localization.md](../../docs/entities/localization.md).
+
+## Agent loop
+
+Values: `ask` (default) or `auto`. Missing key = `ask`.
+
+- **Publish after dry-run:** ask
+- **Download-db after publish:** ask
 
 ## Other
 

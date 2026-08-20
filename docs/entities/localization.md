@@ -16,7 +16,7 @@ Schema: [`data/schemas/LanguageTable.json`](../data/schemas/LanguageTable.json) 
 
 `RowID` is the parent entity PK as a string. Empty / inactive translation → runtime **falls back** to the default column.
 
-User GUI reads translated labels from **PreCompile** cache (language XML baked into settings). After an Object Transfer that changes `LanguageTable`, run **/publish**.
+User GUI reads translated labels from **PreCompile** cache (language XML baked into settings). After an Object Transfer that changes `LanguageTable`, run **/publish**. If the transfer is already applied, `/precompile` is enough.
 
 ## Languages
 
@@ -34,7 +34,7 @@ Admin translation modal lists every **active** row. Do not write `en` into `lang
 
 `WorkflowStepName` (the step itself) is **not** translatable — only `WorkflowStepActionName` and `WorkflowStepSuccessMessage`.
 
-HTML/memo columns (template hint, description memo, button message, object messages) use the same table. Spec v1 covers **names**; those HTML fields are not in `language-table.yaml` yet.
+HTML/memo columns (template hint, description memo, button message, object messages) use the same table. Object-message **names** and **HTML** are in `languageTable.objectMessages` ([object-messages.md](object-messages.md)). Template field **hints** are in `languageTable.templateHints` (`ObjectDefaultLineHint`; RowID is `ObjectDefaultLineID`, not `ObjectLineID`). Description memo and button message are not in `language-table.yaml` yet.
 
 ## Spec: `spec/language-table.yaml`
 
@@ -66,6 +66,10 @@ languageTable:
   stepActions:
     Draft/Submit:
       cs: Odeslat
+  templateHints:
+    default:
+      ACCOUNT_NUMBER:
+        cs: Zadejte IBAN bez mezer
 ```
 
 | Spec key | Maps to |
@@ -82,6 +86,9 @@ languageTable:
 | `workflow` | `WorkflowName` |
 | `stepActions.<stepName>/<actionName>` | `WorkflowStepActionName` |
 | `objectActions.<key>` / `updateActions.<key>` | action display names |
+| `objectMessages.<key>` | `ObjectMessageName` |
+| `objectMessages.<key>.html` | HTML body — LanguageTable ColumnName `ObjectMessageFormat` (DB column is `ObjectMessageFromat`) |
+| `templateHints.<templateKey>.<code>` | `ObjectDefaultLineHint` — canonical English stays on `templates.fields.<code>.hint`; RowID is the template-line PK |
 
 Generator emits `LanguageTable` rows (`IsActive=1`) and ObjectSetup edges `Parent → LanguageTable`. Extract writes the fragment only when translations exist.
 

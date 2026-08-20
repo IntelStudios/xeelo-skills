@@ -12,8 +12,8 @@ New Node.js object actions in this KB are **ESM**. Do not emit legacy (non-ESM) 
 |------------|---------|-----|
 | `typeCode` | `spEndPointRunNodeJSMainLast` | Runs in the second execute pass (`IsLast=1`) |
 | `EndPointRunESM` | `"1"` | `POST /execute-esm` (not the old evaluate path) |
-| `EndPointRunWait` | `"1"` | Wait and write `main()` return value onto the request |
-| `EndPointRunTimeout` | `"60000"` | Wall-clock ms |
+| `EndPointRunWait` | `"1"` | `"1"` wait and write `main()` return onto the request. `"0"` fire-and-forget (message broker still runs the ESM; raise `EndPointRunTimeout` for long jobs) |
+| `EndPointRunTimeout` | `"60000"` | Wall-clock ms. Raise for bulk CREATE (import) |
 | `ApplicableEventType` | `"Save,SaveNew"` (or include `WorkflowAction`) | Restricts when the action runs |
 | `CustomJS` | named `export async function main()` | Platform default template |
 
@@ -146,6 +146,8 @@ The object action already runs **inside** `spRequestRefreshGeneral`. A nested `s
 | This request + any `createType` | refresh always appended | Yes |
 | **Other** object `CREATE` | `{ createType: "CREATE", template: ObjectDefaultID, lines }` | No (refresh is on the **new** request) |
 | Other request update | `withRefresh` optional | Only if that other request’s actions re-enter this one |
+| Other request **refresh only** | `{ requestId, withRefresh: true }` — omit `lines` and `createType` | Runs Last on **that same** request if refresh still executes there. Do **not** use on `Context.RequestID`. **Completed** requests: use `UPDATE` below instead |
+| Other **completed** request + update action | `{ requestId, createType: "UPDATE", updateAction }` — omit `lines` | No on this action. Starts `spRequestInsert` RequestTypeID 2 (new version, copied lines); refresh runs on the **new** request. `UPDATE_EMPTY` skips copied lines |
 | `withRefreshCache: true` | cache / message broker | No |
 
 Safe self-update:
@@ -219,4 +221,4 @@ if (!txRow?.success) {
 return `created #${txRow.requestId}`;
 ```
 
-Grant **WRITE** for service account `0` on **OTHERCODE** (CREATE) as well as on this object (self-update). Combined Select → CREATE → self-update: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
+Grant **WRITE** for service account `0` on **OTHERCODE** (CREATE) as well as on this object (self-update). Combined Select → CREATE → self-update, including [batch + parallel CREATE](../../recipes/nodejs-graphql-patterns.md#6-batch--parallel-create).

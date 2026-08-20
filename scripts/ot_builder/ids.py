@@ -35,6 +35,7 @@ CATEGORY_TO_TABLE: dict[str, str] = {
     "objectUpdateActionConditions": "ObjectUpdateActionCondition",
     "objectUpdateMessages": "ObjectUpdateMessage",
     "objectMessages": "ObjectMessage",
+    "objectMessageConditions": "ObjectMessageCondition",
     "roles": "Role",
     "statuses": "RequestStatus",
     "languageTables": "LanguageTable",

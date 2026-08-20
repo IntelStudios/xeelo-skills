@@ -72,8 +72,10 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] Button (if used) is type `button`; condition equals `1`
 - [ ] `ResponseTextObjectLineID` points at a memo/text/number line
 - [ ] `EndPointRunWait: "1"` if the result must land on the request
+- [ ] Bulk CREATE: batch `input` + limited parallel `client.request`; raise `EndPointRunTimeout` ([nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#6-batch--parallel-create))
 - [ ] GraphQL identifiers in `CustomJS` match **env** `object.code` / `fields[].code` after `/download-db` ([graphql.md](../docs/entities/graphql.md))
 - [ ] Self-update: no `createType`, `withRefresh: false`; `CREATE` only on a **different** object
+- [ ] Completed other requests that need Last: `createType: UPDATE` + `updateAction`, no `lines` ([nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))
 - [ ] Select uses `lines` (valueData), not `linesFormatted`, for calculations
 - [ ] Date picker values are `dd-MM-yyyy`; parse by splitting, not `new Date()` — [graphql.md](../docs/entities/graphql.md#date-picker-type-8)
 - [ ] Service account **0** has **WRITE** on every object the script mutates ([users-and-access.md](../docs/entities/users-and-access.md))
@@ -91,6 +93,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 | Result not on the form | `EndPointRunWait` is 0; wrong `ResponseTextObjectLineID`; line type not 1/2/3/4/11/12 |
 | Button does nothing | Request already Completed; button hidden by extended validation; button not editable on the workflow step (`WorkflowStepAccess`) |
 | Action loops / times out | GraphQL mutation on the **current** request used `withRefresh: true` or `createType` — omit both; see [nodejs-esm.md](../docs/entities/nodejs-esm.md#mutating-the-current-request--no-refresh) |
+| Last on other completed requests does not run | `{ requestId, withRefresh: true }` is not an update action — use `createType: UPDATE` + that object’s `updateAction`; see [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests) |
 | CREATE / mutate fails with access | Service account **0** missing WRITE on that object |
 | Wrong field / unknown type | `CustomJS` used spec codes that the site overwrote — copy from env; [graphql.md](../docs/entities/graphql.md) |
 

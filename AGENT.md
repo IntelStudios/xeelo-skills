@@ -33,38 +33,61 @@ Allowed values: `project` | `project-kb`. Missing `internal/`, missing file, emp
 
 Direct KB requests (“fix this recipe”, “what does the KB say about GraphQL”) are **not** gated.
 
-Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply. If `projects/<name>/conventions.md` exists, **read it** before creating or editing objects (language, naming, other site rules).
+Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply. If `projects/<name>/conventions.md` exists, **read it** before creating or editing objects (language, naming, agent loop, other site rules).
 
 ## Development loop
 
 ```mermaid
 flowchart LR
-  Creds[admin URL + siteId + credentials] --> DL[download-db-transfer]
-  DL --> Snap[snapshots ZIP]
+  Creds["xeeloUrl + token"] --> DL[download-db-transfer]
+  DL --> Snap[snapshots XML]
   Snap --> Env[extract-db-transfer-to-env]
   Env --> Loop[changes/slug notes + specs]
   Loop --> OT[generate-change-loop]
-  OT --> Ask[ask user]
-  Ask --> Push["/push if yes"]
-  Push --> Pub["/publish if yes"]
-  Pub --> Creds
+  OT --> Test["dry-run isTestOnly"]
+  Test --> Pub["/publish ask or auto"]
+  Pub --> DL
 ```
 
-1. **Connect** — user provides Admin URL, `siteId` (`XA-SITE-ID`), credentials JSON → `projects/<project>/.xeelo-connection.json` (gitignored)
-2. **Download** DB transfer → `projects/<project>/snapshots/<stamp>/`
+1. **Connect** — user provides Xeelo URL + GraphQL admin token → `projects/<project>/.xeelo-connection.json` (gitignored)
+2. **Download** DB transfer XML → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
-5. **Ask** — after generate, ask the user whether to `/push` and `/publish`. Do **not** run either unless they say yes (or invoke the skill).
-6. If yes: `/push` uploads and processes the OT; `/publish` runs PreCompileSettings; then download a **new** DB transfer and refresh `env/`
+5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload + `isTestOnly: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`.
+6. **Publish** — only after a successful dry-run. `/publish` applies the OT for real and precompiles; then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**.
+
+There is **no** `/push` skill. `/precompile` is precompile only (not part of the loop).
+
+### Agent loop in conventions
+
+Keys in `projects/<name>/conventions.md` (allowed: `ask` | `auto`; missing section or key = `ask`):
+
+- **Publish after dry-run**
+- **Download-db after publish**
+
+The two keys are independent. Template: [`templates/project/conventions.md`](templates/project/conventions.md).
+
+| Value | After successful dry-run / after successful `/publish` |
+|-------|--------------------------------------------------------|
+| **`auto`** | Run the skill. **Announce** that this site’s conventions say so. |
+| **`ask`** | Offer three options. Do not run unless they pick a run option or invoke the skill. |
+
+**Publish after dry-run** (`ask`): **Publish now** / **Publish now and remember for this site** / **Don't publish**.
+
+**Download-db after publish** (`ask`): **Refresh env now** (`/download-db`) / **Refresh now and remember** / **Don't download**. Offer this only after a successful `/publish`.
+
+**Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). User says stop doing it yourself → set that key back to `ask`. A one-loop exception (“don’t publish this time”) does **not** change conventions.
+
+Failed dry-run or missing connection: do not offer `/publish`, do not write conventions. Failed `/publish`: do not run `/download-db`.
 
 ### Site vs company
 
 | Term | Meaning | Where |
 |------|---------|--------|
-| **site** / `siteId` | Xeelo site; Admin API header `XA-SITE-ID` | `.xeelo-connection.json`, download script |
+| **site** | Xeelo instance (`xeeloUrl` + GraphQL admin token) | `.xeelo-connection.json` |
 | **company** / `companyId` | Logical object division (`Company` table in DB transfer) | spec `company.name`, `ids.explicit.companyId`, `catalog.yaml` |
 
-Example: lz has `siteId` 8 in connection; company KB has `Company.CompanyID: 9001` in the DB transfer. Extract includes **all** objects from the site; `companyId` is metadata on each object, not a filter parameter.
+Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract includes **all** objects from the site; `companyId` is metadata on each object, not a filter parameter.
 
 | Action | Resource |
 |--------|----------|
@@ -72,16 +95,18 @@ Example: lz has `siteId` 8 in connection; company KB has `Company.CompanyID: 900
 | Parse / env | [`scripts/extract-db-transfer-to-env.py`](scripts/extract-db-transfer-to-env.py), [db-transfer-format.md](docs/transfer/db-transfer-format.md) |
 | Init loop | [`scripts/init-change-loop.py`](scripts/init-change-loop.py) |
 | Generate change OT | [`scripts/generate-change-loop.py`](scripts/generate-change-loop.py) |
-| Push OT (upload + process) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) |
-| Publish (precompile) | [`scripts/publish-precompile.py`](scripts/publish-precompile.py) |
+| Dry-run OT (`isTestOnly`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
+| Publish (real OT + precompile) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
+| Precompile only | [`scripts/precompile-settings.py`](scripts/precompile-settings.py) |
 | Spec language | [spec-format.md](docs/transfer/spec-format.md) |
 | Update actions | [docs/entities/update-actions.md](docs/entities/update-actions.md), [recipes/add-update-action.md](recipes/add-update-action.md) |
+| Object messages | [docs/entities/object-messages.md](docs/entities/object-messages.md) (HTML modal on create/update/workflow) |
 | Object actions / Node.js | [object-actions.md](docs/entities/object-actions.md), [nodejs-esm.md](docs/entities/nodejs-esm.md), [recipes/add-object-action.md](recipes/add-object-action.md), [nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md) |
 | GraphQL schema | [docs/entities/graphql.md](docs/entities/graphql.md) (`Select_` / `Mutate_`, `lines` vs `linesFormatted`) |
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
-Object Transfer allows **partial deployment** — upload ZIP, select rows in Admin tree, process in batches.
+Object Transfer allows **partial deployment** — `/publish` applies the generated package (all rows, Orig. ID). Manual Admin UI still works for selecting rows in batches.
 
 ## Creating a new project
 
@@ -91,24 +116,16 @@ When the user asks for a **new empty project** (`projects/<name>/`):
 1. Create the folder with empty `snapshots/`, `env/`, `changes/` (`.gitkeep` if needed for git).
 2. Copy [`templates/project/conventions.md`](templates/project/conventions.md) to `projects/<name>/conventions.md`.
 3. Add **only** `projects/<name>/.xeelo-connection.json` — **no** `.xeelo-connection.example.json`.
-4. Fill **placeholder / empty** values. Do **not** copy `siteId` or `credentials` from other projects.
-5. You may **infer** `adminBaseUrl` as `https://<name>.xeeloadmin.online/` when that matches the site slug; leave it empty if unsure.
+4. Fill **placeholder / empty** values. Do **not** copy `token` from other projects.
+5. You may **infer** `xeeloUrl` as `https://<name>.xeelo.online/` when that matches the site slug; leave it empty if unsure.
 6. After creation, **tell the user exactly what to fill in** (see checklist below).
 
 Template (empty values for user to complete):
 
 ```json
 {
-  "adminBaseUrl": "https://<name>.xeeloadmin.online/",
-  "siteId": null,
-  "credentials": {
-    "access_token": "",
-    "token_type": "bearer",
-    "expires": "",
-    "refresh_token": "",
-    "clientId": "XeeloApp",
-    "rememberMe": "True"
-  }
+  "xeeloUrl": "https://<name>.xeelo.online/",
+  "token": ""
 }
 ```
 
@@ -116,24 +133,50 @@ Template (empty values for user to complete):
 
 | Field | Where to get it |
 |-------|-----------------|
-| `adminBaseUrl` | Xeelo Admin URL for the site (confirm inferred URL if used) |
-| `siteId` | `XA-SITE-ID` for the site in Admin |
-| `credentials` | OAuth token JSON from Admin login (browser devtools / existing session export) |
+| `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
+| `token` | GraphQL **admin** access token (`isAdmin`). Fixed; no refresh |
 
 File is gitignored in both XeeloKB and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in XeeloKB. Do not download DB transfer until the user has filled connection details.
 
+## Ask which workflow
+
+**Always ask** before writing workflow on a **new object** or a **new update action**. Do not default silently. Skip the question only when the user already chose in the same request (“new workflow” / “use workflow X” / “keep template workflow”).
+
+List existing workflows from `projects/<site>/env/`: `catalog.yaml` (`objects[].name`, `slug`, `workflowIds`), `env/objects/<slug>/spec/workflow.yaml` (`workflow.name`, steps), `env/objects/<slug>/spec/ids.yaml` (`ids.explicit.workflowId`). Each option: **object — workflow name — id** (optional step summary). Empty or stale env → only “new workflow”, or `/download-db` first.
+
+**Use existing** = share the same `Workflow` row (Orig. ID), not a clone of steps. Copy `spec/workflow.yaml` + `ids.explicit` (`workflowId`, `workflowSteps`, `workflowStepActions`, roles/statuses). `WorkflowStepAccess` is per `(step, object line)` — the new object’s lines get access rows on the shared steps; do not change steps/actions unless the user asks.
+
+### Creating a new object
+
+Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
+
+1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless the user described steps).
+2. **Existing workflow** — pick from the env list. Bind `ObjectDefault.WorkflowID` to that Orig. ID.
+
+Never create an object with a silent new minimal workflow. Recipe: [create-object.md](recipes/create-object.md).
+
+### Adding an update action
+
+Before `spec/update-actions.yaml`, ask which workflow the **new request version** should use (`ObjectUpdateAction.WorkflowID`). First option is **Recommended**:
+
+1. **Default template workflow** — `ObjectDefault` with `isDefault: true` (or the only template). **Omit** `updateActions[].workflow` (`WorkflowID` NULL; runtime uses the template). Source: `spec/templates.yaml` + the object’s `ids.explicit.workflowId` / `spec/workflow.yaml`.
+2. **Another existing workflow** — from the env list; set `updateActions[].workflow` to that shared Orig. ID.
+3. **New workflow** — new `Workflow` row for this update version.
+
+Recipe: [add-update-action.md](recipes/add-update-action.md). Runtime fallback: [update-actions.md](docs/entities/update-actions.md).
+
 ## Skills
 
-Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/push`, and `/publish`.
+Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, and `/precompile`.
 
 | Skill | When | File |
 |-------|------|------|
 | `/new-project` | New empty Xeelo site under `projects/<name>/` | [`.agents/skills/new-project/SKILL.md`](.agents/skills/new-project/SKILL.md) |
-| `/download-db` | Download DB transfer ZIP and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
-| `/push` | Upload Object Transfer ZIP and process it | [`.agents/skills/push/SKILL.md`](.agents/skills/push/SKILL.md) |
-| `/publish` | Precompile site settings (`PreCompileSettings`) | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
+| `/download-db` | Download DB transfer XML and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
+| `/publish` | Apply Object Transfer for real and precompile | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
+| `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 
-Do **not** auto-run `/push` or `/publish` after generating a change-loop OT. Ask the user first.
+After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
 ### Change loop `notes.md`
 
@@ -161,13 +204,12 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 
 ```text
 projects/ovnet/
-  conventions.md                  # site rules (language, naming); read before object work
-  .xeelo-connection.json          # gitignored — user fills credentials
-  snapshots/<stamp>/*.zip         # DB transfer ZIP from Admin
-  snapshots/<stamp>/*.xml         # raw XML extracted from ZIP (UTF-16 LE, kept alongside)
+  conventions.md                  # site rules (language, naming, agent loop); read before object work
+  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL admin token
+  snapshots/<stamp>/*.xml         # DB transfer XML from GraphQL (UTF-16 LE)
   env/
     catalog.yaml
-    shared/{companies,object-types,roles,statuses,sources}.yaml
+    shared/{companies,object-types,roles,statuses,sources,custom-colors}.yaml
     objects/<slug>/{xeelo-spec.yaml,spec/...}
   changes/<loop-slug>/
     tasks.md                      # checklist
@@ -184,9 +226,9 @@ projects/ovnet/
 python scripts/download-db-transfer.py \
   --connection projects/ovnet/.xeelo-connection.json
 
-# 1) Extract env (all objects from the site; also writes raw XML next to the ZIP)
+# 1) Extract env (all objects from the site)
 python scripts/extract-db-transfer-to-env.py \
-  projects/ovnet/snapshots/<stamp>/<name>.zip \
+  projects/ovnet/snapshots/<stamp>/<name>.xml \
   -o projects/ovnet/env
 
 # 2) Start a change loop
@@ -199,13 +241,19 @@ python scripts/init-change-loop.py \
 python scripts/generate-change-loop.py \
   projects/ovnet/changes/20260811-loop-01-short-name
 
-# 4) Upload + process OT in Admin (wait for parse WS, then poll process)
+# 4) Dry-run OT (isTestOnly) — run automatically after generate
 python scripts/push-object-transfer.py \
+  --connection projects/ovnet/.xeelo-connection.json \
+  --loop projects/ovnet/changes/20260811-loop-01-short-name \
+  --only-test
+
+# 5) Publish: real process + precompile (only if the user says yes)
+python scripts/publish-object-transfer.py \
   --connection projects/ovnet/.xeelo-connection.json \
   --loop projects/ovnet/changes/20260811-loop-01-short-name
 
-# 5) Precompile site settings
-python scripts/publish-precompile.py \
+# 6) Precompile only (no Object Transfer)
+python scripts/precompile-settings.py \
   --connection projects/ovnet/.xeelo-connection.json
 ```
 
@@ -228,7 +276,7 @@ Typical `env/` layout:
 - `extract-summary.yaml` — `catalogObjects: 0`, `extractedObjects: []`
 - **no** `objects/<slug>/` tree until custom objects exist in Admin
 
-Reference sample: [`projects/lz/`](projects/lz/) (test site `siteId` 8).
+Reference sample: [`projects/lz/`](projects/lz/) (test site).
 
 **Before/after greenfield deploy** (same site):
 
@@ -245,9 +293,9 @@ Next step: greenfield Object Transfer or change loop once specs exist under `env
 
 ## Spec v2 layout
 
-Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). Per-object files typically:
+Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Tree icon = Font Awesome **6.5.1** class string (`object.icon` / `objectType.icon` / `company.icon`); color = existing `CustomColorCode` (`object.color`, `objectType.color` — not HEX, not `CompanyTreeColor` / `ObjectTypeTreeColorFont`). Search icons with `python scripts/search-fa-icons.py --query bank`. Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). Per-object files typically:
 
-- `spec/object.yaml` — object, company, layout, onGrid
+- `spec/object.yaml` — object, objectType, company, layout, onGrid
 - `spec/references.yaml` — numberedníky (`references:` map)
 - `spec/lookups.yaml` — dotazovací mapy (`lookups:` map)
 - `spec/autonumbers.yaml` — sequences (`autonumbers:` map; bind on template line)
@@ -264,9 +312,11 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 Two layers in spec:
 
 - `onGrid.fields` — ObjectLine display flags (by field `code`)
-- `onGrid.layouts` — ObjectLineOnGrid placement (size/type/module, row/column)
+- `onGrid.layouts` — ObjectLineOnGrid placement (`size` × `type` × `module`). `size`: **Small** = mobile, **Medium** = tablet, **Large** = desktop. `type`: **Grid** or **Table**. The same field can sit in more than one layout (each row has its own ID). **Table** always paints **one visual row** — `placements[].row` letters (`T`, `A`–`E`) do not wrap; extra columns scroll horizontally. **Grid** stacks those placement rows.
 
 `onGrid.fields.<code>.isTag` (`ObjectLineOnGridIsTag`) marks a line as a **request-grid tag filter**: distinct field values become finer filters (AND). Set it only on **`text` / `textarea`** (Admin types 3, 4) — not combo-box. After deploy, **/publish**. Details: [object-line-types.md](docs/entities/object-line-types.md#on-grid-tag).
+
+Inbox cells parse `[badge:{CustomColorCode}_{text}]` → CSS `.xe-badge-{code}` ([object-line-types.md](docs/entities/object-line-types.md#on-grid-badge)). Do **not** store the token on an `isTag` line (chips show the raw string). Combo cannot be a tag; fill a helper **text** line from `linesFormatted` (display name). Empty combo → write `""`. Hide a Grid column label with `labelType: 1` and `valueWidth: 100`.
 
 ## Reference vs lookup
 
@@ -330,13 +380,13 @@ Cars reference: [`projects/cars/xeelo-spec.yaml`](projects/cars/xeelo-spec.yaml)
 
 ## Partial deployment
 
-Full apply via `/push` (upload + process all selected rows; generator defaults all rows Orig. ID). Manual Admin UI still works for partial batches:
+Full apply via `/publish` (upload + process all selected rows, then precompile; generator defaults all rows Orig. ID). Manual Admin UI still works for partial batches:
 
-1. Upload ZIP in Admin → Object Transfer (or `/push`)
+1. Upload ZIP in Admin → Object Transfer
 2. Uncheck rows not ready for this batch
 3. Set Import as New vs Orig. ID per row if needed
 4. Process selected rows only
-5. `/publish` then `/download-db`
+5. `/precompile` (or `/publish` if applying a generated OT) then `/download-db`
 
 ## Account / OV-NET samples
 
@@ -359,14 +409,16 @@ Full apply via `/push` (upload + process all selected rows; generator defaults a
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
-- [ ] Update actions: `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
-- [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object
+- [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
+- [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
+- [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))
 - [ ] Workflow step field access: `workflow.steps[].access` when a line must be editable after create ([add-workflow.md](recipes/add-workflow.md))
 - [ ] Template create access: `templates[].access` only to hide or lock fields on create (refresh default is visible+editable) — not `hidden` / `alwaysDisabled`
 - [ ] Multiple templates / extended validation / client calc: `spec/templates.yaml` if used ([xeelo-grammar.md](docs/entities/xeelo-grammar.md))
+- [ ] Tree icon = FA **6.5.1** class via `search-fa-icons.py` (local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)); color = existing CustomColorCode on `object.color` / `objectType.color` (not HEX; do not spec obsolete `CompanyTreeColor` / `ObjectTypeTreeColorFont`)
 - [ ] `ids.explicit` populated for Orig. ID import
 - [ ] `output/*-object-transfer.zip` validated
-- [ ] Ask the user whether to `/push` and `/publish` — do not run them unless they say yes
+- [ ] After generate, dry-run `--only-test`; on success `/publish` per conventions (`ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
 
 ## Key data files
 
@@ -376,6 +428,8 @@ Full apply via `/push` (upload + process all selected rows; generator defaults a
 | [`data/field-type-mapping.json`](data/field-type-mapping.json) | Spec type → ObjectLineTypeID (20 slugs) |
 | [`data/enums/ObjectDefaultLineCalculationType.json`](data/enums/ObjectDefaultLineCalculationType.json) | Client / adhoc / server calc IDs |
 | [`data/enums/UserLanguage.json`](data/enums/UserLanguage.json) | Metadata translation language codes |
+| [`data/enums/CustomColor.json`](data/enums/CustomColor.json) | Seed tree/icon and on-grid badge colors (`CustomColorCode` + HEX) |
+| [`data/fontawesome-icons.json`](data/fontawesome-icons.json) | Font Awesome 6.5.1 catalog (`search-fa-icons.py`) |
 | [`data/enums/ObjectLineUnique.json`](data/enums/ObjectLineUnique.json) | Unique level 1–4 |
 | [`data/enums/ObjectLineAutoNumberResetType.json`](data/enums/ObjectLineAutoNumberResetType.json) | Autonumber reset (`1` Yearly) |
 | [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | onGrid columns |

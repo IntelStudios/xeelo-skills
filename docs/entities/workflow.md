@@ -27,7 +27,7 @@ One step = role + request status (+ optional org chart restriction).
 
 | Column | Semantics |
 |--------|-----------|
-| `WorkflowStepName` | Step label |
+| `WorkflowStepName` | Step label. **Not unique** — Admin often leaves the default **Added by system**. Unique index is `(WorkflowID, RoleID, RequestStatusID)`. Spec: optional `workflow.steps[].key` when names collide (`added_by_system_3698`); omit `key` when `name` is unique. |
 | `RoleID` | Who acts in this step |
 | `RequestStatusID` | Status while in this step |
 | `UserOrgChartGroupID` | Optional org chart filter |
@@ -76,9 +76,11 @@ Update actions appear on **completed** requests and create a **new request versi
 
 See [update-actions.md](update-actions.md).
 
+When creating a **new object** or **update action**, always ask whether to create a new workflow or reuse an existing one (list from site `env/`). See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow).
+
 ## Recipe
 
-[`recipes/add-workflow.md`](../recipes/add-workflow.md) · [`recipes/create-object.md`](../recipes/create-object.md)
+[`recipes/add-workflow.md`](../recipes/add-workflow.md) · [`recipes/create-object.md`](../recipes/create-object.md) · [`recipes/add-update-action.md`](../recipes/add-update-action.md)
 
 ## DB transfer
 

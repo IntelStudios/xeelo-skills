@@ -7,12 +7,12 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
 1. Read **[AGENT.md](AGENT.md)** — playbook
 2. If `projects/` is empty or missing, set up the nested private repo — **[docs/projects.md](docs/projects.md)**
 3. Per project (`projects/<name>/` = one Xeelo):
-   - Copy `.xeelo-connection.example.json` → `.xeelo-connection.json` and fill credentials
+   - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL admin `token`
    - `python scripts/download-db-transfer.py --connection projects/<name>/.xeelo-connection.json`
-   - `python scripts/extract-db-transfer-to-env.py <snapshot.zip> -o projects/<name>/env`
+   - `python scripts/extract-db-transfer-to-env.py <snapshot.xml> -o projects/<name>/env`
    - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
    - Edit `changes/<slug>/objects/...` then `python scripts/generate-change-loop.py projects/<name>/changes/<slug>`
-4. Upload generated ZIP in Xeelo Admin → **Object Transfer** → select rows → process
+4. After generate the loop dry-runs the OT (`--only-test`). **`/publish`** applies it and precompiles (`ask` unless the site’s `conventions.md` says `auto`). Same for **`/download-db`** after a successful publish.
 
 Greenfield OT sample (no DB download):
 
@@ -27,7 +27,7 @@ make validate-account
 |---|-------------|-----------------|
 | **XeeloKB reads** | Download + parse → `env/` | OT → spec extract |
 | **XeeloKB generates** | No | **Yes** — change-loop ZIPs |
-| **Deploy** | Full site replace (Admin) | **Partial** — batch by row selection |
+| **Deploy** | Full site replace | **Partial** — `/publish` applies generated OT |
 
 ## Regenerate data from source repos
 
@@ -51,10 +51,11 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 | [docs/transfer/spec-format.md](docs/transfer/spec-format.md) | Spec v2 language |
 | [recipes/](recipes/) | Generation patterns |
 | `projects/` | One folder per Xeelo site (not KB; gitignored — [docs/projects.md](docs/projects.md)) |
-| [data/](data/) | Schemas, enums, hints, object-transfer-map |
-| [scripts/download-db-transfer.py](scripts/download-db-transfer.py) | Admin async download |
-| [scripts/push-object-transfer.py](scripts/push-object-transfer.py) | Admin OT upload + process |
-| [scripts/publish-precompile.py](scripts/publish-precompile.py) | Admin PreCompileSettings |
+| [data/](data/) | Schemas, enums, hints, object-transfer-map, Font Awesome catalog |
+| [scripts/download-db-transfer.py](scripts/download-db-transfer.py) | GraphQL DB-transfer download |
+| [scripts/push-object-transfer.py](scripts/push-object-transfer.py) | GraphQL OT upload + process (dry-run `--only-test`) |
+| [scripts/publish-object-transfer.py](scripts/publish-object-transfer.py) | Real OT process + precompile |
+| [scripts/precompile-settings.py](scripts/precompile-settings.py) | GraphQL precompile only |
 | [scripts/extract-db-transfer-to-env.py](scripts/extract-db-transfer-to-env.py) | DB → env |
 | [scripts/generate-change-loop.py](scripts/generate-change-loop.py) | Loop → OT ZIPs |
 

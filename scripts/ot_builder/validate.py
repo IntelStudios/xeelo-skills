@@ -34,11 +34,18 @@ def extract_block_name(block: str) -> str:
     return prefix[:gt]
 
 
-def split_xmldata_blocks(text: str) -> list[str]:
-    blocks = re.findall(r"<XMLData>.*?</XMLData>", text, re.DOTALL)
-    if not blocks:
+def iter_xmldata_blocks(text: str):
+    """Yield each ``<XMLData>…</XMLData>`` block without materializing them all."""
+    found = False
+    for match in re.finditer(r"<XMLData>.*?</XMLData>", text, re.DOTALL):
+        found = True
+        yield match.group(0)
+    if not found:
         raise ValidationError("No <XMLData> blocks found")
-    return blocks
+
+
+def split_xmldata_blocks(text: str) -> list[str]:
+    return list(iter_xmldata_blocks(text))
 
 
 def validate_transfer_info(block: str) -> None:

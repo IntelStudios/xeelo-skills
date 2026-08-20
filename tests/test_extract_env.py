@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 try:
     import yaml
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from ot_builder.db_extract import extract_env  # noqa: E402
+from ot_builder.parse import load_transfer  # noqa: E402
 
 LZ_TRANSFER = ROOT / "projects/lz/snapshots/20260813_132321/lz_20260813_132321.xml"
 LZ_EMPTY_TRANSFER = ROOT / "projects/lz/snapshots/20260813_111646/lz_20260813_111646.xml"
@@ -95,6 +97,37 @@ class ExtractEnvTests(unittest.TestCase):
         line_ids = [int(v) for v in (by_table.get("ObjectLine") or {}).values()]
         if line_ids:
             self.assertGreaterEqual(base["ObjectLine"], max(line_ids))
+
+
+def _minimal_db_xml() -> bytes:
+    return "".join(
+        [
+            "<XMLData><TransferInfo><TransferType>DB</TransferType>"
+            "<Version>1.3.0</Version></TransferInfo></XMLData>",
+            "<XMLData><Company><CompanyID>1</CompanyID><CompanyName>KB</CompanyName>"
+            "<IsActive>1</IsActive></Company></XMLData>",
+            "<XMLData><ObjectType><ObjectTypeID>1</ObjectTypeID>"
+            "<ObjectTypeName>General</ObjectTypeName></ObjectType></XMLData>",
+            "<XMLData><Object><ObjectID>10</ObjectID><ObjectName>Cars</ObjectName>"
+            "<ObjectCode>CARS</ObjectCode><ObjectTypeID>1</ObjectTypeID>"
+            "<CompanyID>1</CompanyID><IsActive>1</IsActive></Object></XMLData>",
+        ]
+    ).encode("utf-16")
+
+
+class ExtractEnvParseOnceTests(unittest.TestCase):
+    def test_load_transfer_called_once(self) -> None:
+        if yaml is None:
+            self.skipTest("PyYAML not installed")
+        with tempfile.TemporaryDirectory() as tmp:
+            transfer = Path(tmp) / "site.xml"
+            transfer.write_bytes(_minimal_db_xml())
+            env_dir = Path(tmp) / "env"
+            with patch("ot_builder.db_parse.load_transfer", wraps=load_transfer) as mocked:
+                summary = extract_env(transfer, env_dir)
+            self.assertEqual(mocked.call_count, 1)
+            self.assertEqual(summary["catalogObjects"], 1)
+            self.assertTrue((env_dir / "objects/cars/xeelo-spec.yaml").is_file())
 
 
 if __name__ == "__main__":

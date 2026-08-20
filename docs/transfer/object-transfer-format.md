@@ -66,6 +66,8 @@ Schema pairs (ObjectMap): full map from [`data/object-transfer-map.json`](../../
 
 ## Partial deployment
 
+KB `/publish` applies the generated package (all rows, Orig. ID) then precompiles. Manual Admin UI still works for selecting rows:
+
 1. Upload ZIP in Admin → **Object Transfer**
 2. Review hierarchy tree — uncheck rows not ready (`IsSelected=0`)
 3. Per row: **Import as New** (`IsCreateNewID=1`) or **Import with Orig. ID** (`=0`, default)
@@ -74,36 +76,39 @@ Schema pairs (ObjectMap): full map from [`data/object-transfer-map.json`](../../
 
 Generator defaults match upload SP: all rows included, Orig. ID mode.
 
-## Push and publish from XeeloKB
+## Publish from XeeloKB
+
+After generate, the loop **automatically** dry-runs the transfer (`isTestOnly: true`). `/publish` is the real apply + precompile (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
 
 ```bash
+# Dry-run (automatic after generate)
 python scripts/push-object-transfer.py \
+  --connection projects/<project>/.xeelo-connection.json \
+  --loop projects/<project>/changes/<slug> \
+  --only-test
+
+# Real process + precompile (/publish)
+python scripts/publish-object-transfer.py \
   --connection projects/<project>/.xeelo-connection.json \
   --loop projects/<project>/changes/<slug>
 
-python scripts/publish-precompile.py \
+# Precompile only (/precompile)
+python scripts/precompile-settings.py \
   --connection projects/<project>/.xeelo-connection.json
 ```
 
-Push flow:
+Dry-run / publish transfer flow (GraphQL, synchronous, 10 min SQL timeout):
 
-1. Refresh token — `POST /token` (`grant_type=refresh_token`)
-2. Connect WebSocket — `ws(s)://{host}/api/ws?access_token=...`
-3. Snapshot current OT grid — `GET /api/SiteAdmin/XeeloObjectTransfer/GridModel`
-4. Upload ZIP — `POST /api/SiteAdmin/XeeloObjectTransfer/Upload` (multipart). HTTP 200 is **not** done.
-5. Wait for `Type=Task`, `Status=Success` (background `spAdminObjectSetupXMLUpload`: parse XML, hierarchy, first refactor). Failed → abort, do not process.
-6. Resolve `xmlId` as the newest GridModel row not seen in step 3
-7. Process — `PUT /api/SiteAdmin/XeeloObjectTransfer/Process?xmlId={id}&onlyTest=false` (broker job; HTTP returns immediately)
-8. Poll GridModel until status is `Completed` or `Failed` (Admin does not send a process-complete WS event)
+1. Load `.xeelo-connection.json` (`xeeloUrl`, admin `token`)
+2. `Mutate_admin_transfer_upload(fileName, xml)` — XML as GraphQL string (UTF-16 LE on the server)
+3. `Mutate_admin_transfer_process(id, isTestOnly)` — `true` for dry-run, `false` for `/publish`
 
-Publish flow:
+`/publish` then:
 
-1. Refresh token
-2. Connect WebSocket
-3. Start — `POST /api/SiteAdmin/PreCompileSettings` (HTTP 200 is **not** done)
-4. Wait for `Type=Compile`, `Status=Success` or `Failed`
+4. `Mutate_admin_precompile`
+5. Poll `{xeeloUrl}/graphql-api/health` until GraphQL is back (process may restart)
 
-Skills: [`.agents/skills/push/SKILL.md`](../../.agents/skills/push/SKILL.md), [`.agents/skills/publish/SKILL.md`](../../.agents/skills/publish/SKILL.md).
+Skills: [`.agents/skills/publish/SKILL.md`](../../.agents/skills/publish/SKILL.md), [`.agents/skills/precompile/SKILL.md`](../../.agents/skills/precompile/SKILL.md).
 
 ## Import modes
 
@@ -116,7 +121,7 @@ Skills: [`.agents/skills/push/SKILL.md`](../../.agents/skills/push/SKILL.md), [`
 
 `Role` and `RequestStatus` are defined in spec (`roles` / `statuses`) and **always emitted** in transfer together with `Company` and `ObjectType`.
 
-`LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After process, **/publish**.
+`LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After process, **/publish** (or `/precompile` if the OT is already applied).
 
 ## Generate
 
@@ -133,6 +138,6 @@ Golden example: [`projects/account-object/output/object-transfer.xml`](../../pro
 Two layers:
 
 1. **ObjectLine** — display flags (`ObjectLineOnGridIsAllowed`, `ObjectLineOnGridName`, `ObjectLineOnGridIsTag`, …)
-2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`, row/column position)
+2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). `Type` is `Grid` or `Table`; Table is one visual row (spec pseudo-rows do not wrap — horizontal scroll).
 
 Spec: `onGrid.fields` + `onGrid.layouts` in [`spec-format.md`](spec-format.md)

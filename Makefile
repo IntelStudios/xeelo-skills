@@ -14,6 +14,7 @@ extract:
 	$(PY) scripts/extract-labels.py
 	$(PY) scripts/extract-transfer-tables.py
 	$(PY) scripts/extract-object-transfer-map.py
+	$(PY) scripts/extract-fa-icons.py
 
 generate-account:
 	$(PY) scripts/generate-object-transfer.py projects/account-object/xeelo-spec.yaml \
@@ -56,8 +57,11 @@ download-ovnet:
 extract-ovnet:
 	@snap=$$(ls -1d projects/ovnet/snapshots/*/ 2>/dev/null | sort | tail -1); \
 	test -n "$$snap" || (echo "No snapshots under projects/ovnet/snapshots"; exit 1); \
-	zip=$$(ls -1 "$$snap"*.zip | head -1); \
-	$(PY) scripts/extract-db-transfer-to-env.py "$$zip" -o projects/ovnet/env
+	xml=$$(ls -1 "$$snap"*.xml 2>/dev/null | head -1); \
+	zip=$$(ls -1 "$$snap"*.zip 2>/dev/null | head -1); \
+	src=$${xml:-$$zip}; \
+	test -n "$$src" || (echo "No XML/ZIP in $$snap"; exit 1); \
+	$(PY) scripts/extract-db-transfer-to-env.py "$$src" -o projects/ovnet/env
 
 # Usage: make loop-init SLUG=20260811-loop-01-name OBJECTS="ov-net-customer ov-net-account"
 loop-init:

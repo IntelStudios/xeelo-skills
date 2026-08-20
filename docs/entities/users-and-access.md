@@ -49,7 +49,9 @@ Not in DB or Object Transfer. GraphQL and Node.js object actions run as **user I
 
 `Context.GraphQL.Token` is the bearer token for that service account, not the interactive user. `XeeloGraphQLClient` uses it on every `Select_` / `Mutate_`.
 
-Grant **WRITE** in Admin (`UserAccess`) on **each object** the script mutates — including a different object targeted by `createType: CREATE`. After `/push`, tell the user to check this before testing.
+Grant **WRITE** in Admin (`UserAccess`) on **each object** the script mutates — including a different object targeted by `createType: CREATE`. After `/publish`, tell the user to check this before testing.
+
+GraphQL access tokens have separate **read / write / delete** sets per object. `Delete_request` needs **delete**, not write. Query `access_rights` to see `canRead` / `canWrite` / `canDelete`. See [graphql.md](graphql.md#mutation-delete_request).
 
 See [nodejs-esm.md](nodejs-esm.md) and [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 

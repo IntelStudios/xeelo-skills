@@ -9,12 +9,18 @@ from typing import Any
 
 from ot_builder.ids import IdRegistry, build_registry
 from ot_builder.language_table import emit_language_table
+from ot_builder.ongrid import require_ongrid_id
 from ot_builder.object_actions import (
     condition_registry_key,
     iter_params,
     param_registry_key,
     resolve_param_value,
     step_link_registry_key,
+)
+from ot_builder.object_messages import (
+    HTML_DB_COLUMN,
+    condition_registry_key as object_message_condition_registry_key,
+    style_id as object_message_style_id,
 )
 from ot_builder.spec_loader import normalize_spec, spec_references
 from ot_builder.templates import (
@@ -26,16 +32,18 @@ from ot_builder.templates import (
     is_legacy_single_template,
     iter_layout_fields,
     iter_templates,
+    require_template_line_id,
     resolve_template_id,
-    template_line_key,
     template_access_registry_key,
 )
 from ot_builder.update_actions import (
     access_registry_key,
     condition_type_id,
     resolve_access_flags,
+    require_workflow_step_action_id,
     slugify,
     step_access_registry_key,
+    workflow_step_key,
 )
 
 DATA = Path(__file__).resolve().parent.parent.parent / "data"
@@ -72,6 +80,14 @@ def _set_optional_bool(row: dict[str, Any], column: str, value: Any) -> None:
 def _set_optional_str(row: dict[str, Any], column: str, value: Any) -> None:
     if value is not None:
         row[column] = str(value)
+
+
+def _set_optional_nonempty(row: dict[str, Any], column: str, value: Any) -> None:
+    if value is None:
+        return
+    text = str(value).strip()
+    if text:
+        row[column] = text
 
 
 def _apply_object_line_extras(
@@ -551,7 +567,8 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
 
     for step in wf.get("steps", []):
         step_name = step["name"]
-        step_id = registry.require("workflowSteps", step_name)
+        step_key = workflow_step_key(step)
+        step_id = registry.require("workflowSteps", step_key)
         role_id, status_id = _track_role_status(spec, registry, result, step["role"], step["status"])
         result.rows.setdefault("WorkflowStep", []).append(
             {
@@ -575,7 +592,7 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
 
         for action in step.get("actions", []):
             action_name = action["name"]
-            action_id = registry.require("workflowStepActions", action_name)
+            action_id = require_workflow_step_action_id(registry, action)
             action_role_id, action_status_id = _track_role_status(
                 spec, registry, result, action["role"], action["status"]
             )
@@ -612,7 +629,7 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
         for access in step.get("access") or []:
             field_code = str(access["field"])
             subline_id = access.get("sublineId")
-            reg_key = step_access_registry_key(step_name, field_code, subline_id)
+            reg_key = step_access_registry_key(step_key, field_code, subline_id)
             access_id = registry.require("workflowStepAccess", reg_key)
             editable_bit, visible_bit = resolve_access_flags(access)
             access_row: dict[str, Any] = {
@@ -802,6 +819,73 @@ def _tab_id_for_name(spec: dict, registry: IdRegistry, tab_name: str | None, *, 
             tab_key = f"{tab_name}/{section_name}"
             return registry.optional("tabs", tab_key)
     return None
+
+
+def _build_object_messages(spec: dict, registry: IdRegistry, oid: int, result: BuildResult) -> None:
+    messages = spec.get("objectMessages") or []
+    if not messages:
+        return
+
+    message_rows: list[dict] = []
+    condition_rows: list[dict] = []
+
+    for msg in messages:
+        msg_key = str(msg.get("key") or slugify(str(msg.get("name", "message"))))
+        message_id = registry.require("objectMessages", msg_key)
+        html = str(msg.get("html") or "").strip()
+        if not html:
+            raise ValueError(f"objectMessages.{msg_key}: html is required")
+        style = object_message_style_id(msg.get("styleId", msg.get("style")))
+        message_rows.append(
+            {
+                "ObjectMessageID": message_id,
+                "ObjectID": oid,
+                "ObjectMessageName": msg.get("name", msg_key),
+                HTML_DB_COLUMN: html,
+                "ObjectMessageStyleID": style,
+                "ObjectMessageOrder": msg.get("order", 10),
+                "IsActive": 1 if msg.get("isActive", True) else 0,
+            }
+        )
+        result.edges.append(
+            {
+                "TableName": "Object",
+                "TableRowID": oid,
+                "ChildTableName": "ObjectMessage",
+                "ChildTableRowID": message_id,
+            }
+        )
+        for cond in msg.get("conditions") or []:
+            field_code = str(cond["field"])
+            type_slug = str(cond["type"])
+            cond_id = registry.require(
+                "objectMessageConditions",
+                object_message_condition_registry_key(msg_key, field_code, type_slug),
+            )
+            condition_rows.append(
+                {
+                    "ObjectMessageConditionID": cond_id,
+                    "ObjectMessageID": message_id,
+                    "ObjectLineID": registry.require("fields", field_code),
+                    "ObjectMessageConditionTypeID": condition_type_id(type_slug),
+                    "ObjectMessageConditionParam1": cond.get("param1"),
+                    "ObjectMessageConditionParam2": cond.get("param2"),
+                    "IsActive": 1,
+                }
+            )
+            result.edges.append(
+                {
+                    "TableName": "ObjectMessage",
+                    "TableRowID": message_id,
+                    "ChildTableName": "ObjectMessageCondition",
+                    "ChildTableRowID": cond_id,
+                }
+            )
+
+    if message_rows:
+        result.rows["ObjectMessage"] = message_rows
+    if condition_rows:
+        result.rows["ObjectMessageCondition"] = condition_rows
 
 
 def _build_update_actions(spec: dict, registry: IdRegistry, oid: int, result: BuildResult) -> None:
@@ -996,8 +1080,9 @@ def _build_templates(
                 continue
             meta = result.field_meta.get(code) or {}
             line_id = meta.get("lineId") or registry.require("fields", code)
-            line_key = template_line_key(template_key, code, legacy=legacy)
-            template_line_id = registry.require("objectDefaultLines", line_key)
+            template_line_id = require_template_line_id(
+                registry, template_key, code, legacy=legacy
+            )
             template_line: dict[str, Any] = {
                 "ObjectDefaultID": template_id,
                 "ObjectDefaultLineID": template_line_id,
@@ -1227,24 +1312,27 @@ def build_rows(spec: dict) -> BuildResult:
     ot_id = registry.require_scalar("objectTypeId")
     oid = registry.require_scalar("objectId")
 
-    company_name = (spec.get("company") or {}).get("name") or f"{obj['name']} Company"
-    result.rows["Company"] = [
-        {
-            "CompanyID": company_id,
-            "CompanyName": company_name,
-            "CompanyOrder": 0,
-            "IsActive": 1,
-        }
-    ]
+    company = spec.get("company") or {}
+    company_name = company.get("name") or f"{obj['name']} Company"
+    company_row: dict[str, Any] = {
+        "CompanyID": company_id,
+        "CompanyName": company_name,
+        "CompanyOrder": 0,
+        "IsActive": 1,
+    }
+    _set_optional_nonempty(company_row, "CompanyTreeIcon", company.get("icon"))
+    result.rows["Company"] = [company_row]
 
-    result.rows["ObjectType"] = [
-        {
-            "ObjectTypeID": ot_id,
-            "ObjectTypeName": obj.get("objectType", "General"),
-            "ObjectTypeOrder": 0,
-            "IsActive": 1,
-        }
-    ]
+    object_type = spec.get("objectType") or {}
+    object_type_row: dict[str, Any] = {
+        "ObjectTypeID": ot_id,
+        "ObjectTypeName": obj.get("objectType", "General"),
+        "ObjectTypeOrder": 0,
+        "IsActive": 1,
+    }
+    _set_optional_nonempty(object_type_row, "ObjectTypeTreeIcon", object_type.get("icon"))
+    _set_optional_nonempty(object_type_row, "ObjectTypeTreeColorBack", object_type.get("color"))
+    result.rows["ObjectType"] = [object_type_row]
 
     object_row: dict[str, Any] = {
         "ObjectID": oid,
@@ -1254,6 +1342,8 @@ def build_rows(spec: dict) -> BuildResult:
         "ObjectCode": obj.get("code"),
         "IsActive": 1,
     }
+    _set_optional_nonempty(object_row, "ObjectTreeIcon", obj.get("icon"))
+    _set_optional_nonempty(object_row, "ObjectTreeColor", obj.get("color"))
     result.rows["Object"] = [object_row]
     result.edges.extend(
         [
@@ -1436,6 +1526,7 @@ def build_rows(spec: dict) -> BuildResult:
     _build_templates(spec, registry, oid, wf_id, result)
 
     ongrid_rows = []
+    used_legacy_ongrid: set[str] = set()
     for layout in (spec.get("onGrid") or {}).get("layouts", []):
         size = layout.get("size", "Large")
         grid_type = layout.get("type", "Grid")
@@ -1447,7 +1538,14 @@ def build_rows(spec: dict) -> BuildResult:
                 meta = result.field_meta.get(code)
                 if not meta:
                     continue
-                og_id = registry.require("objectLineOnGrid", str(code))
+                og_id = require_ongrid_id(
+                    registry,
+                    size=size,
+                    grid_type=grid_type,
+                    module=module,
+                    field_code=code,
+                    used_legacy=used_legacy_ongrid,
+                )
                 ongrid_rows.append(
                     {
                         "ObjectLineOnGridID": og_id,
@@ -1475,6 +1573,7 @@ def build_rows(spec: dict) -> BuildResult:
     if ongrid_rows:
         result.rows["ObjectLineOnGrid"] = ongrid_rows
 
+    _build_object_messages(spec, registry, oid, result)
     _build_update_actions(spec, registry, oid, result)
     _build_object_actions(spec, registry, oid, result)
     emit_language_table(spec, registry, result)

@@ -4,7 +4,7 @@ How Xeelo builds the per-site GraphQL schema from object metadata. Use this when
 
 Runtime wiring from Node.js: [nodejs-esm.md](nodejs-esm.md). Patterns: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 
-The schema is generated from the object model (`spGraphQLObjectModel`). After object/layout changes, **`/publish`** (PreCompileSettings) so GraphQL picks up new codes and fields.
+The schema is generated from the object model (`spGraphQLObjectModel`). After object/layout changes, **`/precompile`** so GraphQL picks up new codes and fields. After an Object Transfer, use **`/publish`** (real transfer + precompile).
 
 ## Sanitize names
 
@@ -35,7 +35,7 @@ Example: `object_9100_account` → `Select_object_9100_account`, `Mutate_object_
 
 **SubGrid** uses the same prefixes from `subgrid.code`.
 
-Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`.
+Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` is documented next.
 
 ## Query `Select_{code}`
 
@@ -116,7 +116,7 @@ Select_OTHERCODE(
 Mutate_OBJECTCODE(input: [MutateOBJECTCODEInput!]!): [MutationResponse]!
 ```
 
-Each array element is processed separately (`processSingleMutate`). There is **no** application transaction across the batch — a later item can fail after earlier items committed.
+Each array element is processed separately (`processSingleMutate`). There is **no** application transaction across the batch — a later item can fail after earlier items committed. `CREATE` always refreshes the **new** request, so a large `input` array is still sequential wall-clock on that one HTTP call (including nested object actions). For bulk import, keep each array modest and run several `client.request` calls concurrently — [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#6-batch--parallel-create).
 
 `MutationResponse`: `requestId`, `requestSubId`, `userId`, `success`, `messages { procedure, msgType, msgText }`. `success` is false when any message has `MsgType = DANGER`.
 
@@ -140,9 +140,69 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 |-------|----------|---------------------------|
 | Simple update (no `createType`) | `requestId` + `lines` and/or headers | Only if `withRefresh: true` |
 | `CREATE` | `template`; `requestId` optional | **Always** |
-| `UPDATE` | `updateAction` + `requestId` | **Always** |
-| `UPDATE_EMPTY` | `updateAction` + `requestId` | **Always** |
+| `UPDATE` | `updateAction` + `requestId` | **Always** (on the **new** version) |
+| `UPDATE_EMPTY` | `updateAction` + `requestId` | **Always** (on the **new** version; header only — no copied lines) |
+| Simple update + `withRefresh: true` | `requestId` (lines optional) | **Yes** on **that** request — does **not** start an update action. Not enough when the request is **Completed** and Last actions need a new version |
+
+`createType: UPDATE` is GraphQL for the UI update action: `spRequestInsert` `@RequestTypeID = 2` with `@UpdateRequestID` + `@ObjectUpdateActionID`. It copies line data onto a **new** request (same `RequestCode`) and then refreshes that new row, so Last object actions run there. Omit `lines` unless you must override copied values. Use `UPDATE_EMPTY` (`RequestTypeID` 3) only when Last does not need the copied lines.
+
+`withRefresh: true` without `createType` calls `spRequestRefresh` on the **existing** `requestId`. Completed requests typically do not re-enter the same Last path as an update action.
 
 Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks for lines whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique).
 
 From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). `CREATE` / `UPDATE` on a **different** object or request may refresh. See [nodejs-esm.md](nodejs-esm.md#mutating-the-current-request--no-refresh).
+
+## Mutation `Delete_request`
+
+Deletes whole requests (not line values). Separate from `Mutate_`. Needs GraphQL **DELETE** on that object (`objects.delete`); **WRITE** is not enough. Check with `access_rights { id code canRead canWrite canDelete }`.
+
+```graphql
+Delete_request(objectId: Int!, requestIds: [Int!]!, userLogin: String, userId: Int): [MutationResponse!]
+```
+
+| Argument | Role |
+|----------|------|
+| `objectId` | Numeric object id (`env/catalog.yaml` `objects[].id`, e.g. Transakce `9003`) — not the GraphQL code |
+| `requestIds` | Requests to delete; at least one. Each id is `spRequestDelete` in its **own** DB transaction |
+| `userLogin` / `userId` | Resolve `@UserID`. If both omitted, **`0`** |
+
+Returns one `MutationResponse` per id (`requestId`, `success`, `messages`). A failed id does not stop the rest of the array.
+
+Public HTTP is `POST {SiteServerAddress}/graphql` with `Authorization: Bearer <token>`. Select ids with `Select_{code}` (`limit` default 1000, max 10000, paginate with `offset`), then delete in modest `requestIds` batches.
+
+## Admin transfer and precompile
+
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. XeeloKB connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. XML between GraphQL string and SQL `varbinary` is **UTF-16 LE**.
+
+| Operation | Skill | Role |
+|-----------|-------|------|
+| `Select_admin_transfer_download { xml }` | `/download-db` | Whole-site DB-transfer XML |
+| `Mutate_admin_transfer_upload(fileName, xml)` | dry-run after generate; `/publish` | Insert Object Transfer; returns `objectSetupXmlId` |
+| `Mutate_admin_transfer_process(id, isTestOnly)` | dry-run (`true`); `/publish` (`false`) | Apply or dry-run the uploaded transfer |
+| `Mutate_admin_precompile` | `/publish` (after process) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
+
+After precompile, wait until `{xeeloUrl}/graphql-api/health` (or `query { health }`) responds again.
+
+```graphql
+query { Select_admin_transfer_download { xml } }
+
+mutation ($fileName: String!, $xml: String!) {
+  Mutate_admin_transfer_upload(fileName: $fileName, xml: $xml) { objectSetupXmlId }
+}
+
+mutation ($id: Int!, $isTestOnly: Boolean!) {
+  Mutate_admin_transfer_process(id: $id, isTestOnly: $isTestOnly) {
+    success
+    messages { procedure msgType msgText }
+  }
+}
+
+mutation {
+  Mutate_admin_precompile {
+    success
+    messages { procedure msgType msgText }
+  }
+}
+```
+
+`isTestOnly: true` verifies the package without applying it (loop dry-run). `/publish` uploads again with `isTestOnly: false`, then precompiles. Use `/precompile` when the transfer is already on the site.

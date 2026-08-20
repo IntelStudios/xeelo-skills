@@ -1,0 +1,12 @@
+{
+  "table": "ObjectMessageCondition",
+  "columns": [
+    {"name": "ObjectMessageConditionID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectMessageID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageConditionTypeID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectMessageConditionParam1", "type": "VARCHAR(50)", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectMessageConditionParam2", "type": "VARCHAR(50)", "nullable": true, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ]
+}

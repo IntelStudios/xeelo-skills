@@ -48,9 +48,7 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
     workflow_ids: set[int] = set()
     sub_ids: set[int] = set()
 
-    for row in index.rows.get("ObjectLine", []):
-        if int(row.get("ObjectID", 0)) != object_id:
-            continue
+    for row in index.rows_for("ObjectLine", "ObjectID", object_id):
         lid = int(row["ObjectLineID"])
         line_ids.add(lid)
         add("ObjectLine", lid)
@@ -72,9 +70,7 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
     for tid in tab_ids:
         add("ObjectLineTab", tid)
 
-    for row in index.rows.get("ObjectDefault", []):
-        if int(row.get("ObjectID", 0)) != object_id:
-            continue
+    for row in index.rows_for("ObjectDefault", "ObjectID", object_id):
         did = int(row["ObjectDefaultID"])
         default_ids.add(did)
         add("ObjectDefault", did)
@@ -82,57 +78,51 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
             workflow_ids.add(int(row["WorkflowID"]))
             add("Workflow", row["WorkflowID"])
 
-    for row in index.rows.get("ObjectDefaultAccess", []):
-        if int(row.get("ObjectDefaultID", 0)) not in default_ids:
-            continue
+    for row in index.rows_for_any("ObjectDefaultAccess", "ObjectDefaultID", default_ids):
         add("ObjectDefaultAccess", row.get("ObjectDefaultAccessID"))
         if row.get("ObjectLineID") is not None:
             add("ObjectLine", row["ObjectLineID"])
 
-    default_line_ids: set[int] = set()
-    for row in index.rows.get("ObjectDefaultLine", []):
-        if int(row.get("ObjectDefaultID", 0)) not in default_ids:
-            continue
-        dlid = int(row["ObjectDefaultLineID"])
-        default_line_ids.add(dlid)
-        add("ObjectDefaultLine", dlid)
+    for row in index.rows_for_any("ObjectDefaultLine", "ObjectDefaultID", default_ids):
+        add("ObjectDefaultLine", row["ObjectDefaultLineID"])
         if row.get("ObjectDefaultLineLookupID") is not None:
             add("ObjectLineLookup", row["ObjectDefaultLineLookupID"])
 
-    for row in index.rows.get("ObjectLineOnGrid", []):
-        if int(row.get("ObjectID", 0)) == object_id or int(row.get("ObjectLineID", 0)) in line_ids:
-            add("ObjectLineOnGrid", row.get("ObjectLineOnGridID"))
+    seen_ongrid: set[int] = set()
+    for row in index.rows_for("ObjectLineOnGrid", "ObjectID", object_id):
+        og_id = row.get("ObjectLineOnGridID")
+        if og_id is not None:
+            seen_ongrid.add(int(og_id))
+        add("ObjectLineOnGrid", og_id)
+    for lid in line_ids:
+        for row in index.rows_for("ObjectLineOnGrid", "ObjectLineID", lid):
+            og_id = row.get("ObjectLineOnGridID")
+            if og_id is None or int(og_id) in seen_ongrid:
+                continue
+            seen_ongrid.add(int(og_id))
+            add("ObjectLineOnGrid", og_id)
 
     for wf_id in workflow_ids:
         step_ids: set[int] = set()
-        for row in index.rows.get("WorkflowStep", []):
-            if int(row.get("WorkflowID", 0)) != wf_id:
-                continue
+        for row in index.rows_for("WorkflowStep", "WorkflowID", wf_id):
             sid = int(row["WorkflowStepID"])
             step_ids.add(sid)
             add("WorkflowStep", sid)
-        for row in index.rows.get("WorkflowStepAction", []):
-            if int(row.get("WorkflowStepID", 0)) in step_ids:
-                add("WorkflowStepAction", row.get("WorkflowStepActionID"))
-        for row in index.rows.get("WorkflowStepAccess", []):
-            if int(row.get("WorkflowStepID", 0)) in step_ids:
-                add("WorkflowStepAccess", row.get("WorkflowStepAccessID"))
+        for row in index.rows_for_any("WorkflowStepAction", "WorkflowStepID", step_ids):
+            add("WorkflowStepAction", row.get("WorkflowStepActionID"))
+        for row in index.rows_for_any("WorkflowStepAccess", "WorkflowStepID", step_ids):
+            add("WorkflowStepAccess", row.get("WorkflowStepAccessID"))
 
     for sub_id in sub_ids:
         add("ObjectSub", sub_id)
-        for row in index.rows.get("ObjectSubLine", []):
-            if int(row.get("ObjectSubID", 0)) == sub_id:
-                add("ObjectSubLine", row.get("ObjectSubLineID"))
-        for row in index.rows.get("ObjectSubDefault", []):
-            if int(row.get("ObjectSubID", 0)) == sub_id:
-                add("ObjectSubDefault", row.get("ObjectSubDefaultID"))
-        for row in index.rows.get("ObjectSubLineTab", []):
-            # Tabs for subs are linked via sections on sub lines
-            pass
+        for row in index.rows_for("ObjectSubLine", "ObjectSubID", sub_id):
+            add("ObjectSubLine", row.get("ObjectSubLineID"))
+        for row in index.rows_for("ObjectSubDefault", "ObjectSubID", sub_id):
+            add("ObjectSubDefault", row.get("ObjectSubDefaultID"))
         sub_section_ids = {
             int(r["ObjectSubLineSectionID"])
-            for r in index.rows.get("ObjectSubLine", [])
-            if int(r.get("ObjectSubID", 0)) == sub_id and r.get("ObjectSubLineSectionID") is not None
+            for r in index.rows_for("ObjectSubLine", "ObjectSubID", sub_id)
+            if r.get("ObjectSubLineSectionID") is not None
         }
         sub_tab_ids: set[int] = set()
         for ssid in sub_section_ids:
@@ -145,9 +135,7 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
             add("ObjectSubLineTab", stid)
 
     update_action_ids: set[int] = set()
-    for row in index.rows.get("ObjectUpdateAction", []):
-        if int(row.get("ObjectID", 0)) != object_id:
-            continue
+    for row in index.rows_for("ObjectUpdateAction", "ObjectID", object_id):
         ua_id = int(row["ObjectUpdateActionID"])
         update_action_ids.add(ua_id)
         add("ObjectUpdateAction", ua_id)
@@ -156,43 +144,45 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
         if row.get("ObjectDefaultID") is not None:
             add("ObjectDefault", row["ObjectDefaultID"])
 
-    for row in index.rows.get("ObjectUpdateAccess", []):
-        if int(row.get("ObjectUpdateActionID", 0)) in update_action_ids:
-            add("ObjectUpdateAccess", row.get("ObjectUpdateAccessID"))
-            if row.get("ObjectLineID") is not None:
-                add("ObjectLine", row["ObjectLineID"])
+    for row in index.rows_for_any("ObjectUpdateAccess", "ObjectUpdateActionID", update_action_ids):
+        add("ObjectUpdateAccess", row.get("ObjectUpdateAccessID"))
+        if row.get("ObjectLineID") is not None:
+            add("ObjectLine", row["ObjectLineID"])
 
-    for row in index.rows.get("ObjectUpdateActionCondition", []):
-        if int(row.get("ObjectUpdateActionID", 0)) in update_action_ids:
-            add("ObjectUpdateActionCondition", row.get("ObjectUpdateActionConditionID"))
+    for row in index.rows_for_any(
+        "ObjectUpdateActionCondition", "ObjectUpdateActionID", update_action_ids
+    ):
+        add("ObjectUpdateActionCondition", row.get("ObjectUpdateActionConditionID"))
 
-    for row in index.rows.get("ObjectUpdateMessage", []):
-        if int(row.get("ObjectUpdateActionID", 0)) in update_action_ids:
-            add("ObjectUpdateMessage", row.get("ObjectUpdateMessageID"))
-            if row.get("ObjectMessageID") is not None:
-                add("ObjectMessage", row["ObjectMessageID"])
+    for row in index.rows_for_any("ObjectUpdateMessage", "ObjectUpdateActionID", update_action_ids):
+        add("ObjectUpdateMessage", row.get("ObjectUpdateMessageID"))
+        if row.get("ObjectMessageID") is not None:
+            add("ObjectMessage", row["ObjectMessageID"])
+
+    message_ids: set[int] = set()
+    for row in index.rows_for("ObjectMessage", "ObjectID", object_id):
+        om_id = int(row["ObjectMessageID"])
+        message_ids.add(om_id)
+        add("ObjectMessage", om_id)
+    for row in index.rows_for_any("ObjectMessageCondition", "ObjectMessageID", message_ids):
+        add("ObjectMessageCondition", row.get("ObjectMessageConditionID"))
 
     action_ids: set[int] = set()
-    for row in index.rows.get("ObjectAction", []):
-        if int(row.get("ObjectID", 0)) != object_id:
-            continue
+    for row in index.rows_for("ObjectAction", "ObjectID", object_id):
         action_id = int(row["ObjectActionID"])
         action_ids.add(action_id)
         add("ObjectAction", action_id)
 
-    for row in index.rows.get("ObjectActionParam", []):
-        if int(row.get("ObjectActionID", 0)) in action_ids:
-            add("ObjectActionParam", row.get("ObjectActionParamID"))
+    for row in index.rows_for_any("ObjectActionParam", "ObjectActionID", action_ids):
+        add("ObjectActionParam", row.get("ObjectActionParamID"))
 
-    for row in index.rows.get("ObjectActionCondition", []):
-        if int(row.get("ObjectActionID", 0)) in action_ids:
-            add("ObjectActionCondition", row.get("ObjectActionConditionID"))
+    for row in index.rows_for_any("ObjectActionCondition", "ObjectActionID", action_ids):
+        add("ObjectActionCondition", row.get("ObjectActionConditionID"))
 
-    for row in index.rows.get("WorkflowStepObjectAction", []):
-        if int(row.get("ObjectActionID", 0)) in action_ids:
-            add("WorkflowStepObjectAction", row.get("WorkflowStepObjectActionID"))
-            if row.get("WorkflowStepID") is not None:
-                add("WorkflowStep", row["WorkflowStepID"])
+    for row in index.rows_for_any("WorkflowStepObjectAction", "ObjectActionID", action_ids):
+        add("WorkflowStepObjectAction", row.get("WorkflowStepObjectActionID"))
+        if row.get("WorkflowStepID") is not None:
+            add("WorkflowStep", row["WorkflowStepID"])
 
     obj = index.row_by_id("Object", object_id)
     if obj:
@@ -203,15 +193,12 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
         table: {int(row_id) for row_id in ids.values()}
         for table, ids in by_table.items()
     }
-    for row in index.rows.get("LanguageTable", []):
-        parent_table = str(row.get("TableName") or "")
-        parent_id = row.get("RowID")
-        try:
-            rid = int(parent_id)
-        except (TypeError, ValueError):
-            continue
-        if rid in owned.get(parent_table, set()) and row.get("LanguageTableID") is not None:
-            add("LanguageTable", row["LanguageTableID"])
+    lt_by_parent = index.group_by("LanguageTable", "TableName", "RowID")
+    for parent_table, ids in owned.items():
+        for rid in ids:
+            for row in lt_by_parent.get((parent_table, rid), []):
+                if row.get("LanguageTableID") is not None:
+                    add("LanguageTable", row["LanguageTableID"])
 
     return by_table
 

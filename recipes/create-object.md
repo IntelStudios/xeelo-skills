@@ -15,7 +15,7 @@ Transfer package always includes **Company**, **ObjectType**, **Role**, and **Re
 
 See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
 
-Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English.
+Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
 
 ### 2. Allocate IDs
 
@@ -49,16 +49,25 @@ One section edge per section (not per field). Translations: `Parent → Language
 ### 5. onGrid (optional)
 
 - `onGrid.fields.<code>` → ObjectLine display flags
-- `onGrid.layouts[]` → ObjectLineOnGrid placement rows
+- `onGrid.layouts[]` → ObjectLineOnGrid placement (`size` × Grid/Table × `module`). Table = one visual row, no wrap (scroll right).
 - Edge: `Object → ObjectLineOnGrid`
 
-### 6. Workflow + template
+### 6. Ask which workflow
 
-Same as before — Workflow, WorkflowStep, WorkflowStepAction, ObjectDefault, ObjectDefaultLine.
+**Always ask** before writing `spec/workflow.yaml` (do not silent-default `workflow.mode: minimal`). Skip only if the user already chose in the same request.
+
+1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless they described steps).
+2. **Existing workflow** — pick from site `env/` (`catalog.yaml` `workflowIds`, `spec/workflow.yaml` name, `ids.explicit.workflowId`). Each option: **object — workflow name — id**.
+
+**Use existing** = share the same `Workflow` Orig. ID on `ObjectDefault.WorkflowID` (copy that object’s `spec/workflow.yaml` + workflow `ids.explicit`), not a clone of steps. Playbook: [AGENT.md § Ask which workflow](../AGENT.md#ask-which-workflow).
+
+### 7. Workflow + template
+
+Workflow, WorkflowStep, WorkflowStepAction, ObjectDefault, ObjectDefaultLine — after the user chose.
 
 Edges: `Object → Workflow → WorkflowStep → WorkflowStepAction`, `Object → ObjectDefault → ObjectDefaultLine`.
 
-### 7. Generate
+### 8. Generate
 
 ```bash
 python scripts/generate-object-transfer.py my-spec.yaml \
@@ -66,13 +75,13 @@ python scripts/generate-object-transfer.py my-spec.yaml \
   --zip output/object-transfer.zip
 ```
 
-### 8. Deploy (partial)
+### 9. Deploy (partial)
 
 1. Upload ZIP in Admin → Object Transfer
 2. Review tree — uncheck rows for later batches
 3. Process selected rows
 
-### 9. Sync IDs after import
+### 10. Sync IDs after import
 
 If Xeelo assigned new IDs (`Import as New`), re-export the object and extract:
 
@@ -89,6 +98,7 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 
 ## Validate
 
+- User chose new vs existing workflow (not a silent minimal default)
 - Single XML file with ObjectSetup + ObjectMap + rows
 - `TransferType=OBJECT`, `Version=1.3.0`
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`

@@ -17,7 +17,7 @@ Scaffold `projects/<name>/` for one Xeelo site. Read [AGENT.md](../../../AGENT.m
 Determine from the user message or ask once:
 
 - **`<name>`** — project slug (e.g. `lz`, `ovnet`). Must be a valid directory name.
-- **`adminBaseUrl`** — optional. Infer `https://<name>.xeeloadmin.online/` only when the slug clearly matches the site hostname; otherwise leave empty for the user to fill.
+- **`xeeloUrl`** — optional. Infer `https://<name>.xeelo.online/` only when the slug clearly matches the site hostname; otherwise leave empty for the user to fill.
 
 ## Steps
 
@@ -51,24 +51,16 @@ Determine from the user message or ask once:
 
    Copy [`templates/project/conventions.md`](../../../templates/project/conventions.md) to `projects/<name>/conventions.md`.
 
-3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `siteId` or `credentials` from other projects.
+3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `token` from other projects.
 
    ```json
    {
-     "adminBaseUrl": "https://<name>.xeeloadmin.online/",
-     "siteId": null,
-     "credentials": {
-       "access_token": "",
-       "token_type": "bearer",
-       "expires": "",
-       "refresh_token": "",
-       "clientId": "XeeloApp",
-       "rememberMe": "True"
-     }
+     "xeeloUrl": "https://<name>.xeelo.online/",
+     "token": ""
    }
    ```
 
-   Use inferred URL when confident; otherwise set `"adminBaseUrl": ""`.
+   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`.
 
 4. **Do not** create `.xeelo-connection.example.json`.
 
@@ -78,8 +70,7 @@ Determine from the user message or ask once:
 
 | Field | Where to get it |
 |-------|-----------------|
-| `adminBaseUrl` | Xeelo Admin URL for the site (confirm inferred URL if used) |
-| `siteId` | `XA-SITE-ID` for the site in Admin |
-| `credentials` | OAuth token JSON from Admin login (browser devtools / session export) |
+| `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
+| `token` | GraphQL **admin** access token (`isAdmin` from site GraphQL access tokens). Fixed; no refresh. |
 
-Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not XeeloKB). Next step after filling credentials: `/download-db`.
+Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not XeeloKB). Next step after filling connection: `/download-db`.

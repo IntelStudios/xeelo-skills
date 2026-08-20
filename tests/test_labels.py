@@ -151,3 +151,64 @@ class LanguageTableRoundtripTests(unittest.TestCase):
         self.assertEqual(extracted["languageTable"]["lines"]["ks_title"]["cs"], "Název")
         self.assertIn("languageTables", extracted["ids"]["explicit"])
         self.assertTrue(extracted["ids"]["explicit"]["languageTables"])
+
+    def test_template_hint_translation_uses_default_line_id(self) -> None:
+        spec = _base_spec()
+        spec["templates"] = [
+            {
+                "key": "default",
+                "name": "Default",
+                "isDefault": True,
+                "fields": {"ks_title": {"hint": "Hint for Title"}},
+            }
+        ]
+        spec["languageTable"]["templateHints"] = {
+            "default": {"ks_title": {"cs": "Nápověda pro Title"}}
+        }
+        result = build_rows(spec)
+        title = next(r for r in result.rows["ObjectLine"] if r["ObjectLineCode"] == "ks_title")
+        tl = next(
+            r
+            for r in result.rows["ObjectDefaultLine"]
+            if r["ObjectLineID"] == title["ObjectLineID"]
+        )
+        hint_lt = next(
+            r
+            for r in result.rows["LanguageTable"]
+            if r["ColumnName"] == "ObjectDefaultLineHint"
+        )
+        self.assertEqual(hint_lt["TableName"], "ObjectDefaultLine")
+        self.assertEqual(hint_lt["LanguageTableData"], "Nápověda pro Title")
+        self.assertEqual(hint_lt["RowID"], str(tl["ObjectDefaultLineID"]))
+        self.assertIn(
+            {
+                "TableName": "ObjectDefaultLine",
+                "TableRowID": tl["ObjectDefaultLineID"],
+                "ChildTableName": "LanguageTable",
+                "ChildTableRowID": hint_lt["LanguageTableID"],
+            },
+            result.edges,
+        )
+
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+
+        self.assertEqual(
+            extracted["languageTable"]["templateHints"]["default"]["ks_title"]["cs"],
+            "Nápověda pro Title",
+        )
+        self.assertEqual(extracted["templates"][0]["fields"]["ks_title"]["hint"], "Hint for Title")
+
+    def test_unknown_template_hint_line_raises(self) -> None:
+        spec = _base_spec()
+        spec["languageTable"]["templateHints"] = {
+            "default": {"missing": {"cs": "Chybí"}}
+        }
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("missing", str(ctx.exception))

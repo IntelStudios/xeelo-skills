@@ -21,6 +21,8 @@ TABLE_ORDER = [
     "ObjectLineAutoNumber",
     "ObjectLine",
     "ObjectLineOnGrid",
+    "ObjectMessage",
+    "ObjectMessageCondition",
     "ObjectAction",
     "ObjectActionParam",
     "ObjectActionCondition",

@@ -25,6 +25,23 @@
           "type": "string",
           "minLength": 1,
           "description": "ObjectLine code used as the request title in GUI (Object.RequestTitleObjectLineID)"
+        },
+        "icon": { "$ref": "#/$defs/treeIcon" },
+        "color": {
+          "$ref": "#/$defs/customColorCode",
+          "description": "ObjectTreeColor — treeview icon color (CustomColorCode, not HEX)"
+        }
+      }
+    },
+    "objectType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "ObjectType tree visuals. Type name stays on object.objectType.",
+      "properties": {
+        "icon": { "$ref": "#/$defs/treeIcon" },
+        "color": {
+          "$ref": "#/$defs/customColorCode",
+          "description": "ObjectTypeTreeColorBack — live Icon Color. ObjectTypeTreeColorFont is obsolete."
         }
       }
     },
@@ -33,7 +50,8 @@
       "required": ["name"],
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string", "minLength": 1, "maxLength": 50 }
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "icon": { "$ref": "#/$defs/treeIcon" }
       }
     },
     "layout": {
@@ -101,9 +119,25 @@
     "updateActions": {
       "type": "array",
       "items": { "$ref": "#/$defs/updateAction" }
+    },
+    "objectMessages": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/objectMessage" }
     }
   },
   "$defs": {
+    "treeIcon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "Font Awesome 6.5.1 class string as stored by Admin, e.g. fa-building fa-solid fa-fw"
+    },
+    "customColorCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "CustomColor.CustomColorCode (not HEX). Seed codes: data/enums/CustomColor.json"
+    },
     "tab": {
       "type": "object",
       "required": ["name", "sections"],
@@ -450,6 +484,11 @@
       "required": ["name", "role", "status"],
       "additionalProperties": false,
       "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable spec key when WorkflowStepActionName is not unique. Omit when name is unique."
+        },
         "name": { "type": "string" },
         "role": { "type": "string", "minLength": 1 },
         "status": { "type": "string", "minLength": 1 },
@@ -462,6 +501,11 @@
       "required": ["name", "role", "status"],
       "additionalProperties": false,
       "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable spec key when WorkflowStepName is not unique (e.g. several Added by system). Omit when name is unique."
+        },
         "name": { "type": "string" },
         "role": { "type": "string", "minLength": 1 },
         "status": { "type": "string", "minLength": 1 },
@@ -505,6 +549,11 @@
         "defaultValue": {
           "type": ["string", "number"],
           "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
+        },
+        "hint": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectDefaultLineHint — runtime field hint (plain or HTML). All types except empty_space. Canonical English; translations in languageTable.templateHints"
         },
         "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
         "extended": {
@@ -621,6 +670,27 @@
         "visible": { "type": "boolean" }
       }
     },
+    "objectMessage": {
+      "type": "object",
+      "required": ["key", "name", "html"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "style": {
+          "type": "string",
+          "description": "ObjectMessageStyle slug: information | warning | error"
+        },
+        "styleId": { "type": "integer", "enum": [1, 2, 3] },
+        "order": { "type": "integer" },
+        "html": { "type": "string", "minLength": 1 },
+        "isActive": { "type": "boolean" },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        }
+      }
+    },
     "updateAction": {
       "type": "object",
       "additionalProperties": false,
@@ -692,6 +762,7 @@
         "objectUpdateActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectUpdateMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectMessageConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
@@ -745,6 +816,14 @@
       },
       "additionalProperties": { "type": "string", "minLength": 1 }
     },
+    "languageTableObjectMessage": {
+      "type": "object",
+      "description": "ObjectMessageName translations plus optional HTML (ObjectMessageFormat)",
+      "properties": {
+        "html": { "$ref": "#/$defs/langMap" }
+      },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
     "languageTable": {
       "type": "object",
       "additionalProperties": false,
@@ -789,6 +868,18 @@
         "updateActions": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "objectMessages": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/languageTableObjectMessage" }
+        },
+        "templateHints": {
+          "type": "object",
+          "description": "ObjectDefaultLineHint translations. Nested template key then field code. RowID is ObjectDefaultLineID.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/langMap" }
+          }
         }
       }
     }

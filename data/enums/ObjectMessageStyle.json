@@ -1,0 +1,5 @@
+[
+  {"id": 1, "name": "Information", "style": "SUCCESS", "order": 30, "isError": false},
+  {"id": 2, "name": "Warning", "style": "WARNING", "order": 20, "isError": false},
+  {"id": 3, "name": "Error", "style": "DANGER", "order": 10, "isError": true}
+]

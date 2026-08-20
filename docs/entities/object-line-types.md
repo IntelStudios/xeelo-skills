@@ -87,13 +87,36 @@ Admin checkbox **Tag** (`ObjectLineOnGridIsTag`) on Object Line, On-grid group. 
 
 Only **text** (3) and **textarea** (4). Combo-box, date, number, checkbox, … cannot be tagged. For a picklist-like filter, use a **text** line filled by lookup or client calc — not a combo.
 
-Tagged field **values** become finer filters on the **request grid** (Inbox / Items / Tasks). After PreCompileSettings, cache SQL concatenates tagged slots into one `TAG` column (comma-separated, comma-wrapped). The User UI lists **distinct current values** as tag chips. Several selected tags are **AND** (the row must contain every selected value).
+Tagged field **values** become finer filters on the **request grid** (Inbox / Items / Tasks). After precompile, cache SQL concatenates tagged slots into one `TAG` column (comma-separated, comma-wrapped). The User UI lists **distinct current values** as tag chips. Several selected tags are **AND** (the row must contain every selected value).
 
-Do not put commas in tag values — split is by comma. Prefer short discrete labels (code, category), not long free text. Changing Tag requires **/publish** so the cache SQL is rebuilt. Users can hide the tag panel (`UserFilterTabIsShowDataTag`, default on). Site setting `GridFilterShowSearchMinItems` also applies to tag chips.
+Do not put commas in tag values — split is by comma. Prefer short discrete labels (code, category), not long free text. Changing Tag requires **/publish** after OT (or `/precompile` if already deployed) so the cache SQL is rebuilt. Users can hide the tag panel (`UserFilterTabIsShowDataTag`, default on). Site setting `GridFilterShowSearchMinItems` also applies to tag chips.
 
 Not the same as **On-grid search** (`isSearch`): that is typed search on types 3, 4, 8, 12.
 
 Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec/generator do not emit subgrid tags.
+
+## On-grid badge
+
+Inbox cells for ordinary line types run the stored string through `xe-xeelo-badge`. Syntax:
+
+```text
+[badge:{CustomColorCode}_{text}]
+```
+
+The chip uses CSS class `.xe-badge-{code}`. `{CustomColorCode}` is a palette code from [`CustomColor.json`](../data/enums/CustomColor.json) (e.g. `blue`, `purple`, `blue-steel`); a hyphen in the code is allowed. Text is everything after the first `_` following the color until `]`.
+
+Empty value: write `""`, not `[badge:blue_]`. Several badges in one cell: space-separated tokens (`[badge:blue_A] [badge:purple_B]`). The parser is global.
+
+**Do not put `[badge:…]` on an `isTag` line** — tag chips show the raw token. Split:
+
+| Line | `isTag` | `allowed` | Value |
+|------|---------|-----------|--------|
+| Filter helpers | `true` | `false` (no inbox column; leftover placements stay hidden) | plain name |
+| Display | `false` | `true` + layout | badge token(s) |
+
+Hide the inbox column title with layout `labelType: 1` and `valueWidth: 100` ([spec-format.md](../transfer/spec-format.md#ongridlayouts)).
+
+Combo-box cannot be `isTag`. Typical pattern: combo for editing + helper **text** lines (`alwaysDisabled`) filled by an ObjectAction from `linesFormatted.{combo}` (display name, not bind ID). Attachments, numbers, and checkboxes do not process badges.
 
 ## ObjectDefaultLine capabilities
 
@@ -107,7 +130,7 @@ Template behaviour depends on the **line type**:
 | Default value | 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 (`ObjectDefaultLineValue`) |
 | Default filter | combo / radio / multi |
 | Always disabled | all **except** 6, 10, 13, 16, 17 — spec `templates.fields.<code>.alwaysDisabled` → `ObjectDefaultLineIsDisabled` |
-| Hint | all except empty (6) |
+| Hint | all except empty (6) — spec `templates.fields.<code>.hint` → `ObjectDefaultLineHint` (plain or HTML). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue` (`ObjectDefaultLineDescMemo`). Subgrid `ObjectSubDefaultLineHint` is not in spec yet. |
 | Input mask / length / autonumber | text (3) only — autonumber bind `templates.fields.<code>.autonumber` ([object-model.md](object-model.md#autonumber)); mutually exclusive with input mask |
 | Whisperer | text (3) only |
 | Calc confirm | text (3), number (12); delay also textarea (4) |

@@ -160,6 +160,27 @@ def template_line_key(template_key: str, field_code: str, *, legacy: bool) -> st
     return f"{template_key}/{field_code}"
 
 
+def require_template_line_id(
+    registry: IdRegistry,
+    template_key: str,
+    field_code: str,
+    *,
+    legacy: bool,
+) -> int:
+    """Reuse ObjectDefaultLine IDs from extract (field-only or ``{template}/{field}``)."""
+    composite = f"{template_key}/{field_code}"
+    field_only = str(field_code)
+    preferred = field_only if legacy else composite
+    fallback = composite if legacy else field_only
+    known = registry.get("objectDefaultLines", preferred)
+    if known is not None:
+        return known
+    known = registry.get("objectDefaultLines", fallback)
+    if known is not None:
+        return known
+    return registry.require("objectDefaultLines", preferred)
+
+
 def template_access_registry_key(
     template_key: str,
     field_code: str,
@@ -237,6 +258,13 @@ def apply_template_line_extras(
             template_line["ObjectDefaultLineDescMemo"] = value
         else:
             template_line["ObjectDefaultLineValue"] = value
+
+    hint = cfg.get("hint")
+    if hint is not None and str(hint).strip() != "":
+        code = field.get("code")
+        if field.get("type") == "empty_space":
+            raise ValueError(f"templates.fields.{code}: hint is not allowed on empty_space")
+        template_line["ObjectDefaultLineHint"] = str(hint)
 
     calc = cfg.get("clientCalculation")
     if not isinstance(calc, dict) or not calc.get("type"):
@@ -325,6 +353,10 @@ def template_field_spec_from_line(
         key = autonumber_id_to_key.get(int(autonumber_id))
         if key:
             spec_field["autonumber"] = key
+
+    hint = row.get("ObjectDefaultLineHint")
+    if hint is not None and str(hint).strip() != "":
+        spec_field["hint"] = str(hint)
 
     return spec_field or None
 

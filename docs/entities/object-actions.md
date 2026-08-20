@@ -70,8 +70,8 @@ Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNode
 |-------|---------|---------|
 | `CustomJS` | `export async function main()` | ESM script; return value becomes the HTTP response body |
 | `EndPointRunESM` | `"1"` | `POST /execute-esm` |
-| `EndPointRunWait` | `"1"` | Wait and write response onto object lines |
-| `EndPointRunTimeout` | `"60000"` | Timeout ms |
+| `EndPointRunWait` | `"1"` | Wait and write response onto object lines. `"0"` = do not wait (async); timeout still applies to the ESM process |
+| `EndPointRunTimeout` | `"60000"` | Timeout ms. Raise for bulk GraphQL CREATE (import); see [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#6-batch--parallel-create) |
 | `ResponseCodeObjectLineID` | — | Line for HTTP status (types 1, 2, 3, 4, 11, 12) |
 | `ResponseTextObjectLineID` | — | Line for response body — use **Memo (11)** for long text |
 | `ApplicableEventType` | `"Save,SaveNew"` | Comma list: `SaveNew,Save,WorkflowAction,…` |
@@ -79,6 +79,8 @@ Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNode
 With `EndPointRunWait=1`, `spRequestUpdate` writes `EndPointRunResponseText` to `ResponseTextObjectLineID`.
 
 **When mutating the current request, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops.
+
+To re-run Last on **another completed** request, `withRefresh` on that id is not an update action — use `createType: UPDATE` + that object’s `updateAction` ([nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests)).
 
 ## ObjectActionCondition
 
