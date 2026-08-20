@@ -1,11 +1,10 @@
-# Regenerate machine-readable data, project packages, and ovnet env.
+# Regenerate machine-readable data and account-object sample packages.
 
 PYTHON ?= python3
 VENV_PYTHON := .venv/bin/python
 PY := $(shell test -x $(VENV_PYTHON) && echo $(VENV_PYTHON) || echo $(PYTHON))
 
-.PHONY: extract generate-account validate-account extract-cars roundtrip-account test \
-	download-ovnet extract-ovnet loop-init generate-loop all
+.PHONY: extract generate-account validate-account extract-cars roundtrip-account test all
 
 extract:
 	$(PY) scripts/extract-schemas.py
@@ -47,30 +46,5 @@ roundtrip-account: generate-account
 		-o /tmp/account-roundtrip2
 	$(PY) -c "import sys; sys.path.insert(0,'scripts'); from ot_builder.spec_loader import load_spec; a=load_spec(__import__('pathlib').Path('/tmp/account-roundtrip'))['ids']['explicit']; b=load_spec(__import__('pathlib').Path('/tmp/account-roundtrip2'))['ids']['explicit']; sys.exit(0 if a==b else 1)"
 	@echo "Round-trip IDs OK"
-
-# --- Project change-loop (ovnet sample) ---
-
-download-ovnet:
-	$(PY) scripts/download-db-transfer.py \
-		--connection projects/ovnet/.xeelo-connection.json
-
-extract-ovnet:
-	@snap=$$(ls -1d projects/ovnet/snapshots/*/ 2>/dev/null | sort | tail -1); \
-	test -n "$$snap" || (echo "No snapshots under projects/ovnet/snapshots"; exit 1); \
-	xml=$$(ls -1 "$$snap"*.xml 2>/dev/null | head -1); \
-	zip=$$(ls -1 "$$snap"*.zip 2>/dev/null | head -1); \
-	src=$${xml:-$$zip}; \
-	test -n "$$src" || (echo "No XML/ZIP in $$snap"; exit 1); \
-	$(PY) scripts/extract-db-transfer-to-env.py "$$src" -o projects/ovnet/env
-
-# Usage: make loop-init SLUG=20260811-loop-01-name OBJECTS="ov-net-customer ov-net-account"
-loop-init:
-	@test -n "$(SLUG)" || (echo "Set SLUG=..."; exit 1)
-	$(PY) scripts/init-change-loop.py --project projects/ovnet --slug $(SLUG) $(if $(OBJECTS),--objects $(OBJECTS),)
-
-# Usage: make generate-loop LOOP=projects/ovnet/changes/20260811-loop-01-name
-generate-loop:
-	@test -n "$(LOOP)" || (echo "Set LOOP=projects/ovnet/changes/<slug>"; exit 1)
-	$(PY) scripts/generate-change-loop.py $(LOOP)
 
 all: extract generate-account validate-account roundtrip-account
