@@ -35,6 +35,8 @@ updateActions:
         visible: true
 ```
 
+Refresh default for update access is **visible yes, editable no** — list every field that must be editable (or `visible: false` to hide). Same dual-list as template create access (`templates[].access`) and `workflow.steps[].access`; see [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
+
 Include in `xeelo-spec.yaml`:
 
 ```yaml
@@ -66,7 +68,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 
 - [ ] Template workflow can reach **Completed**
 - [ ] Update action defined with order and name
-- [ ] Line access set (defaults: visible yes, editable no)
+- [ ] Line access set (defaults: visible yes, editable no — list `editable: true` for fields to change)
 - [ ] Conditions if action should not always appear
 - [ ] User allow list in Admin
 - [ ] Optional workflow on action for post-update process

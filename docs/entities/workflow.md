@@ -46,7 +46,7 @@ Which object lines are **visible** and **editable** while the request is on a wo
 | `WorkflowStepAccessIsEditable` | Line editable in this step | `0` |
 | `WorkflowStepAccessIsVisible` | Line visible in this step | `1` |
 
-Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format.md#full-cars-account). Object Transfer edge: `WorkflowStep → WorkflowStepAccess`.
+Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format.md#full-cars-account). Object Transfer edge: `WorkflowStep → WorkflowStepAccess`. Same dual-list as template **ObjectDefaultAccess** (create) and **ObjectUpdateAccess** (EditableUpdate); refresh defaults differ — [object-model.md](object-model.md#create-form-access-objectdefaultaccess).
 
 ## WorkflowStepAction
 

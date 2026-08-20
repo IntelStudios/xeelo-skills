@@ -12,6 +12,7 @@ Full workflow lives in the parent XeeloKB clone: `docs/projects.md`. Typical tre
 
 ```text
 <name>/
+  conventions.md           # site rules (language, naming); agent reads before object work
   .xeelo-connection.json   # gitignored — Admin URL, siteId, credentials
   snapshots/               # DB transfer ZIP/XML — gitignored; refresh with /download-db
   env/                     # extracted specs (versioned)

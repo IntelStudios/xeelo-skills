@@ -82,6 +82,13 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
             workflow_ids.add(int(row["WorkflowID"]))
             add("Workflow", row["WorkflowID"])
 
+    for row in index.rows.get("ObjectDefaultAccess", []):
+        if int(row.get("ObjectDefaultID", 0)) not in default_ids:
+            continue
+        add("ObjectDefaultAccess", row.get("ObjectDefaultAccessID"))
+        if row.get("ObjectLineID") is not None:
+            add("ObjectLine", row["ObjectLineID"])
+
     default_line_ids: set[int] = set()
     for row in index.rows.get("ObjectDefaultLine", []):
         if int(row.get("ObjectDefaultID", 0)) not in default_ids:
@@ -191,6 +198,20 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
     if obj:
         add("ObjectType", obj.get("ObjectTypeID"))
         add("Company", obj.get("CompanyID"))
+
+    owned = {
+        table: {int(row_id) for row_id in ids.values()}
+        for table, ids in by_table.items()
+    }
+    for row in index.rows.get("LanguageTable", []):
+        parent_table = str(row.get("TableName") or "")
+        parent_id = row.get("RowID")
+        try:
+            rid = int(parent_id)
+        except (TypeError, ValueError):
+            continue
+        if rid in owned.get(parent_table, set()) and row.get("LanguageTableID") is not None:
+            add("LanguageTable", row["LanguageTableID"])
 
     return by_table
 

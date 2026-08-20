@@ -33,7 +33,7 @@ Allowed values: `project` | `project-kb`. Missing `internal/`, missing file, emp
 
 Direct KB requests (“fix this recipe”, “what does the KB say about GraphQL”) are **not** gated.
 
-Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply.
+Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply. If `projects/<name>/conventions.md` exists, **read it** before creating or editing objects (language, naming, other site rules).
 
 ## Development loop
 
@@ -78,6 +78,7 @@ Example: lz has `siteId` 8 in connection; company KB has `Company.CompanyID: 900
 | Update actions | [docs/entities/update-actions.md](docs/entities/update-actions.md), [recipes/add-update-action.md](recipes/add-update-action.md) |
 | Object actions / Node.js | [object-actions.md](docs/entities/object-actions.md), [nodejs-esm.md](docs/entities/nodejs-esm.md), [recipes/add-object-action.md](recipes/add-object-action.md), [nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md) |
 | GraphQL schema | [docs/entities/graphql.md](docs/entities/graphql.md) (`Select_` / `Mutate_`, `lines` vs `linesFormatted`) |
+| Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
 Object Transfer allows **partial deployment** — upload ZIP, select rows in Admin tree, process in batches.
@@ -88,10 +89,11 @@ When the user asks for a **new empty project** (`projects/<name>/`):
 
 0. **Check `projects/`** — see [docs/projects.md](docs/projects.md). If there is no site and no nested git, explain the public-KB / private-`projects/` split, **offer** nested-repo init (template + `git init`), and give instructions for the user to host a **private** remote. Do not create the remote. Do not scaffold the site until `projects/` is ready (or the user already has sites / nested git).
 1. Create the folder with empty `snapshots/`, `env/`, `changes/` (`.gitkeep` if needed for git).
-2. Add **only** `projects/<name>/.xeelo-connection.json` — **no** `.xeelo-connection.example.json`.
-3. Fill **placeholder / empty** values. Do **not** copy `siteId` or `credentials` from other projects.
-4. You may **infer** `adminBaseUrl` as `https://<name>.xeeloadmin.online/` when that matches the site slug; leave it empty if unsure.
-5. After creation, **tell the user exactly what to fill in** (see checklist below).
+2. Copy [`templates/project/conventions.md`](templates/project/conventions.md) to `projects/<name>/conventions.md`.
+3. Add **only** `projects/<name>/.xeelo-connection.json` — **no** `.xeelo-connection.example.json`.
+4. Fill **placeholder / empty** values. Do **not** copy `siteId` or `credentials` from other projects.
+5. You may **infer** `adminBaseUrl` as `https://<name>.xeeloadmin.online/` when that matches the site slug; leave it empty if unsure.
+6. After creation, **tell the user exactly what to fill in** (see checklist below).
 
 Template (empty values for user to complete):
 
@@ -159,6 +161,7 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 
 ```text
 projects/ovnet/
+  conventions.md                  # site rules (language, naming); read before object work
   .xeelo-connection.json          # gitignored — user fills credentials
   snapshots/<stamp>/*.zip         # DB transfer ZIP from Admin
   snapshots/<stamp>/*.xml         # raw XML extracted from ZIP (UTF-16 LE, kept alongside)
@@ -242,9 +245,13 @@ Next step: greenfield Object Transfer or change loop once specs exist under `env
 
 ## Spec v2 layout
 
-Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). Per-object files typically:
+Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). Per-object files typically:
 
-- `spec/object.yaml` — object, company, layout, onGrid, sources
+- `spec/object.yaml` — object, company, layout, onGrid
+- `spec/references.yaml` — numberedníky (`references:` map)
+- `spec/lookups.yaml` — dotazovací mapy (`lookups:` map)
+- `spec/autonumbers.yaml` — sequences (`autonumbers:` map; bind on template line)
+- `spec/language-table.yaml` — `LanguageTable` translations (`languageTable:` map)
 - `spec/workflow.yaml` — roles, statuses, workflow
 - `spec/templates.yaml` — ObjectDefault rows, extended validation, client calc (optional)
 - `spec/object-actions.yaml` — ObjectAction + WorkflowStepObjectAction (optional)
@@ -259,25 +266,32 @@ Two layers in spec:
 - `onGrid.fields` — ObjectLine display flags (by field `code`)
 - `onGrid.layouts` — ObjectLineOnGrid placement (size/type/module, row/column)
 
-## Reference vs lookup (combo-box)
+`onGrid.fields.<code>.isTag` (`ObjectLineOnGridIsTag`) marks a line as a **request-grid tag filter**: distinct field values become finer filters (AND). Set it only on **`text` / `textarea`** (Admin types 3, 4) — not combo-box. After deploy, **/publish**. Details: [object-line-types.md](docs/entities/object-line-types.md#on-grid-tag).
+
+## Reference vs lookup
 
 | | Reference | Lookup |
 |---|-----------|--------|
-| **Co to je** | Číselník (picklist) ze zdroje | Dotazovací mapa podle jiného pole |
-| **Spec klíč** | `field.reference` | `field.lookup` (+ volitelně `sourceField`) |
+| **Co to je** | Číselník (picklist) | Dotazovací mapa: přepočet z jiného pole |
+| **Spec soubor** | `spec/references.yaml` | `spec/lookups.yaml` |
+| **Spec klíč** | `field.reference.reference` / `referenceId` | `field.lookup.lookup` + **`sourceField`** |
 | **DB binding** | `ObjectLine.ObjectLineSourceID` | `ObjectDefaultLine.ObjectDefaultLineLookupID` |
 | **Edge** | `ObjectLine → ObjectLineSource` | `ObjectDefaultLine → ObjectLineLookup` |
-| **Nikdy** | lookup + reference na stejném poli | reference na template line |
+| **Combo / radio / multi** | **vždy** reference (Admin vyžaduje Source) | lookup je navíc; return musí existovat v číselníku |
+
+Lookup **není** náhrada číselníku. Když uživatel změní Source field (nebo Filter pole), runtime přepočte lookup a zapíše `ReturnValue` do cílového pole. Combo bez vlastní reference Admin naváže na první system list (často Color list) — mapa `HIGH`/`LOW` se v něm nenažene.
 
 ### Reference varianty
 
 | Režim | Kdy | Spec |
 |-------|-----|------|
-| **system** | Site číselník (User/Company list) | `reference.sourceId` |
-| **values** | Vlastní pevný seznam | `sources.*.values[]` + `reference.source` |
-| **refObject** | Hodnoty z requestů jiného objektu | `sources.*.refObject.lines` |
+| **system** | Site číselník (User/Company list) | `reference.referenceId` |
+| **values** | Vlastní pevný seznam | `references.*.values[]` + `reference.reference` |
+| **refObject** | Hodnoty z requestů jiného objektu | `references.*.refObject.lines` (`value`, `valueName`, `valueBind`, optional `valueFilter`) |
 
-New `sources.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSourceStyle` = Value). Other styles only when the user asks. Do not change style on existing `reference.sourceId` (system) sources.
+New `references.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSourceStyle` = Value). Other styles only when the user asks. Do not change style on existing `reference.referenceId` (system) lists.
+
+Load still accepts deprecated `sources:` / `reference.source` / `sourceId`. Extract writes **`references`**.
 
 | `styleId` | Name | Display |
 |-----------|------|---------|
@@ -287,6 +301,10 @@ New `sources.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSou
 | **4** | **Value** | **stored value (default)** |
 
 Recipe: [`recipes/add-reference-field.md`](recipes/add-reference-field.md).
+
+## Autonumber vs unique
+
+**Autonumber** is a site sequence catalog (`ObjectLineAutoNumber`) bound on the **template line**. **Unique** is a level on the **ObjectLine** (`uniqueId` 1–4). Together they make a request identifier: text field + autonumber + `uniqueId: 1`. Several unique **request** lines are each unique on their own, not a composite tuple. Subgrid unique lines **are** a composite key. Details: [object-model.md](docs/entities/object-model.md#autonumber). Recipe: [`recipes/add-autonumber-field.md`](recipes/add-autonumber-field.md).
 
 ## Object transfer output
 
@@ -336,12 +354,15 @@ Full apply via `/push` (upload + process all selected rows; generator defaults a
 - [ ] Spec uses `version: 2` with `layout.tabs` → sections → fields
 - [ ] Unique `ObjectLineSlot` per field (not required for types 5, 6, 13, 16, 17)
 - [ ] Field `type` slug + template capabilities per [object-line-types.md](docs/entities/object-line-types.md); slug from [field-type-mapping.json](data/field-type-mapping.json)
-- [ ] Combobox → **reference** or **lookup**, never both
-- [ ] New `sources.*` → **`styleId: 4`** (Value) unless the user asked otherwise
+- [ ] Combobox / radio / multi → **`reference` required**; lookup is optional query map (same field allowed)
+- [ ] Request identifier → **text** + `spec/autonumbers.yaml` + `templates.fields.<code>.autonumber` + `uniqueId` (usually `1`)
+- [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
-- [ ] Update actions: `spec/update-actions.yaml` + access/conditions if used ([add-update-action.md](recipes/add-update-action.md))
-- [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env, read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object
+- [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
+- [ ] Update actions: `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
+- [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object
 - [ ] Workflow step field access: `workflow.steps[].access` when a line must be editable after create ([add-workflow.md](recipes/add-workflow.md))
+- [ ] Template create access: `templates[].access` only to hide or lock fields on create (refresh default is visible+editable) — not `hidden` / `alwaysDisabled`
 - [ ] Multiple templates / extended validation / client calc: `spec/templates.yaml` if used ([xeelo-grammar.md](docs/entities/xeelo-grammar.md))
 - [ ] `ids.explicit` populated for Orig. ID import
 - [ ] `output/*-object-transfer.zip` validated
@@ -354,7 +375,11 @@ Full apply via `/push` (upload + process all selected rows; generator defaults a
 | [`data/object-transfer-map.json`](data/object-transfer-map.json) | Parent→child table schema (124 edges) |
 | [`data/field-type-mapping.json`](data/field-type-mapping.json) | Spec type → ObjectLineTypeID (20 slugs) |
 | [`data/enums/ObjectDefaultLineCalculationType.json`](data/enums/ObjectDefaultLineCalculationType.json) | Client / adhoc / server calc IDs |
+| [`data/enums/UserLanguage.json`](data/enums/UserLanguage.json) | Metadata translation language codes |
+| [`data/enums/ObjectLineUnique.json`](data/enums/ObjectLineUnique.json) | Unique level 1–4 |
+| [`data/enums/ObjectLineAutoNumberResetType.json`](data/enums/ObjectLineAutoNumberResetType.json) | Autonumber reset (`1` Yearly) |
 | [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | onGrid columns |
+| [`data/schemas/LanguageTable.json`](data/schemas/LanguageTable.json) | Translated labels |
 
 ## What is NOT in transfer
 

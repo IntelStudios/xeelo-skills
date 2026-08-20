@@ -20,7 +20,12 @@
       "properties": {
         "name": { "type": "string", "minLength": 1, "maxLength": 50 },
         "code": { "type": "string", "maxLength": 255 },
-        "objectType": { "type": "string", "minLength": 1, "maxLength": 50 }
+        "objectType": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "requestTitleField": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectLine code used as the request title in GUI (Object.RequestTitleObjectLineID)"
+        }
       }
     },
     "company": {
@@ -53,10 +58,24 @@
       "additionalProperties": { "$ref": "#/$defs/status" }
     },
     "workflow": { "$ref": "#/$defs/workflow" },
-    "sources": {
+    "references": {
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/sourceDefinition" }
     },
+    "sources": {
+      "type": "object",
+      "description": "Deprecated alias for references",
+      "additionalProperties": { "$ref": "#/$defs/sourceDefinition" }
+    },
+    "lookups": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/lookupDefinition" }
+    },
+    "autonumbers": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/autonumberDefinition" }
+    },
+    "languageTable": { "$ref": "#/$defs/languageTable" },
     "ids": { "$ref": "#/$defs/ids" },
     "source": { "$ref": "#/$defs/source" },
     "transferVersion": { "type": "string", "default": "1.3.0" },
@@ -93,6 +112,10 @@
         "name": { "type": "string" },
         "placement": { "type": "integer", "enum": [0, 1], "default": 0 },
         "order": { "type": "integer", "minimum": 1 },
+        "alwaysHidden": {
+          "type": "boolean",
+          "description": "ObjectLineTabAlwaysHidden — hide the whole tab (typical for helper lines)"
+        },
         "sections": {
           "type": "array",
           "minItems": 1,
@@ -171,6 +194,11 @@
         "numberMax": { "type": "integer" },
         "height": { "type": "integer", "minimum": 1 },
         "uniqueId": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "autonumber": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Catalog key from autonumbers:. Bind on a single default template; prefer templates.fields.<code>.autonumber when templates.yaml exists. Text only."
+        },
         "descMemoBorder": {
           "type": "boolean",
           "description": "ObjectLineDescMemoIsBorder. Default false (omit or false). Set true only for a visible box."
@@ -179,18 +207,26 @@
         "buttonMessage": { "type": "string" },
         "colorFont": { "type": "string", "maxLength": 50 },
         "colorBack": { "type": "string", "maxLength": 50 },
-        "isReferenceLink": { "type": "boolean" }
+        "isReferenceLink": { "type": "boolean" },
+        "alwaysHidden": {
+          "type": "boolean",
+          "description": "ObjectLineIsHidden — line is not shown in GUI (definition-level, not template extended validation)"
+        }
       }
     },
     "reference": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "sourceId": { "type": "integer", "minimum": 1 },
-        "source": { "type": "string", "minLength": 1 },
+        "referenceId": { "type": "integer", "minimum": 1 },
+        "reference": { "type": "string", "minLength": 1 },
+        "sourceId": { "type": "integer", "minimum": 1, "description": "Deprecated alias for referenceId" },
+        "source": { "type": "string", "minLength": 1, "description": "Deprecated alias for reference" },
         "filterField": { "type": "string", "minLength": 1 }
       },
       "oneOf": [
+        { "required": ["referenceId"] },
+        { "required": ["reference"] },
         { "required": ["sourceId"] },
         { "required": ["source"] }
       ]
@@ -251,27 +287,71 @@
         { "required": ["refObject"], "not": { "required": ["values"] } }
       ]
     },
-    "lookup": {
+    "lookupValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": { "type": "string" },
+        "return": { "type": "string" },
+        "filter": { "type": "string" },
+        "sourceTo": { "type": "string" },
+        "label": { "type": "string", "description": "Deprecated alias for source" },
+        "value": { "type": "string", "description": "Deprecated alias for return" }
+      },
+      "anyOf": [
+        { "required": ["source", "return"] },
+        { "required": ["value"] }
+      ]
+    },
+    "lookupDefinition": {
       "type": "object",
       "required": ["values"],
       "additionalProperties": false,
       "properties": {
         "name": { "type": "string" },
-        "sourceField": { "type": "string", "minLength": 1 },
+        "matchId": { "type": "integer", "minimum": 1, "maximum": 2, "default": 1 },
         "values": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": ["value"],
-            "additionalProperties": false,
-            "properties": {
-              "label": { "type": "string" },
-              "value": { "type": "string" }
-            }
-          }
+          "items": { "$ref": "#/$defs/lookupValue" }
         }
       }
+    },
+    "autonumberDefinition": {
+      "type": "object",
+      "required": ["format"],
+      "additionalProperties": false,
+      "properties": {
+        "description": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "format": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "next": { "type": "integer", "minimum": 1, "default": 1 },
+        "resetTypeId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "ObjectLineAutoNumberResetTypeID. 1 = Yearly"
+        }
+      }
+    },
+    "lookup": {
+      "type": "object",
+      "required": ["sourceField"],
+      "additionalProperties": false,
+      "properties": {
+        "lookup": { "type": "string", "minLength": 1 },
+        "name": { "type": "string" },
+        "sourceField": { "type": "string", "minLength": 1 },
+        "filterField": { "type": "string", "minLength": 1 },
+        "matchId": { "type": "integer", "minimum": 1, "maximum": 2 },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/lookupValue" }
+        }
+      },
+      "anyOf": [
+        { "required": ["lookup"] },
+        { "required": ["values"] }
+      ]
     },
     "onGrid": {
       "type": "object",
@@ -413,6 +493,15 @@
       "properties": {
         "hidden": { "type": "boolean" },
         "mandatory": { "type": "boolean" },
+        "alwaysDisabled": {
+          "type": "boolean",
+          "description": "ObjectDefaultLineIsDisabled — Admin Always disabled on the template line"
+        },
+        "autonumber": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Catalog key from autonumbers: → ObjectDefaultLineAutoNumberID. Text (3) only."
+        },
         "defaultValue": {
           "type": ["string", "number"],
           "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
@@ -468,6 +557,11 @@
         "fields": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/templateField" }
+        },
+        "access": {
+          "type": "array",
+          "description": "ObjectDefaultAccess — create-form visible/editable; omit refresh defaults (both true)",
+          "items": { "$ref": "#/$defs/workflowStepAccessLine" }
         }
       }
     },
@@ -518,9 +612,18 @@
         "param2": { "type": ["string", "number"] }
       }
     },
+    "updateActionMessage": {
+      "type": "object",
+      "required": ["key"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "visible": { "type": "boolean" }
+      }
+    },
     "updateAction": {
       "type": "object",
-      "additionalProperties": true,
+      "additionalProperties": false,
       "properties": {
         "key": { "type": "string" },
         "name": { "type": "string" },
@@ -528,9 +631,27 @@
         "template": { "type": "string" },
         "workflow": { "type": "string" },
         "isQuick": { "type": "boolean" },
-        "access": { "type": "array" },
-        "conditions": { "type": "array" },
-        "messages": { "type": "array" }
+        "isActive": { "type": "boolean" },
+        "tabFocus": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "left": { "type": ["string", "null"] },
+            "right": { "type": ["string", "null"] }
+          }
+        },
+        "access": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/workflowStepAccessLine" }
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/updateActionMessage" }
+        }
       }
     },
     "idsExplicit": {
@@ -550,9 +671,12 @@
         "sections": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "fields": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectDefaultLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectDefaultAccess": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "templates": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "lookups": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "lookupValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "autonumbers": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "references": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "sources": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "sourceValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "sourceRefObjects": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
@@ -571,7 +695,8 @@
         "objectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
-        "workflowStepObjectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
+        "workflowStepObjectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "languageTables": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
       }
     },
     "ids": {
@@ -605,6 +730,66 @@
         "objectId": { "type": "integer", "minimum": 1 },
         "objectCode": { "type": "string" },
         "extractedAt": { "type": "string" }
+      }
+    },
+    "langMap": {
+      "type": "object",
+      "description": "UserLanguageCode → translated text. Omit en (canonical name lives on the entity column).",
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "languageTableLine": {
+      "type": "object",
+      "description": "ObjectLineName translations plus optional ObjectLineOnGridName",
+      "properties": {
+        "onGrid": { "$ref": "#/$defs/langMap" }
+      },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "languageTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Metadata translations (LanguageTable). Keys are entity type then entity key then language.",
+      "properties": {
+        "object": { "$ref": "#/$defs/langMap" },
+        "company": { "$ref": "#/$defs/langMap" },
+        "objectType": { "$ref": "#/$defs/langMap" },
+        "workflow": { "$ref": "#/$defs/langMap" },
+        "tabs": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "lines": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/languageTableLine" }
+        },
+        "templates": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "statuses": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "stepActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "objectActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "updateActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        }
       }
     }
   }

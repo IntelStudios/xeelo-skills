@@ -42,11 +42,14 @@ Determine from the user message or ask once:
 
    ```text
    projects/<name>/
+     conventions.md
      snapshots/.gitkeep
      env/.gitkeep
      changes/.gitkeep
      .xeelo-connection.json
    ```
+
+   Copy [`templates/project/conventions.md`](../../../templates/project/conventions.md) to `projects/<name>/conventions.md`.
 
 3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `siteId` or `credentials` from other projects.
 

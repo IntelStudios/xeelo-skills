@@ -6,8 +6,10 @@ Replace `OBJECTCODE`, `FIELD_CODE`, `OTHERCODE`, `TEMPLATE_ID` with **site** cod
 
 ## Before test
 
-- [ ] GraphQL names match `env/objects/<slug>/spec/object.yaml` (`object.code`, `fields[].code`)
+- [ ] GraphQL names match `env/objects/<slug>/spec/object.yaml` (`object.code`, `fields[].code`) — after first insert this is often `line_{id}_{slug}`, not the short spec `code` you wrote before deploy
+- [ ] External HTTP failures: `log.error` status + body (no tokens/URLs); empty optional config = message without `log.error`
 - [ ] Select reads `lines` (valueData), not `linesFormatted`
+- [ ] Date picker `lines` are `dd-MM-yyyy` — split the string, do not use `new Date(s)`
 - [ ] Self-update: no `createType`, `withRefresh: false`
 - [ ] `CREATE` only on a **different** object; `template` = `ObjectDefaultID`
 - [ ] Service account **0** has **WRITE** on every mutated object ([users-and-access.md](../docs/entities/users-and-access.md))
@@ -106,6 +108,8 @@ const next = (current + parseFloat(amount)).toFixed(2);
 
 Then the self-update from pattern 1 with `FIELD_CODE: next`.
 
+Date picker `lines` are **`dd-MM-yyyy`**. Split that string; do not use `new Date(s)`. [graphql.md](../docs/entities/graphql.md#date-picker-type-8).
+
 ## 4. Combine (CREATE + Select + self-update)
 
 Typical import-style action:
@@ -117,3 +121,26 @@ Typical import-style action:
 5. `return` a short summary for the result memo
 
 Do not `CREATE`/`UPDATE` **this** request. Do not use `linesFormatted` for the arithmetic.
+
+## 5. Lookup refObject by combo bind
+
+Combo `lines.COMBO_FIELD` is the **bind** (e.g. account number), not the display label. Select the other object with `lineFilters` `EQ` on that bind line — do not page through all rows.
+
+```javascript
+const bind = String(txLines.COMBO_FIELD ?? "").trim();
+let name = "";
+if (bind) {
+    const acc = await client.request(
+        `query ($bind: String) {
+            Select_OTHERCODE(
+                lineFilters: { BIND_FIELD: { operator: EQ, value: $bind } }
+                limit: 1
+            ) { lines { NAME_FIELD } }
+        }`,
+        { bind }
+    );
+    name = String(acc?.Select_OTHERCODE?.[0]?.lines?.NAME_FIELD ?? "").trim();
+}
+```
+
+Date `lineFilters` take **`YYYY-MM-DD`**, not `dd-MM-yyyy`. Operators are `EQ` (enum), not `eq` / `equals`. [graphql.md](../docs/entities/graphql.md#linefilters).

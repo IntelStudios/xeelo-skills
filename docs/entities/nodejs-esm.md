@@ -31,7 +31,9 @@ Script rules (runtime-enforced):
 
 - Export **exactly one** function, no parameters — `export async function main()` (named `main` is the platform default; `export default` also works)
 - Return value is optional; it becomes the HTTP response body (`EndPointRunResponseText`)
-- `log.error()` / `console.error()` marks the run as **failed** even if `main()` returns
+- `logs` in the execute JSON stays empty unless the script calls `log.error()` / `console.error()`. Those also set `success: false` even if `main()` returns
+- Missing optional config (empty API key) can return a user message **without** `log.error`
+- External HTTP failures: `log.error` with status + response body; **do not** log tokens or URLs that contain a token
 - `require()` / `eval()` / arbitrary imports fail. Allowlist + `// install("pkg")` only
 
 ## Context
@@ -113,7 +115,7 @@ GraphQL identifiers are `sanitizeGraphQLName` of **site** codes after `/download
 | `fields[].code` | `lines.{code}` (Select and Mutate) |
 | `ids.explicit.objectDefaultId` / `templates.*` | `template` on `CREATE` |
 
-Full naming, query args, `createType` variants, and **`lines` vs `linesFormatted`**: [graphql.md](graphql.md).
+Full naming, query args, `createType` variants, **`lines` vs `linesFormatted`**, date `dd-MM-yyyy`, and `lineFilters`: [graphql.md](graphql.md).
 
 **Select current lines** — read `lines` (valueData), never `linesFormatted`, when the script will compute or write the value:
 

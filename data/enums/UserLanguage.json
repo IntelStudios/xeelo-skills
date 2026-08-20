@@ -1,0 +1,17 @@
+[
+  { "code": "en", "name": "English", "order": 10 },
+  { "code": "cs", "name": "Česky", "order": 20 },
+  { "code": "de", "name": "Deutsch", "order": 30 },
+  { "code": "pl", "name": "Polski", "order": 40 },
+  { "code": "sk", "name": "Slovensky", "order": 50 },
+  { "code": "hu", "name": "Magyar", "order": 60 },
+  { "code": "nl", "name": "Nederlands", "order": 70 },
+  { "code": "sl", "name": "Slovenščina", "order": 80 },
+  { "code": "hr", "name": "Hrvatski", "order": 90 },
+  { "code": "fr", "name": "Français", "order": 100 },
+  { "code": "es", "name": "Español", "order": 110 },
+  { "code": "pt", "name": "Português", "order": 120 },
+  { "code": "ro", "name": "Română", "order": 130 },
+  { "code": "zh-cn", "name": "Chinese simplified", "order": 300 },
+  { "code": "zh-tw", "name": "Chinese traditionals", "order": 310 }
+]

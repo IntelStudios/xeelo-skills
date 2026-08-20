@@ -8,6 +8,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from ot_builder.language_table import extract_language_table
 from ot_builder.parse import TransferIndex, collect_table_max_ids, find_object_row, load_transfer
 from ot_builder.object_actions import (
     condition_registry_key,
@@ -17,7 +18,9 @@ from ot_builder.object_actions import (
 )
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
+    LOOKUP_FIELD_TYPES,
     REFERENCE_FIELD_TYPES,
+    template_access_registry_key,
     template_field_spec_from_line,
     template_slug_from_name,
 )
@@ -28,6 +31,7 @@ from ot_builder.update_actions import (
     slugify,
     step_access_differs_from_default,
     step_access_registry_key,
+    template_access_differs_from_default,
 )
 
 DATA = Path(__file__).resolve().parent.parent.parent / "data"
@@ -422,13 +426,19 @@ def _template_lines(index: TransferIndex, template_id: int) -> dict[int, dict]:
 def _lookup_values(index: TransferIndex, lookup_id: int) -> list[dict]:
     values = []
     for row in index.rows.get("ObjectLineLookupValue", []):
-        if row.get("ObjectLineLookupID") == lookup_id:
-            values.append(
-                {
-                    "label": row.get("ObjectLineLookupSourceValue", ""),
-                    "value": row.get("ObjectLineLookupReturnValue", ""),
-                }
-            )
+        if row.get("ObjectLineLookupID") != lookup_id:
+            continue
+        entry: dict[str, Any] = {
+            "source": row.get("ObjectLineLookupSourceValue", ""),
+            "return": row.get("ObjectLineLookupReturnValue", ""),
+        }
+        filt = row.get("ObjectLineLookupFilterValue")
+        if filt not in (None, ""):
+            entry["filter"] = filt
+        source_to = row.get("ObjectLineLookupSourceValue1")
+        if source_to not in (None, ""):
+            entry["sourceTo"] = source_to
+        values.append(entry)
     return values
 
 
@@ -437,12 +447,79 @@ def _lookup_name(index: TransferIndex, lookup_id: int) -> str:
     return row.get("ObjectLineLookupName", "") if row else ""
 
 
+def _lookup_value_id_key(lookup_key: str, row: dict) -> str:
+    source = row.get("ObjectLineLookupSourceValue", "")
+    ret = row.get("ObjectLineLookupReturnValue", "")
+    filt = row.get("ObjectLineLookupFilterValue") or ""
+    return f"{lookup_key}|{source}|{filt}|{ret}"
+
+
+def _build_lookups(
+    index: TransferIndex,
+    lookup_ids: set[int],
+) -> tuple[dict[str, dict], dict[str, int], dict[str, int]]:
+    items: dict[int, dict[str, Any]] = {}
+    for lookup_id in lookup_ids:
+        row = index.row_by_id("ObjectLineLookup", lookup_id)
+        if not row:
+            continue
+        spec_entry: dict[str, Any] = {
+            "name": row.get("ObjectLineLookupName") or _lookup_name(index, lookup_id),
+            "values": _lookup_values(index, lookup_id),
+        }
+        match_id = _int(row.get("ObjectLineLookupMatchID"))
+        if match_id and match_id != 1:
+            spec_entry["matchId"] = match_id
+        items[lookup_id] = {"name": spec_entry["name"], "spec": spec_entry}
+
+    lookups, explicit_lookups = _assign_keys(items)
+    explicit_lookup_values: dict[str, int] = {}
+    key_by_id = {row_id: key for key, row_id in explicit_lookups.items()}
+    for row in index.rows.get("ObjectLineLookupValue", []):
+        lookup_id = _int(row.get("ObjectLineLookupID"))
+        if lookup_id is None or lookup_id not in key_by_id:
+            continue
+        key = key_by_id[lookup_id]
+        explicit_lookup_values[_lookup_value_id_key(key, row)] = int(row["ObjectLineLookupValueID"])
+    return lookups, explicit_lookups, explicit_lookup_values
+
+
+def _build_autonumbers(
+    index: TransferIndex,
+    autonumber_ids: set[int],
+) -> tuple[dict[str, dict], dict[str, int]]:
+    items: dict[int, dict[str, Any]] = {}
+    for autonumber_id in autonumber_ids:
+        row = index.row_by_id("ObjectLineAutoNumber", autonumber_id)
+        if not row:
+            continue
+        spec_entry: dict[str, Any] = {
+            "description": row.get("ObjectLineAutoNumberDescription") or f"autonumber_{autonumber_id}",
+            "format": row.get("ObjectLineAutoNumberFormat") or "",
+            "next": int(row.get("ObjectLineAutoNumberNext") or 1),
+        }
+        reset_id = _int(row.get("ObjectLineAutoNumberResetTypeID"))
+        if reset_id:
+            spec_entry["resetTypeId"] = reset_id
+        items[autonumber_id] = {"name": spec_entry["description"], "spec": spec_entry}
+    return _assign_keys(items)
+
+
+def _line_code_by_id(index: TransferIndex, line_id: int | None) -> str | None:
+    if line_id is None:
+        return None
+    row = index.row_by_id("ObjectLine", line_id)
+    if not row:
+        return None
+    return row.get("ObjectLineCode") or f"LINE_{line_id}"
+
+
 def _build_layout(
     index: TransferIndex,
     object_id: int,
     template_lines: dict[int, dict],
     type_map: dict[int, str],
-) -> tuple[list[dict], dict[str, Any], dict[str, dict]]:
+) -> tuple[list[dict], dict[str, Any], dict[str, dict], dict[str, dict]]:
     tabs_by_id: dict[int, dict] = {}
     sections_by_id: dict[int, dict] = {}
 
@@ -459,9 +536,8 @@ def _build_layout(
     explicit_sections: dict[str, int] = {}
     explicit_tabs: dict[str, int] = {}
     explicit_default_lines: dict[str, int] = {}
-    explicit_lookups: dict[str, int] = {}
-    explicit_lookup_values: dict[str, int] = {}
     used_source_ids: set[int] = set()
+    used_lookup_ids: set[int] = set()
 
     for line in lines:
         line_id = int(line["ObjectLineID"])
@@ -485,6 +561,8 @@ def _build_layout(
                 "sections": {},
             },
         )
+        if _boolish(tab.get("ObjectLineTabAlwaysHidden")):
+            tab_entry["alwaysHidden"] = True
         explicit_tabs[tab_name] = tab_id
 
         sec_key = _section_key(tab_name, section_name)
@@ -519,6 +597,7 @@ def _build_layout(
         if ftype == "button" and line.get("ObjectLineButtonSaveAction") is not None:
             field["saveAction"] = int(line["ObjectLineButtonSaveAction"])
         _apply_extracted_line_extras(field, line, ftype, index)
+        _emit_true(field, "alwaysHidden", line.get("ObjectLineIsHidden"))
 
         source_id = _int(line.get("ObjectLineSourceID"))
         filter_line_id = _int(line.get("ObjectLineSourceFilterObjectLineID"))
@@ -526,39 +605,29 @@ def _build_layout(
             used_source_ids.add(source_id)
             field["_sourceId"] = source_id
         if filter_line_id is not None:
-            for other in index.rows.get("ObjectLine", []):
-                if int(other["ObjectLineID"]) == filter_line_id:
-                    field["_filterField"] = other.get("ObjectLineCode") or f"LINE_{filter_line_id}"
-                    break
+            code_for_filter = _line_code_by_id(index, filter_line_id)
+            if code_for_filter:
+                field["_filterField"] = code_for_filter
 
         tl = template_lines.get(line_id)
         if tl:
             explicit_default_lines[str(code)] = int(tl["ObjectDefaultLineID"])
             if _int(tl.get("ObjectDefaultLineValidationID")) == 1:
                 field["mandatory"] = True
-            if not source_id:
-                lookup_id = _int(tl.get("ObjectDefaultLineLookupID"))
-                if lookup_id and ftype in REFERENCE_FIELD_TYPES:
-                    lookup_name = _lookup_name(index, lookup_id)
-                    explicit_lookups[lookup_name] = lookup_id
-                    values = _lookup_values(index, lookup_id)
-                    for val in values:
-                        explicit_lookup_values[str(val["value"])] = int(
-                            next(
-                                row["ObjectLineLookupValueID"]
-                                for row in index.rows.get("ObjectLineLookupValue", [])
-                                if row.get("ObjectLineLookupID") == lookup_id
-                                and row.get("ObjectLineLookupReturnValue") == val["value"]
-                            )
-                        )
-                    lookup_spec: dict[str, Any] = {"name": lookup_name, "values": values}
-                    source_field_id = _int(tl.get("ObjectDefaultLineLookupObjectLineID"))
-                    if source_field_id is not None:
-                        for other in index.rows.get("ObjectLine", []):
-                            if int(other["ObjectLineID"]) == source_field_id:
-                                lookup_spec["sourceField"] = other.get("ObjectLineCode") or f"LINE_{source_field_id}"
-                                break
-                    field["lookup"] = lookup_spec
+            lookup_id = _int(tl.get("ObjectDefaultLineLookupID"))
+            if lookup_id and ftype in LOOKUP_FIELD_TYPES:
+                used_lookup_ids.add(lookup_id)
+                field["_lookupId"] = lookup_id
+                source_field_code = _line_code_by_id(
+                    index, _int(tl.get("ObjectDefaultLineLookupObjectLineID"))
+                )
+                if source_field_code:
+                    field["_lookupSourceField"] = source_field_code
+                filter_field_code = _line_code_by_id(
+                    index, _int(tl.get("ObjectDefaultLineLookupFilterObjectLineID"))
+                )
+                if filter_field_code:
+                    field["_lookupFilterField"] = filter_field_code
 
         section_entry["fields"].append(field)
 
@@ -566,6 +635,8 @@ def _build_layout(
         index, used_source_ids
     )
     source_id_to_key = {source_id: key for key, source_id in explicit_sources.items()}
+    lookups_spec, explicit_lookups, explicit_lookup_values = _build_lookups(index, used_lookup_ids)
+    lookup_id_to_key = {lookup_id: key for key, lookup_id in explicit_lookups.items()}
 
     tabs: list[dict] = []
     for tab_id in sorted(tab_layout.keys(), key=lambda tid: tab_layout[tid]["order"]):
@@ -581,12 +652,22 @@ def _build_layout(
                 filter_field = field.pop("_filterField", None)
                 if source_id:
                     if source_id in source_id_to_key:
-                        ref: dict[str, Any] = {"source": source_id_to_key[source_id]}
+                        ref: dict[str, Any] = {"reference": source_id_to_key[source_id]}
                     else:
-                        ref = {"sourceId": source_id}
+                        ref = {"referenceId": source_id}
                     if filter_field:
                         ref["filterField"] = filter_field
                     field["reference"] = ref
+                lookup_id = field.pop("_lookupId", None)
+                lookup_source = field.pop("_lookupSourceField", None)
+                lookup_filter = field.pop("_lookupFilterField", None)
+                if lookup_id and lookup_id in lookup_id_to_key:
+                    lookup_spec: dict[str, Any] = {"lookup": lookup_id_to_key[lookup_id]}
+                    if lookup_source:
+                        lookup_spec["sourceField"] = lookup_source
+                    if lookup_filter:
+                        lookup_spec["filterField"] = lookup_filter
+                    field["lookup"] = lookup_spec
             sections.append(
                 {
                     "name": sec["name"],
@@ -595,14 +676,15 @@ def _build_layout(
                     "fields": sec["fields"],
                 }
             )
-        tabs.append(
-            {
-                "name": tab_data["name"],
-                "placement": tab_data["placement"],
-                "order": tab_data["order"],
-                "sections": sections,
-            }
-        )
+        tab_out: dict[str, Any] = {
+            "name": tab_data["name"],
+            "placement": tab_data["placement"],
+            "order": tab_data["order"],
+            "sections": sections,
+        }
+        if tab_data.get("alwaysHidden"):
+            tab_out["alwaysHidden"] = True
+        tabs.append(tab_out)
 
     explicit_partial = {
         "tabs": explicit_tabs,
@@ -611,12 +693,12 @@ def _build_layout(
         "objectDefaultLines": explicit_default_lines,
         "lookups": explicit_lookups,
         "lookupValues": explicit_lookup_values,
-        "sources": explicit_sources,
+        "references": explicit_sources,
         "sourceValues": explicit_source_values,
         "sourceRefObjects": explicit_ref_objects,
         "refObjectLines": explicit_ref_lines,
     }
-    return tabs, explicit_partial, sources_spec
+    return tabs, explicit_partial, sources_spec, lookups_spec
 
 
 def _build_ongrid(
@@ -1044,6 +1126,10 @@ def _template_has_extended(row: dict) -> bool:
         return True
     if row.get("ObjectDefaultLineDescMemo"):
         return True
+    if str(row.get("ObjectDefaultLineIsDisabled")) in ("1", "True", "true"):
+        return True
+    if row.get("ObjectDefaultLineAutoNumberID"):
+        return True
     return any(
         row.get(col)
         for col in (
@@ -1054,11 +1140,26 @@ def _template_has_extended(row: dict) -> bool:
     )
 
 
+def _used_autonumber_ids(index: TransferIndex, object_id: int) -> set[int]:
+    template_ids = {
+        int(row["ObjectDefaultID"]) for row in _all_templates(index, object_id)
+    }
+    used: set[int] = set()
+    for tl in index.rows.get("ObjectDefaultLine", []):
+        if int(tl.get("ObjectDefaultID", 0)) not in template_ids:
+            continue
+        autonumber_id = _int(tl.get("ObjectDefaultLineAutoNumberID"))
+        if autonumber_id:
+            used.add(autonumber_id)
+    return used
+
+
 def _build_templates_spec(
     index: TransferIndex,
     object_id: int,
     field_id_to_code: dict[int, str],
     sources_spec: dict[str, dict],
+    autonumber_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], bool]:
     defaults = _all_templates(index, object_id)
     if not defaults:
@@ -1070,8 +1171,11 @@ def _build_templates_spec(
         "templates": {},
         "objectDefaultLines": {},
         "objectDefaultExternalLinks": {},
+        "objectDefaultAccess": {},
     }
     any_extended = False
+    any_access = False
+    legacy = len(defaults) <= 1
 
     for row in defaults:
         template_id = int(row["ObjectDefaultID"])
@@ -1115,14 +1219,47 @@ def _build_templates_spec(
             if _template_has_extended(tl):
                 any_extended = True
             explicit["objectDefaultLines"][f"{key}/{field_code}"] = int(tl["ObjectDefaultLineID"])
-            field_cfg = template_field_spec_from_line(tl, field_id_to_code, sources_spec)
+            field_cfg = template_field_spec_from_line(
+                tl, field_id_to_code, sources_spec, autonumber_id_to_key
+            )
             if field_cfg:
                 fields_spec[field_code] = field_cfg
         if fields_spec:
             spec_tmpl["fields"] = fields_spec
+
+        access_specs: list[dict[str, Any]] = []
+        for access in index.rows.get("ObjectDefaultAccess", []):
+            if int(access.get("ObjectDefaultID", 0)) != template_id:
+                continue
+            if not _boolish(access.get("IsActive", 1)):
+                continue
+            if not template_access_differs_from_default(access):
+                continue
+            line_id = int(access["ObjectLineID"])
+            field_code = _line_field_code(index, line_id, field_id_to_code)
+            if not field_code:
+                continue
+            subline_id = _int(access.get("ObjectSubLineID"))
+            access_id = int(access["ObjectDefaultAccessID"])
+            reg_key = template_access_registry_key(
+                key, field_code, subline_id, legacy=legacy
+            )
+            explicit["objectDefaultAccess"][reg_key] = access_id
+            entry: dict[str, Any] = {
+                "field": field_code,
+                "editable": _boolish(access.get("ObjectLineIsEditableCreate", 1)),
+                "visible": _boolish(access.get("ObjectLineIsVisibleCreate", 1)),
+            }
+            if subline_id is not None:
+                entry["sublineId"] = subline_id
+            access_specs.append(entry)
+        if access_specs:
+            spec_tmpl["access"] = access_specs
+            any_access = True
+
         templates.append(spec_tmpl)
 
-    emit = len(templates) > 1 or any_extended
+    emit = len(templates) > 1 or any_extended or any_access
     return templates, explicit, emit
 
 
@@ -1253,15 +1390,19 @@ def extract_spec(
     template = _default_template(index, oid)
     template_lines = _template_lines(index, int(template["ObjectDefaultID"])) if template else {}
 
-    tabs, layout_explicit, sources_spec = _build_layout(index, oid, template_lines, type_map)
+    tabs, layout_explicit, sources_spec, lookups_spec = _build_layout(index, oid, template_lines, type_map)
     field_id_to_code = {int(v): k for k, v in layout_explicit["fields"].items()}
+    autonumbers_spec, explicit_autonumbers = _build_autonumbers(
+        index, _used_autonumber_ids(index, oid)
+    )
+    autonumber_id_to_key = {row_id: key for key, row_id in explicit_autonumbers.items()}
     ongrid, ongrid_explicit = _build_ongrid(index, oid, field_id_to_code)
     workflow, wf_explicit, roles, statuses = _build_workflow(
         index, template, merge=merge, field_id_to_code=field_id_to_code
     )
     update_actions, ua_explicit = _build_update_actions(index, oid, field_id_to_code)
     templates, tmpl_explicit, emit_templates = _build_templates_spec(
-        index, oid, field_id_to_code, sources_spec
+        index, oid, field_id_to_code, sources_spec, autonumber_id_to_key
     )
     object_actions, oa_explicit = _build_object_actions(index, oid, field_id_to_code)
 
@@ -1287,9 +1428,13 @@ def extract_spec(
         **oa_explicit,
         "objectLineOnGrid": ongrid_explicit,
     }
+    if explicit_autonumbers:
+        explicit["autonumbers"] = explicit_autonumbers
     if emit_templates:
         explicit["templates"] = tmpl_explicit.get("templates") or {}
         explicit["objectDefaultLines"] = tmpl_explicit.get("objectDefaultLines") or {}
+        if tmpl_explicit.get("objectDefaultAccess"):
+            explicit["objectDefaultAccess"] = tmpl_explicit["objectDefaultAccess"]
         if tmpl_explicit.get("objectDefaultExternalLinks"):
             explicit["objectDefaultExternalLinks"] = tmpl_explicit["objectDefaultExternalLinks"]
         for field in (
@@ -1325,10 +1470,20 @@ def extract_spec(
         },
     }
 
+    title_line_id = _int(obj.get("RequestTitleObjectLineID"))
+    if title_line_id is not None:
+        title_code = _object_line_code(index, title_line_id)
+        if title_code:
+            spec["object"]["requestTitleField"] = title_code
+
     if ongrid:
         spec["onGrid"] = ongrid
     if sources_spec:
-        spec["sources"] = sources_spec
+        spec["references"] = sources_spec
+    if lookups_spec:
+        spec["lookups"] = lookups_spec
+    if autonumbers_spec:
+        spec["autonumbers"] = autonumbers_spec
     if roles:
         spec["roles"] = roles
     if statuses:
@@ -1341,6 +1496,12 @@ def extract_spec(
         spec["templates"] = templates
     if object_actions:
         spec["objectActions"] = object_actions
+
+    language_table, lt_explicit = extract_language_table(index, explicit)
+    if language_table:
+        spec["languageTable"] = language_table
+        explicit["languageTables"] = lt_explicit
+        spec["ids"]["explicit"] = explicit
 
     if merge:
         spec = _merge_spec(merge, spec)
@@ -1360,7 +1521,11 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "objectDefault",
         "roles",
         "statuses",
+        "references",
         "sources",
+        "lookups",
+        "autonumbers",
+        "languageTable",
         "object",
         "company",
         "ids",

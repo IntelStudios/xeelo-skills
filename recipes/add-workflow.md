@@ -78,6 +78,8 @@ workflow:
 
 Reuse the site `WorkflowStepAccessID` in `ids.explicit.workflowStepAccess` (`Draft/LOAD_TX`) after the first DB extract.
 
+Create-form and update-form use the same `{field, editable, visible}` list on `templates[].access` (**ObjectDefaultAccess**, refresh: both yes) and `updateActions[].access` (**ObjectUpdateAccess**, refresh: visible yes, editable no). See [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
+
 ## Hints
 
 See [`data/table-hints.json`](../data/table-hints.json) entries for `Workflow`, `WorkflowStep`, `WorkflowStepAction`.

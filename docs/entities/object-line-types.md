@@ -29,7 +29,7 @@ Slot is required when the line is **active** and the type is **not** 5, 6, 13, 1
 | 19 | Radio buttons | `radio` | yes |
 | 20 | Check-box (Multiselect) | `checkbox_multiselect` | yes |
 
-Never put **reference** and **lookup** on the same field. Combo / radio / multi require a **reference** (`ObjectLineSourceID`) in Admin.
+Never omit **reference** on combo / radio / multi (`ObjectLineSourceID` is required in Admin). Lookup is an optional **query map** on the same field — not a substitute for the číselník.
 
 ## ObjectLine extras by type
 
@@ -40,21 +40,39 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
 | `number` | `precision` required in Admin; `numberSeparator`, `numberMin`, `numberMax`; onGrid total |
 | `button` | `saveAction` required; `buttonMessage`, `colorFont`, `colorBack`; label off |
 | `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` |
-| `attachment_preview` | `previewField` (attachment field **code**) required; `previewDownload` |
+| `attachment_preview` | `previewField` (attachment field **code**) required → `ObjectLineAttPreviewObjectLineID`; optional `previewDownload` |
+
+Example (preview bound to the Invoice attachment on the same object):
+
+```yaml
+- name: Invoice
+  code: line_invoice
+  type: attachment
+  slot: 26
+  attachmentStorageId: 0
+- name: Preview
+  code: line_preview
+  type: attachment_preview
+  slot: null
+  previewField: line_invoice
+  previewDownload: true
+```
+
 | `subgrid` | `objectSubId` required |
-| `combobox`, `combobox_search`, `combobox_server`, `radio`, `checkbox_multiselect` | `reference` required; `filterField` optional; combo: `isReferenceLink` |
+| `combobox`, `combobox_search`, `combobox_server`, `radio`, `checkbox_multiselect` | `reference` required; `filterField` optional (this object’s line vs source `values[].filter` or refObject `valueFilter`); combo: `isReferenceLink` |
 | `text` | `textInputType` (0 Default, 1 Bar Code, 2 Location); source optional |
 | `radio`, `checkbox_multiselect` | `columnNumbers` required (`ObjectLineNumberColumns`) |
 | `web_frame` | `webFrameTypeId` (1 Offline file … 4 Web iFrame) |
 | `description_memo` | `descMemoBorder` default **false** (omit or `false`; set `true` only when the user wants a box). `descMemoPadding` optional. Template **default is HTML** (`ObjectDefaultLineDescMemo`), not `ObjectDefaultLineValue` |
 | `memo`, `report` | `height` |
-| Unique-capable (1, 2, 3, 4, 7, 8, 12, 14, 15) | `uniqueId` ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)) |
+| `date` | stored **`dd-MM-yyyy`** (GraphQL `lines`); do not parse with `new Date()` — [graphql.md](graphql.md#date-picker-type-8) |
+| Unique-capable (1, 2, 3, 4, 7, 8, 12, 14, 15) | `uniqueId` 1–4 ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)) — [object-model.md](object-model.md#unique) |
 
 **canSet\*** (Admin):
 
 | Flag | Types |
 |------|--------|
-| Unique | 1, 2, 3, 4, 7, 8, 12, 14, 15 |
+| Unique | 1, 2, 3, 4, 7, 8, 12, 14, 15 — `uniqueId` scope is object / template / requestor |
 | Version history | 1, 2, 3, 4, 7, 8, 9, 10, 12, 14, 15, 19, 20 |
 | Alignment | 1, 2, 3, 4, 8, 12, 14, 15 |
 | Search | 1, 2, 3, 4, 7, 8, 9, 11, 12, 14, 15, 19, 20 |
@@ -62,6 +80,20 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
 | On-grid search | 3, 4, 8, 12 |
 | Color | 18 |
 | On-grid allowed | **not** 5, 6, 13, 16 |
+
+## On-grid tag
+
+Admin checkbox **Tag** (`ObjectLineOnGridIsTag`) on Object Line, On-grid group. Spec: `onGrid.fields.<code>.isTag`.
+
+Only **text** (3) and **textarea** (4). Combo-box, date, number, checkbox, … cannot be tagged. For a picklist-like filter, use a **text** line filled by lookup or client calc — not a combo.
+
+Tagged field **values** become finer filters on the **request grid** (Inbox / Items / Tasks). After PreCompileSettings, cache SQL concatenates tagged slots into one `TAG` column (comma-separated, comma-wrapped). The User UI lists **distinct current values** as tag chips. Several selected tags are **AND** (the row must contain every selected value).
+
+Do not put commas in tag values — split is by comma. Prefer short discrete labels (code, category), not long free text. Changing Tag requires **/publish** so the cache SQL is rebuilt. Users can hide the tag panel (`UserFilterTabIsShowDataTag`, default on). Site setting `GridFilterShowSearchMinItems` also applies to tag chips.
+
+Not the same as **On-grid search** (`isSearch`): that is typed search on types 3, 4, 8, 12.
+
+Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec/generator do not emit subgrid tags.
 
 ## ObjectDefaultLine capabilities
 
@@ -74,9 +106,9 @@ Template behaviour depends on the **line type**:
 | Lookup | 1, 2, 3, 7, 8, 12, 14, 15, 19, 20 |
 | Default value | 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 (`ObjectDefaultLineValue`) |
 | Default filter | combo / radio / multi |
-| Always disabled | all **except** 6, 10, 13, 16, 17 |
+| Always disabled | all **except** 6, 10, 13, 16, 17 — spec `templates.fields.<code>.alwaysDisabled` → `ObjectDefaultLineIsDisabled` |
 | Hint | all except empty (6) |
-| Input mask / length / autonumber | text (3) only |
+| Input mask / length / autonumber | text (3) only — autonumber bind `templates.fields.<code>.autonumber` ([object-model.md](object-model.md#autonumber)); mutually exclusive with input mask |
 | Whisperer | text (3) only |
 | Calc confirm | text (3), number (12); delay also textarea (4) |
 | Desc memo HTML | 16 only — `ObjectDefaultLineDescMemo` is the template default; **HTML** (Admin HTML editor / `innerHTML` at runtime). Spec: `templates.fields.<code>.defaultValue` |
@@ -101,6 +133,8 @@ Admin filters the dropdown by type. **Mandatory is not offered** for 6, 7, 10, 1
 Extended **hidden** is available whenever validation is. **Disabled** is not offered for 10, 16. **Mandatory** condition is not offered for 7, 10, 16.
 
 `hidden: true` compiles to condition `true`. Expressions: [xeelo-grammar.md](xeelo-grammar.md#extended-validation). Spec: `templates.fields.*.extended` — generator already compiles `id{CODE}`.
+
+Create-form **visible/editable** is **ObjectDefaultAccess** (`templates[].access`), not these validation columns. See [object-model.md](object-model.md#create-form-access-objectdefaultaccess).
 
 ## Client calculations
 

@@ -11,6 +11,9 @@ projects/account-object/
   xeelo-spec.yaml       # metadata + includes
   spec/
     object.yaml         # object, company, layout, onGrid
+    references.yaml     # numberedníky (optional)
+    lookups.yaml        # dotazovací mapy (optional)
+    language-table.yaml # LanguageTable translations (optional)
     workflow.yaml       # workflow
     ids.yaml            # ids (+ source after extract)
 ```
@@ -36,6 +39,7 @@ object:
   name: Account
   code: ACCOUNT
   objectType: Finance
+  requestTitleField: TITLE
 company:
   name: Finance Company
 layout:
@@ -71,10 +75,11 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`) |
 | `company` | yes | Company row in transfer (`name`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid display + placement (typically in `object.yaml`) |
+| `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `workflow` | no | Defaults to minimal 2-step flow |
 | `ids.base` | no | Per-table max PK for **new** rows (`ObjectLine: 9112` → next is 9113). Omit for greenfield (default 9000 per table). Legacy: a single integer is the default for tables not in the map. |
 | `ids.explicit` | no | Stable IDs from site / transfer (see below) |
@@ -87,6 +92,15 @@ Generator **always** creates `Company`, `ObjectType`, `Role`, and `RequestStatus
 ## Layout: tabs → sections → fields
 
 Each object can have **multiple tabs** (left/right via `placement`) and **multiple sections** per tab.
+
+### Tab properties
+
+| Property | Maps to |
+|----------|---------|
+| `name` | `ObjectLineTabName` |
+| `placement` | `ObjectLineTabPlacement` (`0` left, `1` right) |
+| `order` | `ObjectLineTabOrder` |
+| `alwaysHidden` | `ObjectLineTabAlwaysHidden` — hide the whole tab. Common for a tab that only holds helper lines. Not template `hidden: true`. |
 
 Fields are defined inside their section under `layout.tabs[]`.
 
@@ -121,27 +135,89 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `textInputType` | `ObjectLineTextInputType` (0 Default, 1 Bar Code, 2 Location) |
 | `columnNumbers` | `ObjectLineNumberColumns` (radio / multi) |
 | `height` | `ObjectLineHeight` (memo, report) |
-| `uniqueId` | `ObjectLineUniqueID` (1–4) |
+| `uniqueId` | `ObjectLineUniqueID` (1 Object, 2 Object/Template, 3 Object/Requestor, 4 Object/Template/Requestor). Also sets `ObjectLineIsUnique = 1`. [object-model.md](../entities/object-model.md#unique) |
+| `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 | `descMemoBorder`, `descMemoPadding` | Description memo extras. **`descMemoBorder` defaults to false** (Admin/SQL `0`); omit it or set `false`. Use `true` only when the user wants a visible box. |
 | `buttonMessage`, `colorFont`, `colorBack` | Button extras |
 | `isReferenceLink` | `ObjectLineIsReferenceLink` (combo types) |
+| `alwaysHidden` | `ObjectLineIsHidden` — line never shown in GUI (definition). Distinct from template `hidden: true` / `extended.hidden`. |
 
-**Never** `reference` and `lookup` on the same field.
+`object.requestTitleField` is a **field code** on the object (not a layout extra). It sets `Object.RequestTitleObjectLineID` — that line’s value is the request title in inbox, header, and links.
 
-## Reference and sources
+Combo / radio / multi **require** `reference`. Lookup on the same field is allowed (query map). Do not use lookup instead of a číselník.
 
-Top-level `sources` map defines greenfield reference sources. Fields use `reference.sourceId` (site ID) or `reference.source` (key).
+## Autonumbers (`spec/autonumbers.yaml`)
 
-| Režim | `sources` shape | Emit |
-|-------|-----------------|------|
-| system | (none — only `reference.sourceId`) | FK on ObjectLine only |
-| fixed values | `sources.{key}.values[]` | ObjectLineSource + ObjectLineSourceValue |
-| refObject | `sources.{key}.refObject` | ObjectLineSource + ObjectLineSourceRefObject |
-
-New `sources.*` default **`styleId: 4`** (Value / `ObjectLineSourceStyleID`). Explicit `styleId` in spec wins. System sources (`reference.sourceId`) are not restyled.
+Site-wide sequence catalog (`ObjectLineAutoNumber`). Bind on the **template line**, not as a field type — [object-model.md](../entities/object-model.md#autonumber).
 
 ```yaml
-sources:
+# spec/autonumbers.yaml
+autonumbers:
+  request_no:
+    description: Request number
+    format: REQ####
+    next: 1
+    # resetTypeId: 1   # optional Yearly
+```
+
+```yaml
+# layout field (unique is on ObjectLine)
+- name: Request number
+  code: REQUEST_NO
+  type: text
+  uniqueId: 1
+
+# spec/templates.yaml (bind + usually not user-edited)
+templates:
+  - key: default
+    isDefault: true
+    fields:
+      REQUEST_NO:
+        autonumber: request_no
+        alwaysDisabled: true
+```
+
+On a single default template you may set `fields[].autonumber: request_no` instead of `templates.yaml`. Format: one contiguous `#` run (zero-padded number), optional `YYYY` / `YY` / `MM` / `DD`. **IDs:** `ids.explicit.autonumbers`.
+
+## Localization (`spec/language-table.yaml`)
+
+Canonical `name` values stay on the entity (usually English). Translations are a separate map — [localization.md](../entities/localization.md).
+
+```yaml
+# spec/language-table.yaml
+languageTable:
+  object:
+    cs: Účet
+  tabs:
+    General:
+      cs: Obecné
+  sections:
+    General/Details:
+      cs: Podrobnosti
+  lines:
+    ACCOUNT_NUMBER:
+      cs: Číslo účtu
+```
+
+Generator emits `LanguageTable` rows and parent→`LanguageTable` ObjectSetup edges. Extract writes this fragment only when translations exist. After `/push`, **/publish** so User GUI picks up labels.
+
+Do not put Czech (or other languages) into `object.yaml` `name` fields. Site rules (always `cs`, onGrid stays English): `projects/<name>/conventions.md`.
+
+## References (`spec/references.yaml`)
+
+Top-level `references` map defines greenfield číselníky (`ObjectLineSource`). Fields use `reference.referenceId` (site ID) or `reference.reference` (key).
+
+| Režim | `references` shape | Emit |
+|-------|-------------------|------|
+| system | (none — only `reference.referenceId`) | FK on ObjectLine only |
+| fixed values | `references.{key}.values[]` | ObjectLineSource + ObjectLineSourceValue |
+| refObject | `references.{key}.refObject` | ObjectLineSource + ObjectLineSourceRefObject |
+
+New `references.*` default **`styleId: 4`** (Value / `ObjectLineSourceStyleID`). Explicit `styleId` in spec wins. System lists (`reference.referenceId`) are not restyled.
+
+```yaml
+# spec/references.yaml
+references:
   colors:
     name: Colors
     typeId: 1
@@ -151,13 +227,78 @@ sources:
 
 # field:
 reference:
-  source: colors
+  reference: colors
+  filterField: COMPANY           # optional — ObjectLineSourceFilterObjectLineID
 # or site system list:
 reference:
-  sourceId: 1
+  referenceId: 1
 ```
 
+refObject picker (values from another object’s requests):
+
+```yaml
+references:
+  payment_label:
+    name: Payment label
+    typeId: 1
+    styleId: 1
+    refObject:
+      objectId: 9102
+      requestType: all
+      lines:
+        value: line_label_id
+        valueName: line_name
+        valueBind: line_label_id
+        valueFilter: line_applicability   # compared to consuming filterField
+```
+
+| Spec | Column |
+|------|--------|
+| `reference.filterField` | `ObjectLineSourceFilterObjectLineID` — line **on this object** |
+| `values[].filter` | `ObjectLineSourceValueFilter` — comma-split list vs filter field (fixed values) |
+| `refObject.lines.valueFilter` | `ValueFilterObjectLineID` — line **on the referenced object**; option shown when it equals the filter field |
+
+Load still accepts `sources:` / `reference.source` / `sourceId`. Extract writes `references` / `reference.reference`.
+
 See [`recipes/add-reference-field.md`](../../recipes/add-reference-field.md).
+
+## Lookups (`spec/lookups.yaml`)
+
+Top-level `lookups` map is the query-map definition (name, match, values). The field only binds: which map, which Source field, optional Filter field.
+
+```yaml
+# spec/lookups.yaml
+lookups:
+  priority_by_kind:
+    name: Priority by kind
+    matchId: 1
+    values:
+      - { source: demo, return: LOW }
+      - { source: full, return: HIGH }
+
+# field (combo still needs a reference whose binds include LOW/HIGH):
+reference:
+  reference: ks_priority
+lookup:
+  lookup: priority_by_kind
+  sourceField: ks_kind
+  filterField: ks_flag          # optional
+```
+
+| Spec | Column |
+|------|--------|
+| `values[].source` | `ObjectLineLookupSourceValue` — match the Source field value |
+| `values[].return` | `ObjectLineLookupReturnValue` — written to this field |
+| `values[].filter` | `ObjectLineLookupFilterValue` — **exact** `==` vs Filter field (omit / null when unused) |
+| `values[].sourceTo` | `ObjectLineLookupSourceValue1` — range end when `matchId: 2` |
+| `sourceField` | `ObjectDefaultLineLookupObjectLineID` (required) |
+| `filterField` | `ObjectDefaultLineLookupFilterObjectLineID` |
+
+`source` is the match key, not a combo label. Combo labels come from the **reference**.
+
+Inline `lookup.values` on the field still works (one-off map). Same key in `lookups:` = one `ObjectLineLookup` shared by fields.
+
+See [`recipes/add-lookup-field.md`](../../recipes/add-lookup-field.md).
 
 ## IDs and round-trip
 
@@ -203,7 +344,7 @@ ids:
       ACCOUNT_NUMBER: 9005
     objectDefaultLines:
       ACCOUNT_NUMBER: 9006
-    sources:
+    references:
       colors: 9010
     sourceValues:
       "1": 9011
@@ -372,7 +513,7 @@ objectMessages:
   warning_msg: 1053
 ```
 
-Condition `type` slugs match platform seed (`contains`, `equals_text`, `is_empty`, …). Extract omits access rows at DB defaults (editable=0, visible=1).
+Condition `type` slugs match platform seed (`contains`, `equals_text`, `is_empty`, …). Extract omits access rows at **refresh** defaults (editable=0, visible=1). List `editable: true` for fields the user must change on the update form; `visible: false` to hide. `editable: true` implies visible. Optional `access[].sublineId` for a subgrid column.
 
 **Not in spec v1:** `ObjectUpdateActionUserList` (User admin only).
 
@@ -387,6 +528,9 @@ templates:
     isDefault: true
     fields:
       TYPE: { hidden: true }
+    access:
+      - field: SECRET
+        visible: false
   - key: bank
     name: Bank
     fields:
@@ -404,22 +548,25 @@ templates:
 | Spec | Maps to |
 |------|---------|
 | `hidden: true` | `ObjectDefaultLineValidationID = 9`, `ExtHiddenCondition = true` |
+| `alwaysDisabled: true` | `ObjectDefaultLineIsDisabled = 1` (Admin Always disabled). Distinct from `extended.disabled` |
 | `mandatory: true` | `ObjectDefaultLineValidationID = 1` (unless extended is also set) |
 | *(neither `mandatory` nor `extended`)* | `ObjectDefaultLineValidationID = 2` (Optional) — always written; omitting the column is `NULL` and Admin autosaves |
 | `extended.hidden/disabled/mandatory` | Independent boolean `condition` expressions (no `v#` prefix) — [xeelo-grammar.md](../entities/xeelo-grammar.md#extended-validation) |
+| `access[]` | **ObjectDefaultAccess** create-form visible/editable. Refresh seeds **both true**; list only hide/lock exceptions. Same `{field, editable, visible, sublineId?}` shape as `workflow.steps[].access` and `updateActions[].access`. Not `hidden` / `alwaysDisabled`. |
 | `clientCalculation.type` / `expr` | Client-Math (`math`) / Client-String (`string`) — stored **without** `1#`/`2#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-math-vs-client-string). Client-UserInfo (`user_info`) / Client-DeviceInfo (`device_info`) — `expr` is a required `{Placeholder}` without `7#`/`8#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-userinfo--client-deviceinfo) |
 | `defaultValue` | `ObjectDefaultLineValue`, except **`description_memo`**: HTML into `ObjectDefaultLineDescMemo` |
+| `autonumber` | Catalog key from `spec/autonumbers.yaml` → `ObjectDefaultLineAutoNumberID`. Text (3) only. Mutually exclusive with input mask. |
 
 Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 
 - `id{FIELD_CODE}` → `id{ObjectLineID}`
 - `{sourceKey.valueKey}` → **`ObjectLineSourceValueBind`** of that source value (not `value`, not the row ID). Numeric bind stays unquoted (`id123 != 2`); any other bind is a STRING with **single quotes** (`id9108 != 'FIO'`). Double quotes are invalid. Full grammar: [xeelo-grammar.md](../entities/xeelo-grammar.md).
 
-**IDs:** `ids.explicit.templates`, `objectDefaultLines` keys `{template}/{field}` when more than one template (single template keeps field-only keys), optional `objectDefaultExternalLinks`.
+**IDs:** `ids.explicit.templates`, `objectDefaultLines` keys `{template}/{field}` when more than one template (single template keeps field-only keys), optional `objectDefaultAccess` (`{template}/{field}` or field-only when a single template), optional `objectDefaultExternalLinks`.
 
 ## Object actions (`spec/object-actions.yaml`)
 
-Optional fragment for **ObjectAction** (server automation on save/workflow). See [entities/object-actions.md](../entities/object-actions.md). Node.js scripts: [entities/nodejs-esm.md](../entities/nodejs-esm.md) — always ESM (`EndPointRunESM: "1"`); mutations on the current request must not refresh (`withRefresh: false`, no `createType`). GraphQL identifiers in `CustomJS` must match **site** `object.code` / field codes from env after extract ([graphql.md](../entities/graphql.md)).
+Optional fragment for **ObjectAction** (server automation on save/workflow). See [entities/object-actions.md](../entities/object-actions.md). Node.js scripts: [entities/nodejs-esm.md](../entities/nodejs-esm.md) — always ESM (`EndPointRunESM: "1"`); mutations on the current request must not refresh (`withRefresh: false`, no `createType`). GraphQL identifiers in `CustomJS` must match **site** `object.code` / field codes from env after extract ([graphql.md](../entities/graphql.md)). New lines often land as `line_{ObjectLineID}_{slug}` even if the spec used a shorter `code`.
 
 ```yaml
 objectActions:
@@ -481,8 +628,18 @@ Sets **ObjectLine** display flags for inbox grid:
 |----------|-----------|
 | `allowed` | `ObjectLineOnGridIsAllowed` |
 | `name` | `ObjectLineOnGridName` |
-| `isTag` | `ObjectLineOnGridIsTag` |
-| `isSearch` | `ObjectLineOnGridIsSearch` |
+| `isTag` | `ObjectLineOnGridIsTag` — **only** `text` / `textarea` (types 3, 4). Field values become request-grid tag filters (AND). See [object-line-types.md](../entities/object-line-types.md#on-grid-tag). |
+| `isSearch` | `ObjectLineOnGridIsSearch` — typed search; types 3, 4, 8, 12 |
+
+```yaml
+onGrid:
+  fields:
+    CATEGORY:
+      allowed: true
+      isTag: true
+```
+
+`CATEGORY` must be `type: text` or `textarea`. Extract emits `onGrid.fields` only for lines with `allowed`. After deploy, **/publish** so the tag cache SQL is rebuilt.
 
 ### `onGrid.layouts`
 

@@ -15,8 +15,10 @@ flowchart TB
     ObjectLineSection --> ObjectLine
     ObjectLine --> ObjectSub
     Object --> ObjectDefault
+    ObjectDefault --> ObjectDefaultAccess
     ObjectDefault --> ObjectDefaultLine
     Object --> ObjectUpdateAction
+    ObjectUpdateAction --> ObjectUpdateAccess
     Object --> ObjectAction
     ObjectAction --> ObjectActionParam
     ObjectAction --> ObjectActionCondition
@@ -50,9 +52,10 @@ flowchart TB
 - **Object** — form definition
 - **ObjectLineTab / Section / Line** — layout and fields
 - **Subgrid (ObjectSub)** — embedded table on a line
-- **ObjectDefault / ObjectDefaultLine** — template (defaults, validation, lookup)
-- **Lookup / Reference / Autonumber** — field data sources
-- **Update action (ObjectUpdateAction)** — post-completion user update → new request version
+- **ObjectDefault / ObjectDefaultLine** — template (defaults, validation, lookup, autonumber)
+- **ObjectDefaultAccess** — create-form visible/editable per template (same dual-list as update/workflow access)
+- **Lookup / Reference / Autonumber** — field data sources; autonumber is a sequence catalog bound on the template line
+- **Update action (ObjectUpdateAction)** — post-completion user update → new request version; **ObjectUpdateAccess** = visible/editable on the update form
 - **Object action (ObjectAction)** — server automation on save/workflow (`WorkflowStepObjectAction`)
 - **Periodic** — scheduled automation
 - **Calendar** — work calendars
@@ -83,7 +86,7 @@ flowchart TB
 
 Priority tables for **create object** recipe:
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineLookup`, `ObjectLineLookupValue`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultLine`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
 
 ## Entity docs
 
@@ -91,7 +94,7 @@ Detailed semantics from admin hints:
 
 | Doc | Entities |
 |-----|----------|
-| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, lookups |
+| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, lookups, autonumber, unique |
 | [entities/object-line-types.md](entities/object-line-types.md) | ObjectLine types 1–20, extras, template capabilities |
 | [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |
@@ -102,3 +105,4 @@ Detailed semantics from admin hints:
 | [entities/integrations.md](entities/integrations.md) | Export, import, periodic, scheduler |
 | [entities/outputs.md](entities/outputs.md) | Notification, printout, report |
 | [entities/users-and-access.md](entities/users-and-access.md) | Users vs transfer scope |
+| [entities/localization.md](entities/localization.md) | `LanguageTable` translations |

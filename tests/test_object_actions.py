@@ -734,5 +734,116 @@ class ExtendedConditionCompileTests(unittest.TestCase):
         )
 
 
+class RequestTitleAndHiddenFlagsTests(unittest.TestCase):
+    def test_generate_and_extract_title_disabled_hidden(self) -> None:
+        spec = {
+            "version": 2,
+            "kind": "create_object",
+            "object": {
+                "name": "Account",
+                "code": "ACCOUNT",
+                "objectType": "Finance",
+                "requestTitleField": "TITLE",
+            },
+            "company": {"name": "KB"},
+            "layout": {
+                "tabs": [
+                    {
+                        "name": "General",
+                        "placement": 0,
+                        "order": 10,
+                        "sections": [
+                            {
+                                "name": "Identity",
+                                "order": 10,
+                                "width": 100,
+                                "fields": [
+                                    {
+                                        "name": "Name",
+                                        "code": "NAME",
+                                        "type": "text",
+                                        "slot": 1,
+                                        "width": 50,
+                                        "order": 10,
+                                    },
+                                    {
+                                        "name": "Title",
+                                        "code": "TITLE",
+                                        "type": "text",
+                                        "slot": 2,
+                                        "width": 50,
+                                        "order": 20,
+                                    },
+                                ],
+                            }
+                        ],
+                    },
+                    {
+                        "name": "Helpers",
+                        "placement": 1,
+                        "order": 20,
+                        "alwaysHidden": True,
+                        "sections": [
+                            {
+                                "name": "Hidden",
+                                "order": 10,
+                                "width": 100,
+                                "fields": [
+                                    {
+                                        "name": "Scratch",
+                                        "code": "SCRATCH",
+                                        "type": "text",
+                                        "slot": 3,
+                                        "width": 50,
+                                        "order": 10,
+                                        "alwaysHidden": True,
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                ]
+            },
+            "templates": [
+                {
+                    "key": "bank",
+                    "name": "Bank",
+                    "isDefault": True,
+                    "fields": {"TITLE": {"alwaysDisabled": True}},
+                }
+            ],
+        }
+        result = build_rows(spec)
+        obj = result.rows["Object"][0]
+        title_id = next(r["ObjectLineID"] for r in result.rows["ObjectLine"] if r["ObjectLineCode"] == "TITLE")
+        self.assertEqual(obj["RequestTitleObjectLineID"], title_id)
+        scratch = next(r for r in result.rows["ObjectLine"] if r["ObjectLineCode"] == "SCRATCH")
+        self.assertEqual(scratch["ObjectLineIsHidden"], 1)
+        helpers = next(r for r in result.rows["ObjectLineTab"] if r["ObjectLineTabName"] == "Helpers")
+        self.assertEqual(helpers["ObjectLineTabAlwaysHidden"], 1)
+        title_tl = next(
+            tl
+            for tl in result.rows["ObjectDefaultLine"]
+            if tl["ObjectLineID"] == title_id
+        )
+        self.assertEqual(title_tl["ObjectDefaultLineIsDisabled"], 1)
+
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+
+        self.assertEqual(extracted["object"]["requestTitleField"], "TITLE")
+        helpers_tab = next(t for t in extracted["layout"]["tabs"] if t["name"] == "Helpers")
+        self.assertTrue(helpers_tab["alwaysHidden"])
+        scratch_field = helpers_tab["sections"][0]["fields"][0]
+        self.assertTrue(scratch_field["alwaysHidden"])
+        bank = extracted["templates"][0]
+        self.assertTrue(bank["fields"]["TITLE"]["alwaysDisabled"])
+
+
 if __name__ == "__main__":
     unittest.main()

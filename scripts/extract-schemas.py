@@ -25,7 +25,10 @@ PRIORITY_TABLES = [
     "ObjectLineSourceValue",
     "ObjectLineSourceRefObject",
     "ObjectDefault",
+    "ObjectDefaultAccess",
     "ObjectDefaultLine",
+    "ObjectUpdateAction",
+    "ObjectUpdateAccess",
     "Workflow",
     "WorkflowStep",
     "WorkflowStepAction",
@@ -38,6 +41,8 @@ PRIORITY_TABLES = [
     "ObjectActionParam",
     "ObjectActionCondition",
     "WorkflowStepObjectAction",
+    "LanguageTable",
+    "ObjectLineAutoNumber",
 ]
 
 

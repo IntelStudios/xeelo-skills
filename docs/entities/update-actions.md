@@ -63,14 +63,18 @@ Admin hints: [`data/table-hints.json`](../data/table-hints.json) (`ObjectUpdateA
 
 ## ObjectUpdateAccess
 
-Per-line (and optional subgrid column) flags during **EditableUpdate** mode.
+Per-line (and optional subgrid column) flags during **EditableUpdate** mode. Same Admin Visible / Editable dual-list as **template create access** (`ObjectDefaultAccess`) and **workflow step access**.
 
-| Column | Default | Semantics |
-|--------|---------|-----------|
+| Column | Refresh insert | Semantics |
+|--------|----------------|-----------|
 | `ObjectLineIsEditableUpdate` | 0 | Field editable during update |
 | `ObjectLineIsVisibleUpdate` | 1 | Field visible during update |
 
-Applied via `CacheStatic.ProcessEditableUpdateAccess`.
+Site refresh inserts a row per (action, line) as **visible, not editable**. Spec `updateActions[].access` must list fields that should be editable (or hidden). `editable: true` forces `visible: true`.
+
+Applied via `ProcessEditableUpdateAccess` when the new version is unsaved (`RequestTypeID` 2/3). **ObjectAction** (server automation) has no line-access table.
+
+This is not `templates.fields.hidden` / `alwaysDisabled` — see [object-model.md](object-model.md#create-form-access-objectdefaultaccess).
 
 ## ObjectUpdateActionCondition
 

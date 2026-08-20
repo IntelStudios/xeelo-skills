@@ -75,6 +75,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] GraphQL identifiers in `CustomJS` match **env** `object.code` / `fields[].code` after `/download-db` ([graphql.md](../docs/entities/graphql.md))
 - [ ] Self-update: no `createType`, `withRefresh: false`; `CREATE` only on a **different** object
 - [ ] Select uses `lines` (valueData), not `linesFormatted`, for calculations
+- [ ] Date picker values are `dd-MM-yyyy`; parse by splitting, not `new Date()` — [graphql.md](../docs/entities/graphql.md#date-picker-type-8)
 - [ ] Service account **0** has **WRITE** on every object the script mutates ([users-and-access.md](../docs/entities/users-and-access.md))
 - [ ] `ids.explicit` populated for Orig. ID import
 - [ ] Request stays **editable** on that workflow step (not immediately Completed)

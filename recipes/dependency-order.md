@@ -14,17 +14,22 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 6 | `ObjectLineSection` | ObjectLineTab |
 | 7 | `ObjectLineLookup` | — |
 | 8 | `ObjectLineLookupValue` | ObjectLineLookup |
-| 9 | `ObjectLine` | Object, ObjectLineSection |
-| 10 | `Workflow` | Role, RequestStatus |
-| 11 | `WorkflowStep` | Workflow, Role, RequestStatus |
-| 12 | `WorkflowStepAccess` | WorkflowStep, ObjectLine |
-| 13 | `WorkflowStepAction` | WorkflowStep, Role, RequestStatus, WorkflowStepActionStyle |
-| 14 | `ObjectDefault` | Object, Workflow |
-| 15 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup? |
-| 16 | `ObjectAction` | Object |
-| 17 | `ObjectActionParam` | ObjectAction |
-| 18 | `ObjectActionCondition` | ObjectAction, ObjectLine |
-| 19 | `WorkflowStepObjectAction` | WorkflowStep, ObjectAction |
+| 9 | `ObjectLineAutoNumber` | — |
+| 10 | `ObjectLine` | Object, ObjectLineSection |
+| 11 | `Workflow` | Role, RequestStatus |
+| 12 | `WorkflowStep` | Workflow, Role, RequestStatus |
+| 13 | `WorkflowStepAccess` | WorkflowStep, ObjectLine |
+| 14 | `WorkflowStepAction` | WorkflowStep, Role, RequestStatus, WorkflowStepActionStyle |
+| 15 | `ObjectDefault` | Object, Workflow |
+| 16 | `ObjectDefaultAccess` | ObjectDefault, ObjectLine |
+| 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber? |
+| 18 | `ObjectUpdateAction` | Object |
+| 19 | `ObjectUpdateAccess` | ObjectUpdateAction, ObjectLine |
+| 20 | `ObjectAction` | Object |
+| 21 | `ObjectActionParam` | ObjectAction |
+| 22 | `ObjectActionCondition` | ObjectAction, ObjectLine |
+| 23 | `WorkflowStepObjectAction` | WorkflowStep, ObjectAction |
+| 24 | `LanguageTable` | Parent entity PK in `RowID` (Object, ObjectLine, …) |
 
 ## Full transfer table list
 

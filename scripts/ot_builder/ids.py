@@ -14,12 +14,15 @@ CATEGORY_TO_TABLE: dict[str, str] = {
     "sections": "ObjectLineSection",
     "objectLineOnGrid": "ObjectLineOnGrid",
     "sources": "ObjectLineSource",
+    "references": "ObjectLineSource",
     "sourceValues": "ObjectLineSourceValue",
     "sourceRefObjects": "ObjectLineSourceRefObject",
     "lookups": "ObjectLineLookup",
     "lookupValues": "ObjectLineLookupValue",
+    "autonumbers": "ObjectLineAutoNumber",
     "templates": "ObjectDefault",
     "objectDefaultLines": "ObjectDefaultLine",
+    "objectDefaultAccess": "ObjectDefaultAccess",
     "workflowSteps": "WorkflowStep",
     "workflowStepActions": "WorkflowStepAction",
     "workflowStepAccess": "WorkflowStepAccess",
@@ -34,6 +37,7 @@ CATEGORY_TO_TABLE: dict[str, str] = {
     "objectMessages": "ObjectMessage",
     "roles": "Role",
     "statuses": "RequestStatus",
+    "languageTables": "LanguageTable",
 }
 
 SCALAR_TO_TABLE: dict[str, str] = {
@@ -151,6 +155,21 @@ class IdRegistry:
         if existing is not None:
             return self._track(table, existing)
         return None
+
+    def get(self, category: str, key: str) -> int | None:
+        """Return an already known ID without allocating."""
+        existing = self.optional(category, key)
+        if existing is not None:
+            return existing
+        return self._allocated.get(category, {}).get(key)
+
+    def get_scalar(self, key: str) -> int | None:
+        """Return an already known scalar ID without allocating."""
+        table = _table_for_scalar(key)
+        existing = self._scalar(key)
+        if existing is not None:
+            return self._track(table, existing)
+        return self._allocated_scalar.get(key)
 
     def seed_used(self, table: str, *values: int) -> None:
         used = self._used.setdefault(table, set())

@@ -17,6 +17,8 @@ Identifiers come from **site** `ObjectCode` / `ObjectLineCode` (after `/download
 
 Take codes from env, not from an older spec if they diverged (`ACCOUNT` vs `object_9100_account`).
 
+On **insert**, Admin often stores `ObjectLineCode` as `line_{ObjectLineID}_{slug}` even when the spec/`Object Transfer` sent a shorter `code` (`line_account` → `line_9142_account`). GraphQL `lines.{code}` is that stored code. After the first `/download-db`, rewrite `CustomJS` to match `env/objects/<slug>/spec/object.yaml` field codes before retesting.
+
 For `code` = sanitized `ObjectCode`:
 
 | Kind | GraphQL name |
@@ -73,6 +75,41 @@ Same keys (`sanitize(line.code)`), both `String` or null. Different DB columns:
 
 For Node.js arithmetic (balance += amount) always use `lines`, then `parseFloat` / write `String` or `.toFixed`. Use `linesFormatted` only for UI/export text.
 
+## Date picker (type 8)
+
+Stored **valueData** / GraphQL `lines.{code}` is **`dd-MM-yyyy`** (day-month-year with hyphens), e.g. `19-08-2026`. Empty is `""`. Save (`fnDateCheck`) parses with `cs-cz` and normalizes to that string.
+
+Do **not** parse `lines` with `new Date(s)`. A hyphenated non-ISO string is treated as US `MM-dd-yyyy` in JavaScript: year can look right, month is wrong (`01-08-2026` → January, not August). Split `dd-MM-yyyy` (and only then, as a fallback, `yyyy-MM-dd` from ISO ingress) into calendar parts. Never use `getUTCMonth()`.
+
+Mutations should **write** `dd-MM-yyyy`. Other `cs-cz`-parseable inputs are normalized on save.
+
+`linesFormatted.{code}` is display (`fnDateString2`, site layout; often `dd.MM.yyyy`). Read-only; do not send it in `Mutate_`.
+
+**Date `lineFilters`** use `DateFilterCondition` with values in **`YYYY-MM-DD`** (not the storage format). See below.
+
+## `lineFilters`
+
+Each filterable line is a field on `{code}LineFilter`. Type **8** → `DateFilterCondition`; type **12** → `NumberFilterCondition`; otherwise `StringFilterCondition`. Filters **valueData**, not formatted.
+
+Operators are GraphQL enums (`EQ`, not `eq` / `equals`):
+
+| Input | Operators | Value |
+|-------|-----------|--------|
+| `StringFilterCondition` | `EQ` `NE` `GT` `GTE` `LT` `LTE` `CONTAINS` `STARTS_WITH` `ENDS_WITH` `IN` `NOT_IN` `IS_EMPTY` `IS_NOT_EMPTY` | `value: String` (or `values` for IN) |
+| `DateFilterCondition` | `EQ` `NE` `GT` `GTE` `LT` `LTE` `IN` `NOT_IN` `BETWEEN` `NOT_BETWEEN` | `value` / `from` / `to` as **`YYYY-MM-DD`** |
+| `NumberFilterCondition` | same scalar set as date | `value: Float` |
+
+Look up a **refObject** row from a combo bind (exact match on the bind line):
+
+```graphql
+Select_OTHERCODE(
+  lineFilters: { BIND_FIELD: { operator: EQ, value: $bind } }
+  limit: 1
+) { lines { NAME_FIELD } }
+```
+
+`$bind` is `lines.COMBO_FIELD` on the current request (valueData), not `linesFormatted` (label).
+
 ## Mutation `Mutate_{code}`
 
 ```graphql
@@ -106,6 +143,6 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 | `UPDATE` | `updateAction` + `requestId` | **Always** |
 | `UPDATE_EMPTY` | `updateAction` + `requestId` | **Always** |
 
-Pipeline: optional `spRequestInsert` (`createType`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh.
+Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks for lines whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique).
 
 From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). `CREATE` / `UPDATE` on a **different** object or request may refresh. See [nodejs-esm.md](nodejs-esm.md#mutating-the-current-request--no-refresh).

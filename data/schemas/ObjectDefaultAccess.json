@@ -1,0 +1,17 @@
+{
+  "table": "ObjectDefaultAccess",
+  "columns": [
+    {"name": "ObjectDefaultID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectDefaultAccessID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectLineIsEditableCreate", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectLineIsVisibleCreate", "type": "BIT", "nullable": false, "identity": false, "default": "1"},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": [
+    {"column": "ObjectDefaultID", "referencesTable": "ObjectDefault", "referencesColumn": "ObjectDefaultID"},
+    {"column": "ObjectLineID", "referencesTable": "ObjectLine", "referencesColumn": "ObjectLineID"},
+    {"column": "ObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"}
+  ]
+}

@@ -13,12 +13,15 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Request Status** | Lifecycle state (Draft, Active, Completed, …) |
 | **Company** | Top-level org grouping |
 | **Object Type** | Category for objects (icon, color, order) |
-| **Object Template (ObjectDefault)** | Default values, validation, lookup bindings per field |
-| **Update action (ObjectUpdateAction)** | User update on completed request → new version ([update-actions.md](entities/update-actions.md)) |
+| **Object Template (ObjectDefault)** | Default values, validation, lookup bindings, create-form access ([object-model.md](entities/object-model.md#create-form-access-objectdefaultaccess)) |
+| **Update action (ObjectUpdateAction)** | User update on completed request → new version; field visible/editable via **ObjectUpdateAccess** ([update-actions.md](entities/update-actions.md)) |
 | **Object action (ObjectAction)** | Server automation on Save / workflow; Node.js Last: [object-actions.md](entities/object-actions.md), [nodejs-esm.md](entities/nodejs-esm.md) |
 | **GraphQL** | Per-site `Select_` / `Mutate_` from object codes; `lines` vs `linesFormatted`: [graphql.md](entities/graphql.md) |
-| **Reference (ObjectLineSource)** | Picklist source for combo-box — bind on **ObjectLine** |
-| **Lookup (ObjectLineLookup)** | Query map / static list — bind on **template line** |
+| **Reference (ObjectLineSource)** | Číselník for combo/radio/multi — bind on **ObjectLine**; spec `spec/references.yaml` |
+| **Lookup (ObjectLineLookup)** | Query map on **template line** — fills the field from another line (`sourceField`) |
+| **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |
+| **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted requests — [object-model.md](entities/object-model.md#unique) |
+| **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields — [localization.md](entities/localization.md) |
 
 ## Configuration vs runtime
 
@@ -42,7 +45,7 @@ Template layer (required for usable object):
 
 ```
 ObjectDefault (links Object + Workflow)
-└── ObjectDefaultLine (per ObjectLine: validation, lookup, calculations)
+└── ObjectDefaultLine (per ObjectLine: validation, lookup, autonumber, calculations)
 ```
 
 ## Admin grouping
@@ -57,5 +60,6 @@ See [01-entity-hierarchy.md](01-entity-hierarchy.md) for portlet-grouped entity 
 - [entities/graphql.md](entities/graphql.md) — `Select_` / `Mutate_`, `lines` vs `linesFormatted`
 - [entities/object-line-types.md](entities/object-line-types.md) — 20 ObjectLine types, template capabilities, client calc
 - [entities/xeelo-grammar.md](entities/xeelo-grammar.md) — extended validation (`v#`), Client-Math/String, UserInfo/DeviceInfo
+- [entities/localization.md](entities/localization.md) — `LanguageTable`, `spec/language-table.yaml`
 - [../AGENT.md](../AGENT.md) — project loop (download → env → change-loop OT)
 - [projects.md](projects.md) — nested private git for `projects/`

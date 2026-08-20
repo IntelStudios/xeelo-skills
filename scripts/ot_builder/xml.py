@@ -18,6 +18,7 @@ TABLE_ORDER = [
     "ObjectLineSourceRefObject",
     "ObjectLineLookup",
     "ObjectLineLookupValue",
+    "ObjectLineAutoNumber",
     "ObjectLine",
     "ObjectLineOnGrid",
     "ObjectAction",
@@ -29,11 +30,13 @@ TABLE_ORDER = [
     "WorkflowStepAction",
     "WorkflowStepObjectAction",
     "ObjectDefault",
+    "ObjectDefaultAccess",
     "ObjectDefaultLine",
     "ObjectUpdateAction",
     "ObjectUpdateAccess",
     "ObjectUpdateActionCondition",
     "ObjectUpdateMessage",
+    "LanguageTable",
 ]
 
 

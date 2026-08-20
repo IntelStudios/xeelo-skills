@@ -1,4 +1,4 @@
-# XeeloKB
+# xeelo-skills
 
 Agent-oriented knowledge base for Xeelo configuration: **download DB transfer → env specs → change-loop Object Transfer**.
 
@@ -8,10 +8,10 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
 2. If `projects/` is empty or missing, set up the nested private repo — **[docs/projects.md](docs/projects.md)**
 3. Per project (`projects/<name>/` = one Xeelo):
    - Copy `.xeelo-connection.example.json` → `.xeelo-connection.json` and fill credentials
-   - `make download-ovnet` / `python scripts/download-db-transfer.py --connection ...`
-   - `make extract-ovnet`
-   - `make loop-init SLUG=... OBJECTS="ov-net-customer"`
-   - Edit `changes/<slug>/objects/...` then `make generate-loop LOOP=...`
+   - `python scripts/download-db-transfer.py --connection projects/<name>/.xeelo-connection.json`
+   - `python scripts/extract-db-transfer-to-env.py <snapshot.zip> -o projects/<name>/env`
+   - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
+   - Edit `changes/<slug>/objects/...` then `python scripts/generate-change-loop.py projects/<name>/changes/<slug>`
 4. Upload generated ZIP in Xeelo Admin → **Object Transfer** → select rows → process
 
 Greenfield OT sample (no DB download):

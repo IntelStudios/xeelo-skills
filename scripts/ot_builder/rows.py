@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from ot_builder.ids import IdRegistry, build_registry
+from ot_builder.language_table import emit_language_table
 from ot_builder.object_actions import (
     condition_registry_key,
     iter_params,
@@ -15,8 +16,10 @@ from ot_builder.object_actions import (
     resolve_param_value,
     step_link_registry_key,
 )
+from ot_builder.spec_loader import normalize_spec, spec_references
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
+    LOOKUP_FIELD_TYPES,
     REFERENCE_FIELD_TYPES,
     apply_template_line_extras,
     apply_template_line_validation,
@@ -25,10 +28,12 @@ from ot_builder.templates import (
     iter_templates,
     resolve_template_id,
     template_line_key,
+    template_access_registry_key,
 )
 from ot_builder.update_actions import (
     access_registry_key,
     condition_type_id,
+    resolve_access_flags,
     slugify,
     step_access_registry_key,
 )
@@ -77,6 +82,7 @@ def _apply_object_line_extras(
 ) -> None:
     if field.get("uniqueId") is not None:
         line_row["ObjectLineUniqueID"] = int(field["uniqueId"])
+        line_row["ObjectLineIsUnique"] = 1
 
     if ftype == "number":
         _set_optional_str(line_row, "ObjectLineNumberSeparator", field.get("numberSeparator"))
@@ -245,19 +251,21 @@ def _resolve_ref_object_line_id(spec: dict, registry: IdRegistry, code_or_id: st
 
 
 def _resolve_source_id(spec: dict, registry: IdRegistry, reference: dict) -> int:
+    if reference.get("referenceId") is not None:
+        return int(reference["referenceId"])
     if reference.get("sourceId") is not None:
         return int(reference["sourceId"])
-    source_key = reference.get("source")
+    source_key = reference.get("reference") or reference.get("source")
     if not source_key:
-        raise ValueError("reference requires sourceId or source")
-    sources = spec.get("sources") or {}
-    if source_key not in sources:
-        raise ValueError(f"Unknown source key: {source_key!r}")
-    return registry.require("sources", str(source_key))
+        raise ValueError("reference requires referenceId or reference")
+    references = spec_references(spec)
+    if source_key not in references:
+        raise ValueError(f"Unknown reference key: {source_key!r}")
+    return registry.require("references", str(source_key))
 
 
 def _emit_sources(spec: dict, registry: IdRegistry, result: BuildResult) -> None:
-    sources = spec.get("sources") or {}
+    sources = spec_references(spec)
     if not sources:
         return
 
@@ -267,7 +275,7 @@ def _emit_sources(spec: dict, registry: IdRegistry, result: BuildResult) -> None
 
     for key in sorted(sources.keys()):
         source_def = sources[key]
-        source_id = registry.require("sources", key)
+        source_id = registry.require("references", key)
         source_row: dict[str, Any] = {
             "ObjectLineSourceID": source_id,
             "ObjectLineSourceName": source_def["name"],
@@ -312,6 +320,10 @@ def _emit_sources(spec: dict, registry: IdRegistry, result: BuildResult) -> None
                 "ObjectLineSourceRefObjectRequestTypeID": REQUEST_TYPE_IDS.get(
                     ref_object.get("requestType", "all"), 0
                 ),
+                # Draft/Open accounts must appear; SQL default IsOnlyCompleted=1 would hide them.
+                "ObjectLineSourceRefObjectIsOnlyCompleted": 1
+                if ref_object.get("requestType") == "completed"
+                else 0,
                 "IsActive": 1,
             }
             for role, column in REF_OBJECT_LINE_COLUMNS.items():
@@ -334,6 +346,142 @@ def _emit_sources(spec: dict, registry: IdRegistry, result: BuildResult) -> None
         result.rows["ObjectLineSourceValue"] = value_rows
     if ref_object_rows:
         result.rows["ObjectLineSourceRefObject"] = ref_object_rows
+
+
+def _lookup_value_parts(value: dict) -> tuple[str, str, str | None, str | None]:
+    ret = str(value.get("return", value.get("value", "")))
+    source = str(value.get("source", value.get("label", ret)))
+    filt = value.get("filter")
+    filt_s = str(filt) if filt not in (None, "") else None
+    source_to = value.get("sourceTo")
+    source_to_s = str(source_to) if source_to not in (None, "") else None
+    return source, ret, filt_s, source_to_s
+
+
+def _field_lookup_key(field: dict, lookup: dict) -> str:
+    key = lookup.get("lookup")
+    if key:
+        return str(key)
+    name = lookup.get("name") or field.get("name") or "lookup"
+    return slugify(str(name)) or "lookup"
+
+
+def _collect_lookup_defs(spec: dict) -> dict[str, dict]:
+    defs = dict(spec.get("lookups") or {})
+    for field in iter_layout_fields(spec):
+        lookup = field.get("lookup")
+        if not isinstance(lookup, dict):
+            continue
+        key = lookup.get("lookup")
+        if key:
+            if str(key) not in defs:
+                raise ValueError(f"Unknown lookup key: {key!r}")
+            continue
+        values = lookup.get("values")
+        if not values:
+            raise ValueError(
+                f"Field {field.get('code')!r} lookup requires lookup key or values"
+            )
+        name = lookup.get("name") or field.get("name") or "lookup"
+        inline_key = slugify(str(name)) or "lookup"
+        if inline_key not in defs:
+            entry: dict[str, Any] = {"name": name, "values": values}
+            if lookup.get("matchId") is not None:
+                entry["matchId"] = lookup["matchId"]
+            defs[inline_key] = entry
+    return defs
+
+
+def _emit_lookups(spec: dict, registry: IdRegistry, result: BuildResult) -> None:
+    defs = _collect_lookup_defs(spec)
+    if not defs:
+        return
+
+    lookup_rows: list[dict] = []
+    lookup_value_rows: list[dict] = []
+    for key in sorted(defs.keys()):
+        lookup_def = defs[key]
+        lookup_id = registry.require("lookups", key)
+        lookup_rows.append(
+            {
+                "ObjectLineLookupID": lookup_id,
+                "ObjectLineLookupName": lookup_def.get("name", key),
+                "ObjectLineLookupMatchID": int(lookup_def.get("matchId", 1)),
+                "ObjectLineLookupIsCache": 1,
+                "IsActive": 1,
+            }
+        )
+        for value in lookup_def.get("values") or []:
+            source, ret, filt, source_to = _lookup_value_parts(value)
+            value_key = f"{key}|{source}|{filt or ''}|{ret}"
+            lv_id = registry.require("lookupValues", value_key)
+            row: dict[str, Any] = {
+                "ObjectLineLookupValueID": lv_id,
+                "ObjectLineLookupID": lookup_id,
+                "ObjectLineLookupSourceValue": source,
+                "ObjectLineLookupReturnValue": ret,
+                "IsActive": 1,
+            }
+            if source_to is not None:
+                row["ObjectLineLookupSourceValue1"] = source_to
+            if filt is not None:
+                row["ObjectLineLookupFilterValue"] = filt
+            lookup_value_rows.append(row)
+            result.edges.append(
+                {
+                    "TableName": "ObjectLineLookup",
+                    "TableRowID": lookup_id,
+                    "ChildTableName": "ObjectLineLookupValue",
+                    "ChildTableRowID": lv_id,
+                }
+            )
+
+    if lookup_rows:
+        result.rows["ObjectLineLookup"] = lookup_rows
+    if lookup_value_rows:
+        result.rows["ObjectLineLookupValue"] = lookup_value_rows
+
+
+def _collect_autonumber_defs(spec: dict) -> dict[str, dict]:
+    defs = dict(spec.get("autonumbers") or {})
+    used: set[str] = set()
+    for field in iter_layout_fields(spec):
+        key = field.get("autonumber")
+        if key:
+            used.add(str(key))
+    for template_cfg in iter_templates(spec):
+        for field_cfg in (template_cfg.get("fields") or {}).values():
+            if isinstance(field_cfg, dict) and field_cfg.get("autonumber"):
+                used.add(str(field_cfg["autonumber"]))
+    for key in used:
+        if key not in defs:
+            raise ValueError(f"Unknown autonumber key: {key!r}")
+    return defs
+
+
+def _emit_autonumbers(spec: dict, registry: IdRegistry, result: BuildResult) -> None:
+    defs = _collect_autonumber_defs(spec)
+    if not defs:
+        return
+
+    rows: list[dict] = []
+    for key in sorted(defs.keys()):
+        autonumber_def = defs[key]
+        if not autonumber_def.get("format"):
+            raise ValueError(f"autonumber {key!r} requires format")
+        autonumber_id = registry.require("autonumbers", key)
+        row: dict[str, Any] = {
+            "ObjectLineAutoNumberID": autonumber_id,
+            "ObjectLineAutoNumberDescription": autonumber_def.get("description", key),
+            "ObjectLineAutoNumberFormat": str(autonumber_def["format"]),
+            "ObjectLineAutoNumberNext": int(autonumber_def.get("next", 1)),
+            "IsActive": 1,
+        }
+        reset_type = autonumber_def.get("resetTypeId")
+        if reset_type is not None:
+            row["ObjectLineAutoNumberResetTypeID"] = int(reset_type)
+        rows.append(row)
+    result.rows["ObjectLineAutoNumber"] = rows
 
 
 def _section_key(tab_name: str, section_name: str) -> str:
@@ -466,12 +614,13 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
             subline_id = access.get("sublineId")
             reg_key = step_access_registry_key(step_name, field_code, subline_id)
             access_id = registry.require("workflowStepAccess", reg_key)
+            editable_bit, visible_bit = resolve_access_flags(access)
             access_row: dict[str, Any] = {
                 "WorkflowStepID": step_id,
                 "WorkflowStepAccessID": access_id,
                 "ObjectLineID": registry.require("fields", field_code),
-                "WorkflowStepAccessIsEditable": 1 if access.get("editable") else 0,
-                "WorkflowStepAccessIsVisible": 0 if access.get("visible") is False else 1,
+                "WorkflowStepAccessIsEditable": editable_bit,
+                "WorkflowStepAccessIsVisible": visible_bit,
                 "IsActive": 1,
             }
             if subline_id is not None:
@@ -720,12 +869,13 @@ def _build_update_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
             reg_key = access_registry_key(action_key, field_code, subline_id)
             access_id = registry.require("objectUpdateAccess", reg_key)
             line_id = registry.require("fields", field_code)
+            editable_bit, visible_bit = resolve_access_flags(access)
             access_row: dict[str, Any] = {
                 "ObjectUpdateActionID": action_id,
                 "ObjectUpdateAccessID": access_id,
                 "ObjectLineID": line_id,
-                "ObjectLineIsEditableUpdate": 1 if access.get("editable") else 0,
-                "ObjectLineIsVisibleUpdate": 0 if access.get("visible") is False else 1,
+                "ObjectLineIsEditableUpdate": editable_bit,
+                "ObjectLineIsVisibleUpdate": visible_bit,
                 "IsActive": 1,
             }
             if subline_id is not None:
@@ -811,6 +961,7 @@ def _build_templates(
     default_seen = False
     template_rows: list[dict] = []
     template_line_rows: list[dict] = []
+    template_access_rows: list[dict] = []
 
     for index, template_cfg in enumerate(templates):
         template_key = str(template_cfg.get("key") or slugify(str(template_cfg.get("name", "default"))))
@@ -874,6 +1025,20 @@ def _build_templates(
                 source_field_id = meta.get("lookupSourceFieldId")
                 if source_field_id:
                     template_line["ObjectDefaultLineLookupObjectLineID"] = source_field_id
+                filter_field_id = meta.get("lookupFilterFieldId")
+                if filter_field_id:
+                    template_line["ObjectDefaultLineLookupFilterObjectLineID"] = filter_field_id
+            autonumber_key = None
+            if isinstance(field_cfg, dict):
+                autonumber_key = field_cfg.get("autonumber")
+            if not autonumber_key:
+                autonumber_key = field.get("autonumber")
+            autonumber_id = None
+            if autonumber_key:
+                if field.get("type") != "text":
+                    raise ValueError(f"Field {code!r} autonumber requires type text")
+                autonumber_id = registry.require("autonumbers", str(autonumber_key))
+                template_line["ObjectDefaultLineAutoNumberID"] = autonumber_id
             template_line_rows.append(template_line)
             result.edges.append(
                 {
@@ -892,8 +1057,47 @@ def _build_templates(
                         "ChildTableRowID": lookup_id,
                     }
                 )
+            if autonumber_id:
+                result.edges.append(
+                    {
+                        "TableName": "ObjectDefaultLine",
+                        "TableRowID": template_line_id,
+                        "ChildTableName": "ObjectLineAutoNumber",
+                        "ChildTableRowID": autonumber_id,
+                    }
+                )
+
+        for access in template_cfg.get("access") or []:
+            field_code = str(access["field"])
+            subline_id = access.get("sublineId")
+            reg_key = template_access_registry_key(
+                template_key, field_code, subline_id, legacy=legacy
+            )
+            access_id = registry.require("objectDefaultAccess", reg_key)
+            editable_bit, visible_bit = resolve_access_flags(access)
+            access_row: dict[str, Any] = {
+                "ObjectDefaultID": template_id,
+                "ObjectDefaultAccessID": access_id,
+                "ObjectLineID": registry.require("fields", field_code),
+                "ObjectLineIsEditableCreate": editable_bit,
+                "ObjectLineIsVisibleCreate": visible_bit,
+                "IsActive": 1,
+            }
+            if subline_id is not None:
+                access_row["ObjectSubLineID"] = int(subline_id)
+            template_access_rows.append(access_row)
+            result.edges.append(
+                {
+                    "TableName": "ObjectDefault",
+                    "TableRowID": template_id,
+                    "ChildTableName": "ObjectDefaultAccess",
+                    "ChildTableRowID": access_id,
+                }
+            )
 
     result.rows["ObjectDefault"] = template_rows
+    if template_access_rows:
+        result.rows["ObjectDefaultAccess"] = template_access_rows
     result.rows["ObjectDefaultLine"] = template_line_rows
 
 
@@ -1012,6 +1216,7 @@ def _build_object_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
 
 
 def build_rows(spec: dict) -> BuildResult:
+    spec = normalize_spec(spec)
     validate_spec(spec)
     mapping = load_field_mapping()
     registry = build_registry(spec)
@@ -1041,16 +1246,15 @@ def build_rows(spec: dict) -> BuildResult:
         }
     ]
 
-    result.rows["Object"] = [
-        {
-            "ObjectID": oid,
-            "ObjectTypeID": ot_id,
-            "CompanyID": company_id,
-            "ObjectName": obj["name"],
-            "ObjectCode": obj.get("code"),
-            "IsActive": 1,
-        }
-    ]
+    object_row: dict[str, Any] = {
+        "ObjectID": oid,
+        "ObjectTypeID": ot_id,
+        "CompanyID": company_id,
+        "ObjectName": obj["name"],
+        "ObjectCode": obj.get("code"),
+        "IsActive": 1,
+    }
+    result.rows["Object"] = [object_row]
     result.edges.extend(
         [
             {"TableName": "Object", "TableRowID": oid, "ChildTableName": "Object", "ChildTableRowID": oid},
@@ -1070,26 +1274,26 @@ def build_rows(spec: dict) -> BuildResult:
     )
 
     _emit_sources(spec, registry, result)
+    _emit_lookups(spec, registry, result)
+    _emit_autonumbers(spec, registry, result)
 
     tab_rows = []
     section_rows = []
     line_rows = []
-    lookup_rows = []
-    lookup_value_rows = []
     line_index = 0
 
     for tab in spec["layout"]["tabs"]:
         tab_name = tab["name"]
         tab_id = registry.require("tabs", tab_name)
-        tab_rows.append(
-            {
-                "ObjectLineTabID": tab_id,
-                "ObjectLineTabName": tab_name,
-                "ObjectLineTabOrder": tab.get("order", 1),
-                "ObjectLineTabPlacement": tab.get("placement", 0),
-                "IsActive": 1,
-            }
-        )
+        tab_row: dict[str, Any] = {
+            "ObjectLineTabID": tab_id,
+            "ObjectLineTabName": tab_name,
+            "ObjectLineTabOrder": tab.get("order", 1),
+            "ObjectLineTabPlacement": tab.get("placement", 0),
+            "IsActive": 1,
+        }
+        _set_optional_bool(tab_row, "ObjectLineTabAlwaysHidden", tab.get("alwaysHidden"))
+        tab_rows.append(tab_row)
         for section in tab.get("sections", []):
             section_name = section["name"]
             sec_key = _section_key(tab_name, section_name)
@@ -1132,6 +1336,7 @@ def build_rows(spec: dict) -> BuildResult:
                 }
                 if field.get("code"):
                     line_row["ObjectLineCode"] = field["code"]
+                _set_optional_bool(line_row, "ObjectLineIsHidden", field.get("alwaysHidden"))
                 if ftype == "number" and field.get("precision") is not None:
                     line_row["ObjectLineNumberPrecision"] = field["precision"]
                 if ftype == "subgrid" and field.get("objectSubId") is not None:
@@ -1177,8 +1382,6 @@ def build_rows(spec: dict) -> BuildResult:
 
                 reference = field.get("reference")
                 lookup = field.get("lookup")
-                if reference and lookup:
-                    raise ValueError(f"Field {code!r} cannot have both reference and lookup")
 
                 if reference and ftype in REFERENCE_FIELD_TYPES:
                     source_id = _resolve_source_id(spec, registry, reference)
@@ -1198,52 +1401,29 @@ def build_rows(spec: dict) -> BuildResult:
                     )
                     result.field_meta[code]["sourceId"] = source_id
 
-                if ftype in REFERENCE_FIELD_TYPES and lookup and not reference:
-                    lookup_name = lookup.get("name", field["name"])
-                    lookup_id = registry.require("lookups", lookup_name)
+                if lookup and ftype in LOOKUP_FIELD_TYPES:
                     source_field = lookup.get("sourceField")
-                    if source_field:
-                        result.field_meta[code]["lookupSourceFieldId"] = registry.require(
-                            "fields", str(source_field)
-                        )
-                    lookup_rows.append(
-                        {
-                            "ObjectLineLookupID": lookup_id,
-                            "ObjectLineLookupName": lookup_name,
-                            "ObjectLineLookupMatchID": 1,
-                            "ObjectLineLookupIsCache": 1,
-                            "IsActive": 1,
-                        }
-                    )
+                    if not source_field:
+                        raise ValueError(f"Field {code!r} lookup requires sourceField")
+                    lookup_key = _field_lookup_key(field, lookup)
+                    lookup_id = registry.require("lookups", lookup_key)
                     result.field_meta[code]["lookupId"] = lookup_id
-                    for value in lookup["values"]:
-                        return_value = str(value["value"])
-                        lv_id = registry.require("lookupValues", return_value)
-                        lookup_value_rows.append(
-                            {
-                                "ObjectLineLookupValueID": lv_id,
-                                "ObjectLineLookupID": lookup_id,
-                                "ObjectLineLookupSourceValue": value.get("label", return_value),
-                                "ObjectLineLookupReturnValue": return_value,
-                                "IsActive": 1,
-                            }
-                        )
-                        result.edges.append(
-                            {
-                                "TableName": "ObjectLineLookup",
-                                "TableRowID": lookup_id,
-                                "ChildTableName": "ObjectLineLookupValue",
-                                "ChildTableRowID": lv_id,
-                            }
+                    result.field_meta[code]["lookupSourceFieldId"] = registry.require(
+                        "fields", str(source_field)
+                    )
+                    filter_field = lookup.get("filterField")
+                    if filter_field:
+                        result.field_meta[code]["lookupFilterFieldId"] = registry.require(
+                            "fields", str(filter_field)
                         )
 
     result.rows["ObjectLineTab"] = tab_rows
     result.rows["ObjectLineSection"] = section_rows
     result.rows["ObjectLine"] = line_rows
-    if lookup_rows:
-        result.rows["ObjectLineLookup"] = lookup_rows
-    if lookup_value_rows:
-        result.rows["ObjectLineLookupValue"] = lookup_value_rows
+
+    title_field = obj.get("requestTitleField")
+    if title_field:
+        object_row["RequestTitleObjectLineID"] = registry.require("fields", str(title_field))
 
     wf_cfg = spec.get("workflow", {})
     if wf_cfg.get("mode") == "full" and wf_cfg.get("steps"):
@@ -1297,5 +1477,6 @@ def build_rows(spec: dict) -> BuildResult:
 
     _build_update_actions(spec, registry, oid, result)
     _build_object_actions(spec, registry, oid, result)
+    emit_language_table(spec, registry, result)
 
     return result

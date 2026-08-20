@@ -15,7 +15,7 @@ Transfer package always includes **Company**, **ObjectType**, **Role**, and **Re
 
 See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
 
-Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout.
+Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English.
 
 ### 2. Allocate IDs
 
@@ -44,7 +44,7 @@ ObjectLine → ObjectLineTab
 ObjectLineTab → ObjectLineSection
 ```
 
-One section edge per section (not per field).
+One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`.
 
 ### 5. onGrid (optional)
 
@@ -85,11 +85,11 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 
 ## Tables in minimal create_object package
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineLookup?`, `ObjectLineLookupValue?`, `ObjectLineOnGrid?`, `Role`, `RequestStatus`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultLine`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineLookup?`, `ObjectLineLookupValue?`, `ObjectLineAutoNumber?`, `ObjectLineOnGrid?`, `Role`, `RequestStatus`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultLine`
 
 ## Validate
 
 - Single XML file with ObjectSetup + ObjectMap + rows
 - `TransferType=OBJECT`, `Version=1.3.0`
-- Unique slots; combobox lookup chain complete
+- Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`
 - onGrid `field` codes match layout field codes

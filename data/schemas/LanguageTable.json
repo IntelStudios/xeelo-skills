@@ -1,72 +1,58 @@
 {
-  "table": "ObjectLineLookupValue",
+  "table": "LanguageTable",
   "columns": [
     {
-      "name": "ObjectLineLookupValueID",
+      "name": "LanguageTableID",
       "type": "INT",
       "nullable": false,
       "identity": true,
       "default": null
     },
     {
-      "name": "ObjectLineLookupID",
-      "type": "INT",
+      "name": "TableName",
+      "type": "varchar(255)",
       "nullable": false,
       "identity": false,
       "default": null
     },
     {
-      "name": "ObjectLineLookupSourceValue",
-      "type": "nvarchar(255)",
+      "name": "ColumnName",
+      "type": "varchar(255)",
       "nullable": false,
       "identity": false,
       "default": null
     },
     {
-      "name": "ObjectLineLookupSourceValue1",
-      "type": "nvarchar(255)",
-      "nullable": true,
-      "identity": false,
-      "default": null
-    },
-    {
-      "name": "ObjectLineLookupReturnValue",
-      "type": "nvarchar(255)",
+      "name": "RowID",
+      "type": "varchar(255)",
       "nullable": false,
       "identity": false,
       "default": null
     },
     {
-      "name": "ObjectLineLookupFilterValue",
-      "type": "nvarchar(255)",
-      "nullable": true,
-      "identity": false,
-      "default": null
-    },
-    {
-      "name": "RequestCode",
-      "type": "BIGINT",
-      "nullable": true,
-      "identity": false,
-      "default": null
-    },
-    {
-      "name": "RequestSubCode",
-      "type": "BIGINT",
-      "nullable": true,
-      "identity": false,
-      "default": null
-    },
-    {
-      "name": "IsActive",
-      "type": "BIT",
+      "name": "UserLanguageCode",
+      "type": "varchar(5)",
       "nullable": false,
       "identity": false,
       "default": null
     },
     {
-      "name": "CopyID",
-      "type": "INT",
+      "name": "LanguageTableData",
+      "type": "nvarchar(max)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
       "nullable": true,
       "identity": false,
       "default": null
@@ -79,18 +65,40 @@
       "default": null
     },
     {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
       "name": "ModifiedDate",
       "type": "datetime",
       "nullable": true,
       "identity": false,
       "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
     }
   ],
-  "foreignKeys": [
-    {
-      "column": "ObjectLineLookupID",
-      "referencesTable": "ObjectLineLookup",
-      "referencesColumn": "ObjectLineLookupID"
-    }
-  ]
+  "foreignKeys": []
 }

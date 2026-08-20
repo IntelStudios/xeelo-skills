@@ -1,24 +1,25 @@
 # Recipe: Add Reference Field (Combo-box)
 
-Add a combo-box whose values come from an **ObjectLineSource** (reference / číselník), not a static lookup.
+Add a combo-box whose values come from an **ObjectLineSource** (reference / číselník).
 
 ## When to use
 
 Task mentions: picklist, reference list, user list, company list, values from another object, dynamic dropdown from requests.
 
-**Not** for static fixed options — use [`add-lookup-field.md`](add-lookup-field.md) (lookup / dotazovací mapa).
+Static **fixed options** still use a **reference** (`references.*.values[]`). A **lookup** is a query map on top of a field — see [`add-lookup-field.md`](add-lookup-field.md). Combo / radio / multi always need a reference.
 
 ## Reference vs lookup
 
 | | Reference | Lookup |
 |---|-----------|--------|
-| Spec | `field.reference` | `field.lookup` |
+| Spec file | `spec/references.yaml` | `spec/lookups.yaml` |
+| Spec | `field.reference.reference` / `referenceId` | `field.lookup.lookup` + `sourceField` |
 | Bind | `ObjectLine.ObjectLineSourceID` | `ObjectDefaultLine.ObjectDefaultLineLookupID` |
-| Meaning | Číselník (picklist source) | Dotazovací mapa podle jiného pole |
+| Meaning | Číselník (picklist) | Dotazovací mapa podle jiného pole |
 
-Never both on the same field.
+Both on the same combo is allowed: reference = options, lookup = which option to set when another field changes.
 
-New `sources.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSourceStyle` = Value). Other styles only when asked. System sources (`reference.sourceId`) keep their existing style.
+New `references.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSourceStyle` = Value). Other styles only when asked. System lists (`reference.referenceId`) keep their existing style.
 
 | `styleId` | Name | Display |
 |-----------|------|---------|
@@ -29,7 +30,7 @@ New `sources.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSou
 
 ## Variant 1: System reference (site-preexisting)
 
-Use when the site already has a system source (User List, Company List, …). Only bind the field — do not emit `ObjectLineSource` rows.
+Use when the site already has a system list (User List, Company List, …). Only bind the field — do not emit `ObjectLineSource` rows.
 
 ```yaml
 fields:
@@ -38,15 +39,14 @@ fields:
     type: combobox
     slot: 3
     reference:
-      sourceId: 1    # site ID from ids.byTable.ObjectLineSource
+      referenceId: 1    # site ID from ids.byTable.ObjectLineSource
 ```
 
 ## Variant 2: Fixed values (ObjectLineSourceValue)
 
-Define a custom table-type source with explicit options:
-
 ```yaml
-sources:
+# spec/references.yaml
+references:
   profile_colors:
     name: Profile colors
     typeId: 1
@@ -59,26 +59,19 @@ sources:
         label: Černá
         bind: "4"
 
-layout:
-  tabs:
-    - name: General
-      sections:
-        - name: Details
-          fields:
-            - name: Color
-              type: combobox
-              reference:
-                source: profile_colors
+# field:
+- name: Color
+  type: combobox
+  reference:
+    reference: profile_colors
 ```
 
 Tables emitted: `ObjectLineSource`, `ObjectLineSourceValue`, edge `ObjectLine → ObjectLineSource`.
 
 ## Variant 3: ReferenceObject (dynamic from requests)
 
-Values computed at runtime from requests of another object:
-
 ```yaml
-sources:
+references:
   cars_picker:
     name: Cars picker
     typeId: 1
@@ -96,17 +89,58 @@ fields:
   - name: Car
     type: combobox
     reference:
-      source: cars_picker
+      reference: cars_picker
 ```
 
 Line codes in `refObject.lines` refer to fields on the **referenced** object. Put their line IDs in `ids.explicit.refObjectLines` when generating greenfield.
+
+| `refObject.lines.*` | Column | Role |
+|---------------------|--------|------|
+| `value` | `ValueObjectLineID` | Stored option value |
+| `valueName` | `ValueNameObjectLineID` | Display name (`styleId: 1`) |
+| `valueBind` | `ValueBindObjectLineID` | Bind / match key |
+| `valueFilter` | `ValueFilterObjectLineID` | Value compared to the consuming combo’s `filterField` |
+| `valueOrder` | `ValueOrderObjectLineID` | Sort |
 
 Tables emitted: `ObjectLineSource`, `ObjectLineSourceRefObject`.
 
 ## Optional filter
 
+The consuming combo/radio/multi sets `reference.filterField` → `ObjectLine.ObjectLineSourceFilterObjectLineID` (a line **on this object**). What it is compared against depends on the reference mode.
+
+### Fixed values (comma-split)
+
 ```yaml
 reference:
-  sourceId: 16
-  filterField: COMPANY_FIELD_CODE   # → ObjectLineSourceFilterObjectLineID
+  reference: colors
+  filterField: COMPANY_FIELD_CODE
 ```
+
+`values[].filter` → `ObjectLineSourceValueFilter` is comma-separated. Every current filter-field value must appear in that list (intersection).
+
+### refObject (line on the other object)
+
+```yaml
+references:
+  payment_label:
+    name: Payment label
+    typeId: 1
+    styleId: 1
+    refObject:
+      objectId: 9102
+      requestType: all
+      lines:
+        value: line_label_id
+        valueName: line_name
+        valueBind: line_label_id
+        valueFilter: line_applicability   # field on Payment label
+
+fields:
+  - name: Label
+    type: combobox
+    reference:
+      reference: payment_label
+      filterField: DIRECTION              # field on this object
+```
+
+Runtime keeps options whose `valueFilter` line equals the current `filterField` value. Use the **same stored strings** on both sides (e.g. Direction text `Příjem` / `Výdej` and Applicability combo binds). Distinct from lookup `filterField` (exact string on `ObjectLineLookupFilterValue`).

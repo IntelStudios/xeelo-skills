@@ -80,4 +80,8 @@ git commit -m "Initial projects repo"
 git push -u origin main
 ```
 
-`/new-project` adds `projects/<name>/` into this same private repo. Commit there, not in XeeloKB.
+`/new-project` adds `projects/<name>/` into this same private repo (including `conventions.md` from [`templates/project/conventions.md`](../templates/project/conventions.md)). Commit there, not in XeeloKB.
+
+## Site conventions
+
+`projects/<name>/conventions.md` holds **site-specific** rules (language, naming, other). The agent reads it at the start of site work. Template defaults: English canonical `name`, always Czech in `spec/language-table.yaml`, inbox/`onGrid` names stay English. Edit per site; do not put these rules into the public KB.

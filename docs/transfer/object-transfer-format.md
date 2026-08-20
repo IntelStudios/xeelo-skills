@@ -58,10 +58,11 @@ Layout chain for form fields:
 Object → ObjectLine → ObjectLineTab → ObjectLineSection
 Object → ObjectLineOnGrid  (direct; references ObjectLineID)
 Object → ObjectDefault → ObjectDefaultLine → ObjectLineLookup → ObjectLineLookupValue
+ObjectDefaultLine → ObjectLineAutoNumber
 Object → Workflow → WorkflowStep → WorkflowStepAction
 ```
 
-Schema pairs (ObjectMap): full map from [`data/object-transfer-map.json`](../../data/object-transfer-map.json) (~124 parent→child table types), same as Xeelo download.
+Schema pairs (ObjectMap): full map from [`data/object-transfer-map.json`](../../data/object-transfer-map.json) (~124 parent→child table types), same as Xeelo download. Generator also adds `Parent → LanguageTable` pairs when `spec/language-table.yaml` is present.
 
 ## Partial deployment
 
@@ -114,6 +115,8 @@ Skills: [`.agents/skills/push/SKILL.md`](../../.agents/skills/push/SKILL.md), [`
 ## Reference data
 
 `Role` and `RequestStatus` are defined in spec (`roles` / `statuses`) and **always emitted** in transfer together with `Company` and `ObjectType`.
+
+`LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After process, **/publish**.
 
 ## Generate
 

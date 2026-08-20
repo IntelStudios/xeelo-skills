@@ -1,56 +1,85 @@
-# Recipe: Add Lookup Field (Combo-box)
+# Recipe: Add Lookup Field (query map)
 
-Add a static-value combo-box to an **existing** object.
+Fill a field from **another field** using an `ObjectLineLookup` map (dotazovací mapa). Not a picklist — combo / radio / multi still need a **reference**.
 
 ## When to use
 
-Task mentions: dropdown, select, enum, choice list, typ (type), category with fixed options.
+Task mentions: derive / map value from another line, query map, lookup that recalculates when X changes, optional extra filter line.
 
-## Spec fragment
+Admin types that allow lookup: combo, combo search/server, text, checkbox, date, number, time, radio, multi.
+
+## Shared map + field binding
+
+Put the map in `spec/lookups.yaml`. The field only names the map and the trigger line(s).
 
 ```yaml
-fields:
-  - name: Status
-    code: STATUS
-    type: combobox
-    slot: 4          # new unique slot on object
-    width: 50
-    mandatory: false
-    lookup:
-      name: Status Options
-      values:
-        - { label: Open, value: OPEN }
-        - { label: Closed, value: CLOSED }
+# spec/lookups.yaml
+lookups:
+  priority_by_kind:
+    name: Priority by kind
+    values:
+      - { source: demo, return: LOW }
+      - { source: full, return: HIGH }
+
+# spec/references.yaml  — required if the target is a combo
+references:
+  ks_priority:
+    name: Priority
+    typeId: 1
+    styleId: 4
+    values:
+      - { value: LOW, label: Low }
+      - { value: MED, label: Medium }
+      - { value: HIGH, label: High }
+
+# field:
+- name: Priority
+  code: ks_priority
+  type: combobox
+  slot: 13
+  reference:
+    reference: ks_priority
+  lookup:
+    lookup: priority_by_kind
+    sourceField: ks_kind          # required — Admin Source field
+    # filterField: ks_flag        # optional exact Filter
 ```
+
+When the user changes `ks_kind`, lookup matches `source` against that value and writes `return` into Priority. `return` must exist in the reference (here LOW / HIGH). `ObjectLineLookupSourceValue` is **not** a combo label.
+
+## Text field (no reference)
+
+```yaml
+lookups:
+  title_from_kind:
+    name: Title from kind
+    values:
+      - { source: demo, return: "Demo request" }
+      - { source: full, return: "Full request" }
+
+# field:
+- name: Title
+  code: ks_title
+  type: text
+  lookup:
+    lookup: title_from_kind
+    sourceField: ks_kind
+```
+
+## Filter
+
+`values[].filter` is exact equality with the Filter field (`ObjectDefaultLineLookupFilterObjectLineID`). Empty filter on the template line uses rows with `FilterValue` NULL. This is **not** comma-split; comma lists belong to **reference** `ObjectLineSourceValueFilter`.
 
 ## Tables to emit
 
-1. **ObjectLine** — new line row (`ObjectLineTypeID=1`)
-2. **ObjectLineLookup** — new lookup definition
-3. **ObjectLineLookupValue** — one row per option
-4. **ObjectDefaultLine** — link line to lookup via `ObjectDefaultLineLookupID`
+1. **ObjectLineLookup** + **ObjectLineLookupValue** (once per map key)
+2. **ObjectDefaultLine** — `ObjectDefaultLineLookupID`, `…LookupObjectLineID`, optional `…LookupFilterObjectLineID`
+3. Combo: **ObjectLineSource** as usual (`reference`)
 
-If object already has `ObjectDefault`, add template line only. If not, create full template chain (see [`create-object.md`](create-object.md)).
+Same `lookups:` key → one `ObjectLineLookup` shared by fields.
 
-## Lookup value columns
-
-| Column | Value |
-|--------|-------|
-| `ObjectLineLookupSourceValue` | Display text in UI |
-| `ObjectLineLookupReturnValue` | Stored value |
-| `ObjectLineLookupFilterValue` | Optional filter (usually null) |
-
-## Reference types (not this recipe)
-
-Combo-box fields use **lookup** for static lists and dotazovací mapy. For **reference** (ObjectLineSource / číselník), see [`add-reference-field.md`](add-reference-field.md).
-
-Other source types (out of scope here):
-
-- **Reference External** — SQL/external source (`ObjectLineSourceRefExternal`)
-- **Combo-box (server)** — server-side search (type ID 14)
-
-Static lists use **ObjectLineLookup** + **ObjectLineLookupValue** on the **template line** only.
+Inline `lookup.values` on the field still works for a one-off map.
 
 ## Hints
 
-From [`data/table-hints.json`](../data/table-hints.json) — lookup fields configured on template line as **Source** (`ObjectDefaultLineLookupID` in Admin UI).
+Admin template group **Lookup**: Source (`ObjectDefaultLineLookupID`), Source field, Filter.

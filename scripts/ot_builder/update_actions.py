@@ -62,6 +62,24 @@ def access_differs_from_default(row: dict[str, Any]) -> bool:
     return editable or not visible or subline is not None
 
 
+def template_access_differs_from_default(row: dict[str, Any]) -> bool:
+    """Refresh seeds ObjectDefaultAccess as visible+editable (both 1)."""
+    editable = bool(row.get("ObjectLineIsEditableCreate", 1))
+    visible = bool(row.get("ObjectLineIsVisibleCreate", 1))
+    subline = row.get("ObjectSubLineID")
+    return (not editable) or (not visible) or subline is not None
+
+
+def resolve_access_flags(access: dict[str, Any]) -> tuple[int, int]:
+    """Return (editable, visible) bits. Editable implies visible (platform trigger)."""
+    editable_bit = 1 if access.get("editable") else 0
+    if editable_bit:
+        return 1, 1
+    if access.get("visible") is False:
+        return 0, 0
+    return 0, 1
+
+
 def step_access_registry_key(step_name: str, field_code: str, subline_id: int | None = None) -> str:
     if subline_id is not None:
         return f"{step_name}/{field_code}/sub{subline_id}"

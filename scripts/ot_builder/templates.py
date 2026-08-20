@@ -7,6 +7,7 @@ import uuid
 from typing import Any
 
 from ot_builder.ids import IdRegistry
+from ot_builder.spec_loader import spec_references
 from ot_builder.update_actions import slugify
 
 VALIDATION_MANDATORY = 1
@@ -26,6 +27,20 @@ REFERENCE_FIELD_TYPES = frozenset(
     }
 )
 COMBO_FIELD_TYPES = frozenset({"combobox", "combobox_search", "combobox_server"})
+LOOKUP_FIELD_TYPES = frozenset(
+    {
+        "combobox",
+        "combobox_search",
+        "text",
+        "checkbox",
+        "date",
+        "number",
+        "combobox_server",
+        "time",
+        "radio",
+        "checkbox_multiselect",
+    }
+)
 
 CLIENT_CALC_TYPE_IDS = {
     "math": 1,
@@ -43,10 +58,10 @@ PLACEHOLDER_PARAM_RE = re.compile(r"^\{[^{}]+\}")
 
 
 def lookup_source_bind(spec: dict, source_key: str, value_key: str) -> str:
-    sources = spec.get("sources") or {}
-    if source_key not in sources:
-        raise ValueError(f"Unknown source key in extended validation: {source_key!r}")
-    for value_def in sources[source_key].get("values") or []:
+    references = spec_references(spec)
+    if source_key not in references:
+        raise ValueError(f"Unknown reference key in extended validation: {source_key!r}")
+    for value_def in references[source_key].get("values") or []:
         val = str(value_def["value"])
         bind = str(value_def.get("bind", value_def["value"]))
         if value_key in (val, bind):
@@ -145,6 +160,19 @@ def template_line_key(template_key: str, field_code: str, *, legacy: bool) -> st
     return f"{template_key}/{field_code}"
 
 
+def template_access_registry_key(
+    template_key: str,
+    field_code: str,
+    subline_id: int | None = None,
+    *,
+    legacy: bool,
+) -> str:
+    base = template_line_key(template_key, field_code, legacy=legacy)
+    if subline_id is not None:
+        return f"{base}/sub{subline_id}"
+    return base
+
+
 def resolve_template_id(registry: IdRegistry, key: str, *, is_default: bool) -> int:
     mapped = registry.optional("templates", key)
     if mapped is not None:
@@ -201,6 +229,8 @@ def apply_template_line_extras(
     registry: IdRegistry,
 ) -> None:
     cfg = dict(template_field or {})
+    if cfg.get("alwaysDisabled"):
+        template_line["ObjectDefaultLineIsDisabled"] = 1
     if cfg.get("defaultValue") is not None:
         value = str(cfg["defaultValue"])
         if field.get("type") == "description_memo":
@@ -233,12 +263,16 @@ def template_field_spec_from_line(
     row: dict[str, Any],
     field_id_to_code: dict[int, str],
     sources_spec: dict[str, dict],
+    autonumber_id_to_key: dict[int, str] | None = None,
 ) -> dict[str, Any] | None:
     validation_id = row.get("ObjectDefaultLineValidationID")
     hidden_cond = row.get("ObjectDefaultLineValidationExtHiddenCondition")
     disabled_cond = row.get("ObjectDefaultLineValidationExtDisabledCondition")
     mandatory_cond = row.get("ObjectDefaultLineValidationExtMandatoryCondition")
     spec_field: dict[str, Any] = {}
+
+    if str(row.get("ObjectDefaultLineIsDisabled")) in ("1", "True", "true"):
+        spec_field["alwaysDisabled"] = True
 
     if validation_id is not None and int(validation_id) == VALIDATION_MANDATORY:
         spec_field["mandatory"] = True
@@ -285,6 +319,12 @@ def template_field_spec_from_line(
                     str(calc_expr), field_id_to_code, sources_spec
                 )
             spec_field["clientCalculation"] = calc_spec
+
+    autonumber_id = row.get("ObjectDefaultLineAutoNumberID")
+    if autonumber_id is not None and autonumber_id_to_key:
+        key = autonumber_id_to_key.get(int(autonumber_id))
+        if key:
+            spec_field["autonumber"] = key
 
     return spec_field or None
 
