@@ -106,6 +106,8 @@ Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
+Object Transfer **upserts** by Orig. ID — it does not delete. Soft-disable with `isActive: false` on the same ID (`ObjectUpdateAction`, `ObjectAction`, …). Omit the row and the site copy stays active.
+
 Object Transfer allows **partial deployment** — `/publish` applies the generated package (all rows, Orig. ID). Manual Admin UI still works for selecting rows in batches.
 
 ## Creating a new project
@@ -337,7 +339,7 @@ Lookup **není** náhrada číselníku. Když uživatel změní Source field (ne
 |-------|-----|------|
 | **system** | Site číselník (User/Company list) | `reference.referenceId` |
 | **values** | Vlastní pevný seznam | `references.*.values[]` + `reference.reference` |
-| **refObject** | Hodnoty z requestů jiného objektu | `references.*.refObject.lines` (`value`, `valueName`, `valueBind`, optional `valueFilter`) |
+| **refObject** | Hodnoty z requestů jiného objektu | `references.*.refObject.lines` (`value`, `valueName`, `valueBind`, optional `valueFilter`); `refObject.requestType` (`all` default / `completed` / `in-progress`) = Admin Request Type |
 
 New `references.*` (values / refObject) always set **`styleId: 4`** (`ObjectLineSourceStyle` = Value). Other styles only when the user asks. Do not change style on existing `reference.referenceId` (system) lists.
 

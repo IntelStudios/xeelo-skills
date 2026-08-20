@@ -70,6 +70,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] ESM defaults: `EndPointRunESM: "1"`, `export async function main()`
 - [ ] `workflowSteps` names match `workflow.steps[].name`
 - [ ] Button (if used) is type `button`; condition equals `1`
+- [ ] Change role and status: `spRequestWorkflowUpdate` (this request) unless you need all versions or keep exclusion; params `{ role }` / `{ status }`; not a `WorkflowStepAction`
 - [ ] `ResponseTextObjectLineID` points at a memo/text/number line
 - [ ] `EndPointRunWait: "1"` if the result must land on the request
 - [ ] Bulk CREATE: batch `input` + limited parallel `client.request`; raise `EndPointRunTimeout` ([nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#6-batch--parallel-create))
@@ -91,7 +92,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 | Action never runs | Missing `WorkflowStepObjectAction`; wrong step; `ApplicableEventType` filter |
 | Runs on every save | Missing condition on the button (or other gate) |
 | Result not on the form | `EndPointRunWait` is 0; wrong `ResponseTextObjectLineID`; line type not 1/2/3/4/11/12 |
-| Button does nothing | Request already Completed; button hidden by extended validation; button not editable on the workflow step (`WorkflowStepAccess`) |
+| Button does nothing | Request already Completed; button hidden by extended validation; button not editable on the workflow step (`WorkflowStepAccess`); extra step `IsActive = 0` because refresh did not see a `WorkflowStepAction` targeting that status |
 | Action loops / times out | GraphQL mutation on the **current** request used `withRefresh: true` or `createType` — omit both; see [nodejs-esm.md](../docs/entities/nodejs-esm.md#mutating-the-current-request--no-refresh) |
 | Last on other completed requests does not run | `{ requestId, withRefresh: true }` is not an update action — use `createType: UPDATE` + that object’s `updateAction`; see [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests) |
 | CREATE / mutate fails with access | Service account **0** missing WRITE on that object |

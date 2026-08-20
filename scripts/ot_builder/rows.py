@@ -10,6 +10,7 @@ from typing import Any
 from ot_builder.ids import IdRegistry, build_registry
 from ot_builder.language_table import emit_language_table
 from ot_builder.ongrid import require_ongrid_id
+from ot_builder.reopen import reopen_on_save_id
 from ot_builder.object_actions import (
     condition_registry_key,
     iter_params,
@@ -577,7 +578,8 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
                 "WorkflowStepName": step_name,
                 "RoleID": role_id,
                 "RequestStatusID": status_id,
-                "IsActive": 1,
+                "WorkflowStepIsSuppressSave": 1 if step.get("suppressSave") else 0,
+                "IsActive": 1 if step.get("isActive", True) else 0,
             }
         )
         result.edges.append(
@@ -597,18 +599,20 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
                 spec, registry, result, action["role"], action["status"]
             )
             style_id = action.get("styleId", 1)
-            result.rows.setdefault("WorkflowStepAction", []).append(
-                {
-                    "WorkflowStepActionID": action_id,
-                    "WorkflowStepID": step_id,
-                    "WorkflowStepActionName": action_name,
-                    "WorkflowStepActionOrder": action.get("order", 10),
-                    "RoleID": action_role_id,
-                    "RequestStatusID": action_status_id,
-                    "WorkflowStepActionStyleID": style_id,
-                    "IsActive": 1,
-                }
-            )
+            action_row: dict[str, Any] = {
+                "WorkflowStepActionID": action_id,
+                "WorkflowStepID": step_id,
+                "WorkflowStepActionName": action_name,
+                "WorkflowStepActionOrder": action.get("order", 10),
+                "RoleID": action_role_id,
+                "RequestStatusID": action_status_id,
+                "WorkflowStepActionStyleID": style_id,
+                "IsActive": 1 if action.get("isActive", True) else 0,
+            }
+            reopen_id = reopen_on_save_id(action.get("reopenOnSave"))
+            if reopen_id is not None:
+                action_row["WorkflowStepActionReopenTypeID"] = reopen_id
+            result.rows.setdefault("WorkflowStepAction", []).append(action_row)
             result.edges.extend(
                 [
                     {
@@ -794,7 +798,7 @@ def _object_default_row(
         explicit.get("objectDefaultIsExternal", 0) if is_default else 0,
     )
 
-    return {
+    row: dict[str, Any] = {
         "ObjectDefaultID": template_id,
         "ObjectID": object_id,
         "ObjectDefaultName": template_cfg.get("name", "Default"),
@@ -806,6 +810,10 @@ def _object_default_row(
         "ObjectDefaultExternalLink": str(external_link).upper(),
         "IsActive": 1,
     }
+    reopen_id = reopen_on_save_id(template_cfg.get("reopenOnSave"))
+    if reopen_id is not None:
+        row["ObjectDefaultReopenTypeID"] = reopen_id
+    return row
 
 
 def _tab_id_for_name(spec: dict, registry: IdRegistry, tab_name: str | None, *, placement: int) -> int | None:
@@ -928,6 +936,9 @@ def _build_update_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
             row["ObjectDefaultID"] = template_id
         if workflow_id is not None:
             row["WorkflowID"] = workflow_id
+        reopen_id = reopen_on_save_id(action.get("reopenOnSave"))
+        if reopen_id is not None:
+            row["ObjectUpdateActionReopenTypeID"] = reopen_id
 
         tab_focus = action.get("tabFocus") or {}
         left_id = _tab_id_for_name(spec, registry, tab_focus.get("left"), placement=0)
@@ -1255,7 +1266,7 @@ def _build_object_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
                     "ObjectActionConditionTypeID": condition_type_id(type_slug),
                     "ObjectActionConditionParam1": cond.get("param1"),
                     "ObjectActionConditionParam2": cond.get("param2"),
-                    "IsActive": 1,
+                    "IsActive": 1 if cond.get("isActive", True) else 0,
                 }
             )
             result.edges.append(
@@ -1422,7 +1433,7 @@ def build_rows(spec: dict) -> BuildResult:
                     "ObjectLineOrder": field.get("order", line_index * 10),
                     "ObjectLineTypeID": type_info["objectLineTypeId"],
                     "ObjectLineTypeWidth": field.get("width", 100),
-                    "IsActive": 1,
+                    "IsActive": 1 if field.get("isActive", True) else 0,
                 }
                 if field.get("code"):
                     line_row["ObjectLineCode"] = field["code"]

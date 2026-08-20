@@ -118,3 +118,34 @@ class TemplateHintTests(unittest.TestCase):
         tl = result.rows["ObjectDefaultLine"][0]
         self.assertEqual(tl["ObjectDefaultLineHint"], "Hint for Title")
         self.assertNotIn("ObjectDefaultLineClientCalculationTypeID", tl)
+
+
+class FieldIsActiveTests(unittest.TestCase):
+    def test_generate_and_extract_inactive_line(self) -> None:
+        spec = _hint_spec()
+        spec["layout"]["tabs"][0]["sections"][0]["fields"].append(
+            {
+                "name": "Update",
+                "code": "BTN_UPDATE",
+                "type": "button",
+                "slot": 10,
+                "width": 50,
+                "order": 20,
+                "isActive": False,
+            }
+        )
+        result = build_rows(spec)
+        by_code = {r["ObjectLineCode"]: r for r in result.rows["ObjectLine"]}
+        self.assertEqual(by_code["TITLE"]["IsActive"], 1)
+        self.assertEqual(by_code["BTN_UPDATE"]["IsActive"], 0)
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        fields = extracted["layout"]["tabs"][0]["sections"][0]["fields"]
+        by_extracted = {f["code"]: f for f in fields}
+        self.assertNotIn("isActive", by_extracted["TITLE"])
+        self.assertFalse(by_extracted["BTN_UPDATE"]["isActive"])

@@ -857,5 +857,57 @@ class TemplateLineIdTests(unittest.TestCase):
         )
 
 
+class ChangeRoleParamTests(unittest.TestCase):
+    def test_role_status_params_resolve_and_extract(self) -> None:
+        spec = _account_like_spec()
+        spec["statuses"]["updating"] = {"name": "Updating", "order": 20, "isCompleted": False}
+        spec["workflow"]["steps"].append(
+            {
+                "name": "Updating",
+                "role": "requestor",
+                "status": "updating",
+                "actions": [],
+                "suppressSave": True,
+            }
+        )
+        spec["objectActions"].append(
+            {
+                "key": "to_updating",
+                "name": "To updating",
+                "typeCode": "spRequestWorkflowUpdate",
+                "order": 20,
+                "workflowSteps": ["Draft"],
+                "params": {
+                    "RoleID1": {"role": "requestor"},
+                    "RequestStatusID1": {"status": "updating"},
+                },
+                "conditions": [{"field": "LOAD_TX", "type": "equals_text", "param1": "1"}],
+            }
+        )
+        result = build_rows(spec)
+        params = {
+            row["ObjectActionTypeParamCode"]: row["ObjectActionParamValue"]
+            for row in result.rows["ObjectActionParam"]
+            if row["ObjectActionID"]
+            == next(a["ObjectActionID"] for a in result.rows["ObjectAction"] if a["ObjectActionName"] == "To updating")
+        }
+        role_id = next(r["RoleID"] for r in result.rows["Role"] if r["RoleName"] == "Requestor")
+        status_id = next(
+            s["RequestStatusID"] for s in result.rows["RequestStatus"] if s["RequestStatusName"] == "Updating"
+        )
+        self.assertEqual(params["RoleID1"], str(role_id))
+        self.assertEqual(params["RequestStatusID1"], str(status_id))
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        change = next(a for a in extracted["objectActions"] if a["key"] == "to_updating")
+        self.assertEqual(change["params"]["RoleID1"], {"role": "requestor"})
+        self.assertEqual(change["params"]["RequestStatusID1"], {"status": "updating"})
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -32,8 +32,12 @@ One step = role + request status (+ optional org chart restriction).
 | `RequestStatusID` | Status while in this step |
 | `UserOrgChartGroupID` | Optional org chart filter |
 | `WorkflowStepSuccessMessage` | Message after transition (supports `{RequestID}`, `{RoleName}`, `{RequestStatusName}`) |
+| `WorkflowStepIsSuppressSave` | Admin **Suppress save**. Spec: `steps[].suppressSave`. Hides the **footer Save** on that step (`showSaveBtn`). Form **Button** lines (type 18) still save on click. |
+| `IsActive` | Soft-disable. Spec: `steps[].isActive: false`. Object Transfer does not delete the step. |
 
 Unique index: `(WorkflowID, RoleID, RequestStatusID)`.
+
+`spRefreshWorkflowStep` (after Workflow / WorkflowStepAction changes) keeps a step **active** only when its `(RoleID, RequestStatusID)` is the workflow **header** state, an export-fail / workflow-fail / recall target, or the **target** of an active `WorkflowStepAction` on an active step. A step that exists only in spec — including one reached solely by ObjectAction **Change role and status** — is stored with `IsActive = 0`. Object Transfer `IsActive: 1` does not win against that refresh. Add a `WorkflowStepAction` targeting the extra status (footer transition button) even if the form also has a type-18 button.
 
 ## WorkflowStepAccess
 
@@ -60,13 +64,20 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 | `WorkflowStepActionStyleID` | Button style — [`data/enums/WorkflowStepActionStyle.json`](../data/enums/WorkflowStepActionStyle.json) |
 | `WorkflowStepActionIsCommented` | Comment required |
 | `WorkflowStepActionConfirmMethod` | QR / Push / TOTP confirmation |
-| `WorkflowStepActionReopenTypeID` | Reopen behaviour after action |
+| `WorkflowStepActionReopenTypeID` | Reopen after this **workflow button**. Spec: `workflow.steps[].actions[].reopenOnSave`. Same catalog as template — [`ReopenActionType.json`](../data/enums/ReopenActionType.json). Omit/`none` = close. |
+| `IsActive` | Soft-disable the footer button. Spec: `steps[].actions[].isActive: false`. Omit the action from spec and the site row stays active. |
 
 ## Role & RequestStatus
 
 **UI:** Role · Request Status
 
 Reference data defined in spec — **always emitted** in transfer with stable IDs from `ids.explicit.roles` / `statuses`. Workflow steps reference role/status **keys**.
+
+## Soft-delete (`IsActive`)
+
+Object Transfer **upserts** by Orig. ID; it does not delete site rows. To hide an entity, emit the same Orig. ID with **`isActive: false`** (`IsActive = 0`). Omitting it from spec leaves the live row unchanged.
+
+Applies to `ObjectUpdateAction`, `ObjectAction`, `Role`, `RequestStatus`, `WorkflowStep`, `WorkflowStepAction`, and other transferred tables with `IsActive`. Extract lists **active** update/object actions only — keep `isActive: false` in the change-loop spec so a later generate cannot turn the row back on. Extract **does** write `isActive: false` on inactive workflow steps and step actions so a later generate keeps them off.
 
 ## Related: Update actions
 

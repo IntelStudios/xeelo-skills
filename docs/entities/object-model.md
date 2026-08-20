@@ -74,6 +74,7 @@ Note: no direct `ObjectID` FK — association is via sections → lines → obje
 | `ObjectLineTypeWidth` | Field width in percent (1–100) |
 | `ObjectLineCode` | Optional stable code (GraphQL, integrations). After insert, Admin often persists `line_{ObjectLineID}_{slug}` even if the transfer sent a shorter code. GraphQL uses the stored value — take it from env after `/download-db`. |
 | `ObjectLineIsHidden` | Hide this line in GUI (definition-level). Spec: `fields[].alwaysHidden`. Distinct from template `hidden: true` / `extended.hidden`. Helper fields often live on an `alwaysHidden` tab instead. |
+| `IsActive` | Soft-disable the line. Spec: `fields[].isActive: false`. Object Transfer does not delete. Distinct from `alwaysHidden` (line still active, just not shown). |
 | `ObjectLineOnGridIsAllowed` | Line may appear on the request grid |
 | `ObjectLineOnGridIsTag` | Tag filter: field **values** as chips on the request grid. Admin enables only types **3, 4** — [object-line-types.md](object-line-types.md#on-grid-tag) |
 | `ObjectLineOnGridIsSearch` | Typed search on the request grid (types 3, 4, 8, 12) |
@@ -91,6 +92,7 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectID` | Object |
 | `WorkflowID` | Workflow for new requests |
 | `ObjectDefaultIsDefault` | Exactly one `=1` per object |
+| `ObjectDefaultReopenTypeID` | After **create** save: stay open or close. Spec: `templates[].reopenOnSave`. Catalog [`ReopenActionType.json`](../data/enums/ReopenActionType.json) (`none`/`close` = NULL, `open-only-everytime` = 1, `open-with-actions` = 2, `open-only-assigned` = 3). Same enum on `ObjectUpdateActionReopenTypeID` and `WorkflowStepActionReopenTypeID`. Runtime uses the template (or update-action) value on **new** requests (`isNew`); an already-saved request always stays Open only (everytime). ID 3 is not sent to the frontend — the backend rewrites it to OpenOnly or Close from Inbox assignment (`EditableWorkflow`). |
 
 | ObjectDefaultLine | Semantics |
 |-------------------|-----------|
@@ -145,6 +147,16 @@ Spec: `templates[].access` — see [spec-format.md](../transfer/spec-format.md#t
 | System (`ObjectLineSourceTypeID >= 10`) | — | Site-preexisting (User List, Company List, …) |
 | Table + values | `ObjectLineSourceValue` | Pevně nadefinované položky; optional `values[].filter` (comma-split) |
 | Table + refObject | `ObjectLineSourceRefObject` | Dynamicky z requestů referencovaného objektu; optional `refObject.lines.valueFilter` matched against the consuming `filterField` |
+
+refObject **Request Type** (`ObjectLineSourceRefObjectRequestTypeID`, spec `refObject.requestType`, default `all`) filters which request versions appear in the combo. Not the same as request Create/Update (`RequestTypeID` 1/2/3). Enum: [`ObjectLineSourceRefObjectRequestType.json`](../data/enums/ObjectLineSourceRefObjectRequestType.json).
+
+| ID | Admin | Spec | Combo options |
+|----|-------|------|----------------|
+| 0 | All | `all` (default) | last version of each request |
+| 1 | Only completed | `completed` | last version only when it is completed |
+| 2 | Only inprogress | `in-progress` | last version only when it is not completed |
+
+The generator also writes deprecated `ObjectLineSourceRefObjectIsOnlyCompleted` (`1` iff `completed`); runtime uses Request Type.
 
 `ObjectLineSourceStyleID` (`styleId`): 1 Name, 2 Bind - name, 3 Name (value), **4 Value (default for new references)**.
 

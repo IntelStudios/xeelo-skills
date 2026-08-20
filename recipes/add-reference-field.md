@@ -79,7 +79,7 @@ references:
     refObject:
       name: Cars Ref
       objectId: 6097
-      requestType: all    # all | completed | in-progress
+      requestType: all    # Admin Request Type: All | Only completed | Only inprogress
       lines:
         value: line_12301_id
         valueName: line_12302_name
@@ -101,6 +101,16 @@ Line codes in `refObject.lines` refer to fields on the **referenced** object. Pu
 | `valueBind` | `ValueBindObjectLineID` | Bind / match key |
 | `valueFilter` | `ValueFilterObjectLineID` | Value compared to the consuming combo’s `filterField` |
 | `valueOrder` | `ValueOrderObjectLineID` | Sort |
+
+`refObject.requestType` (`ObjectLineSourceRefObjectRequestTypeID`; default `all`). Not Create/Update `RequestTypeID`. Enum: [`ObjectLineSourceRefObjectRequestType.json`](../data/enums/ObjectLineSourceRefObjectRequestType.json).
+
+| ID | Admin | Spec | Combo options |
+|----|-------|------|----------------|
+| 0 | All | `all` (default) | last version of each request |
+| 1 | Only completed | `completed` | last version only when it is completed |
+| 2 | Only inprogress | `in-progress` | last version only when it is not completed |
+
+The generator also writes deprecated `ObjectLineSourceRefObjectIsOnlyCompleted` (`1` iff `completed`); runtime uses Request Type.
 
 Tables emitted: `ObjectLineSource`, `ObjectLineSourceRefObject`.
 

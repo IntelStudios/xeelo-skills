@@ -88,6 +88,20 @@ Same type catalog as update-action conditions (Contains, Equals text/number, Is 
 
 Gate a button-triggered action with `equals_text` / param `1` on the button field.
 
+## Change role and status (Last)
+
+Three seed types. All are **Last**. They change `Request.RoleID` / `RequestStatusID` on the **same** request (no new version — not `ObjectUpdateAction`). Target role+status must exist as an **active** `WorkflowStep` on the request’s workflow, or the SP returns DANGER.
+
+| `typeCode` | Admin name | Behaviour |
+|------------|------------|-----------|
+| `spRequestWorkflowUpdate` | Change role and status of request (Last) | This `RequestID` only. Clears `RequestUserExclusion`. Sets/clears Completed and Canceled from the **target** status. |
+| `spRequestWorkflowUpdateAllVersion` | Change role and status of request (all versions) (Last) | Same update on **every submitted** version with the same `RequestCode`. |
+| `spRequestWorkflowUpdateExclusion` | Change role and status of request keep exclusion (Last) | Like the first, but keeps `RequestUserExclusion`. |
+
+Typical in-progress edit: form buttons + first type (not all-versions). Params `RoleID1` / `RequestStatusID1` — spec `{ role: requestor }` / `{ status: updating }` (or raw IDs). Condition the action on the button; assign it only to the **source** step. Hide footer Save with `steps[].suppressSave` so users transition via those buttons, not `WorkflowStepAction`.
+
+Do **not** confuse with **WorkflowStepAction** (workflow transition buttons in the request footer).
+
 ## WorkflowStepObjectAction
 
 Assigns an `ObjectAction` to a `WorkflowStep` (optional `RequestTypeID`). Without this link the action never runs.

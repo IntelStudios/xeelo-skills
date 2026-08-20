@@ -176,9 +176,12 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `uniqueId` | `ObjectLineUniqueID` (1 Object, 2 Object/Template, 3 Object/Requestor, 4 Object/Template/Requestor). Also sets `ObjectLineIsUnique = 1`. [object-model.md](../entities/object-model.md#unique) |
 | `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 | `descMemoBorder`, `descMemoPadding` | Description memo extras. **`descMemoBorder` defaults to false** (Admin/SQL `0`); omit it or set `false`. Use `true` only when the user wants a visible box. |
-| `buttonMessage`, `colorFont`, `colorBack` | Button extras |
+| `buttonMessage` | Confirm text before the click saves (`ObjectLineButtonMessage`) |
+| `colorBack` | Button **background** — `CustomColor.CustomColorCode` (e.g. `blue`), not HEX. Admin Color Back. GUI: `xe-back-{code}` |
+| `colorFont` | Button **text** — same palette (e.g. `white`). Admin Color Font. GUI: `xe-font-{code}` |
 | `isReferenceLink` | `ObjectLineIsReferenceLink` (combo types) |
 | `alwaysHidden` | `ObjectLineIsHidden` — line never shown in GUI (definition). Distinct from template `hidden: true` / `extended.hidden`. |
+| `isActive` | `ObjectLine.IsActive`. `false` soft-disables the line (OT does not delete). Omit the field from spec and the site row stays **active**. |
 
 `object.requestTitleField` is a **field code** on the object (not a layout extra). It sets `Object.RequestTitleObjectLineID` — that line’s value is the request title in inbox, header, and links.
 
@@ -293,6 +296,16 @@ references:
         valueBind: line_label_id
         valueFilter: line_applicability   # compared to consuming filterField
 ```
+
+`refObject.requestType` is Admin **Request Type** on Reference Object (`ObjectLineSourceRefObjectRequestTypeID`). Default `all`. Not the same as request Create/Update (`RequestTypeID` 1/2/3). Enum: [`ObjectLineSourceRefObjectRequestType.json`](../../data/enums/ObjectLineSourceRefObjectRequestType.json).
+
+| ID | Admin | Spec | Options in the combo |
+|----|-------|------|----------------------|
+| 0 | All | `all` (default) | last version of each request |
+| 1 | Only completed | `completed` | last version only when it is completed |
+| 2 | Only inprogress | `in-progress` | last version only when it is not completed |
+
+The generator also writes deprecated `ObjectLineSourceRefObjectIsOnlyCompleted` (`1` iff `completed`); runtime uses Request Type.
 
 | Spec | Column |
 |------|--------|
@@ -470,6 +483,7 @@ workflow:
           role: owner
           status: active
           styleId: 1
+          # reopenOnSave: open-only-assigned  # WorkflowStepActionReopenTypeID; omit = close after this button
 ```
 
 Keys are required when two statuses share the same `name` (e.g. two `Saved` rows on site). Optional `isActive: false` preserves site inactive rows on refactor.
@@ -511,6 +525,14 @@ workflow:
 
 `steps[].access` maps to **WorkflowStepAccess** (editable/visible per line on that step). Site refresh inserts missing rows as visible + **not** editable. Extract omits those defaults; only emit lines that must be editable (or hidden). Admin UI groups this by request status name (e.g. Open).
 
+`steps[].suppressSave: true` → `WorkflowStepIsSuppressSave`. Hides footer **Save**; form Button lines still save. Extract writes the flag only when true.
+
+`steps[].actions[].reopenOnSave` → `WorkflowStepActionReopenTypeID`. Same slugs as template `reopenOnSave`. Applies after that **workflow button**; omit/`none` = close.
+
+`steps[].isActive: false` / `steps[].actions[].isActive: false` → `IsActive = 0`. Object Transfer does not delete leftover steps or footer buttons; omit them from spec and the site row stays **active**.
+
+An extra step stays **active** only if `spRefreshWorkflowStep` sees its `(role, status)` as the workflow header, a fail/recall target, or a **`WorkflowStepAction` target**. Change-role ObjectActions alone do not count — omit the targeting step action and the site stores the step with `IsActive = 0`.
+
 **IDs:** `ids.explicit.workflowStepAccess` keys `{stepName}/{field}`. After the first site refresh, reuse the existing `WorkflowStepAccessID` (Orig. ID) — do not allocate a new one or the unique `(WorkflowStepID, ObjectLineID)` index will fail.
 
 Extract sets `mode: full` when steps differ from minimal template **or** any step has non-default access.
@@ -536,6 +558,8 @@ updateActions:
     template: default              # ObjectDefault scope; omit = all templates
     workflow: post_update_wf       # optional; omit = template workflow
     isQuick: false
+    # reopenOnSave: open-only-assigned   # ObjectUpdateActionReopenTypeID; omit = close after update-version save
+    # isActive: false   # soft-delete; omit the action and the site row stays active
     tabFocus:
       left: General
       right: null
@@ -613,13 +637,14 @@ Canonical HTML is English on `html:` (OT column `ObjectMessageFromat`). Translat
 
 ## Templates (`spec/templates.yaml`)
 
-Optional fragment for multiple **ObjectDefault** rows. Omit it to keep a single default template (current behaviour; field `mandatory` applies there).
+Optional fragment for multiple **ObjectDefault** rows. Omit it to keep a single default template (current behaviour; field `mandatory` applies there). Extract still writes this fragment for one template when it has field extras, create-access exceptions, or `reopenOnSave`.
 
 ```yaml
 templates:
   - key: cash_register
     name: Cash register
     isDefault: true
+    reopenOnSave: open-only-assigned
     fields:
       TYPE: { hidden: true }
     access:
@@ -651,6 +676,7 @@ templates:
 | `defaultValue` | `ObjectDefaultLineValue`, except **`description_memo`**: HTML into `ObjectDefaultLineDescMemo` |
 | `hint` | `ObjectDefaultLineHint` — runtime field hint (plain or HTML). All types except `empty_space`. Canonical English; translations in `languageTable.templateHints.<templateKey>.<code>`. Not `defaultValue` on description memo. |
 | `autonumber` | Catalog key from `spec/autonumbers.yaml` → `ObjectDefaultLineAutoNumberID`. Text (3) only. Mutually exclusive with input mask. |
+| `reopenOnSave` | `ObjectDefaultReopenTypeID` — omit / `none` / `close` = NULL (request **closes** after create save). `open-only-everytime` (1), `open-with-actions` (2), `open-only-assigned` (3). Same slugs on `updateActions[].reopenOnSave` and `workflow.steps[].actions[].reopenOnSave`. Template/update-action values apply on **new** requests; already-saved requests always stay Open only (everytime). Workflow-button value applies after that transition. Catalog: [`ReopenActionType.json`](../data/enums/ReopenActionType.json). |
 
 Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 
@@ -684,7 +710,7 @@ objectActions:
         param1: "1"
 ```
 
-`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. Condition `type` slugs match update actions.
+`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. Condition `type` slugs match update actions.
 
 **IDs:** `objectActions`, `objectActionParams` (`action/paramCode`), `objectActionConditions` (`action/field/type`), `workflowStepObjectActions` (`action/stepName`).
 

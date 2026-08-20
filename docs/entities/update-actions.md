@@ -55,9 +55,9 @@ Object Transfer edges: [`data/object-transfer-map.json`](../data/object-transfer
 | `ObjectDefaultID` | Limit to one template; NULL = all templates |
 | `WorkflowID` | Workflow for the **new version** after update |
 | `ObjectUpdateActionIsQuick` | Process immediately without save step |
-| `ObjectUpdateActionReopenTypeID` | Reopen behaviour after save |
+| `ObjectUpdateActionReopenTypeID` | Reopen after **update-version** save. Spec: `updateActions[].reopenOnSave`. Same catalog as template [`ReopenActionType.json`](../data/enums/ReopenActionType.json). Omit/`none` = close. Used when `isNew` and `ObjectUpdateActionID` is set; already-saved versions ignore it. |
 | `ObjectLineTabFocusLeftID/RightID` | Tab focus in update form |
-| `IsActive` | Soft disable |
+| `IsActive` | Soft disable. Spec `isActive: false` — Object Transfer does not delete; omit the row and the site copy stays active. Extract skips inactive actions. |
 
 Admin hints: [`data/table-hints.json`](../data/table-hints.json) (`ObjectUpdateAction*`)
 
@@ -70,7 +70,7 @@ Per-line (and optional subgrid column) flags during **EditableUpdate** mode. Sam
 | `ObjectLineIsEditableUpdate` | 0 | Field editable during update |
 | `ObjectLineIsVisibleUpdate` | 1 | Field visible during update |
 
-Site refresh inserts a row per (action, line) as **visible, not editable**. Spec `updateActions[].access` must list fields that should be editable (or hidden). `editable: true` forces `visible: true`.
+Site refresh inserts a row per (action, line) as **visible, not editable**. Spec `updateActions[].access` must list fields that should be editable (or hidden). `editable: true` forces `visible: true`. Extract omits those default-locked rows — when you later make one editable, take the existing `ObjectUpdateAccessID` from the DB transfer (`ids.explicit.objectUpdateAccess`); do not allocate a new Orig. ID (unique `(ObjectUpdateActionID, ObjectLineID)`).
 
 Applied via `ProcessEditableUpdateAccess` when the new version is unsaved (`RequestTypeID` 2/3). **ObjectAction** (server automation) has no line-access table.
 

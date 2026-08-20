@@ -1,0 +1,17 @@
+[
+  {
+    "id": 0,
+    "name": "All",
+    "spec": "all"
+  },
+  {
+    "id": 1,
+    "name": "Only completed",
+    "spec": "completed"
+  },
+  {
+    "id": 2,
+    "name": "Only inprogress",
+    "spec": "in-progress"
+  }
+]

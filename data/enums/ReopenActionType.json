@@ -1,0 +1,22 @@
+[
+  {
+    "id": 0,
+    "name": "None",
+    "spec": "none"
+  },
+  {
+    "id": 1,
+    "name": "Open only (everytime)",
+    "spec": "open-only-everytime"
+  },
+  {
+    "id": 2,
+    "name": "Open with Actions",
+    "spec": "open-with-actions"
+  },
+  {
+    "id": 3,
+    "name": "Open only (assigned)",
+    "spec": "open-only-assigned"
+  }
+]

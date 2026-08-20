@@ -191,3 +191,70 @@ class DuplicateWorkflowStepTests(unittest.TestCase):
         action = step["actions"][0]
         self.assertEqual(action["name"], "Submit")
         self.assertNotIn("key", action)
+
+
+class SuppressSaveTests(unittest.TestCase):
+    def test_generate_and_extract_suppress_save(self) -> None:
+        spec = _dup_step_spec()
+        spec["workflow"]["steps"][0]["suppressSave"] = True
+        result = build_rows(spec)
+        step = result.rows["WorkflowStep"][0]
+        self.assertEqual(step["WorkflowStepIsSuppressSave"], 1)
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        self.assertTrue(extracted["workflow"]["steps"][0]["suppressSave"])
+        self.assertNotIn("suppressSave", extracted["workflow"]["steps"][1])
+
+
+class StepActionReopenOnSaveTests(unittest.TestCase):
+    def test_generate_and_extract_open_only_assigned(self) -> None:
+        spec = _dup_step_spec()
+        spec["workflow"]["steps"][0]["actions"][0]["reopenOnSave"] = "open-only-assigned"
+        result = build_rows(spec)
+        action = result.rows["WorkflowStepAction"][0]
+        self.assertEqual(action["WorkflowStepActionReopenTypeID"], 3)
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        self.assertEqual(
+            extracted["workflow"]["steps"][0]["actions"][0]["reopenOnSave"],
+            "open-only-assigned",
+        )
+        self.assertNotIn("reopenOnSave", extracted["workflow"]["steps"][1]["actions"][0])
+
+    def test_omit_does_not_emit_column(self) -> None:
+        result = build_rows(_dup_step_spec())
+        for row in result.rows["WorkflowStepAction"]:
+            self.assertNotIn("WorkflowStepActionReopenTypeID", row)
+
+
+class WorkflowIsActiveTests(unittest.TestCase):
+    def test_generate_and_extract_inactive_step_and_action(self) -> None:
+        spec = _dup_step_spec()
+        spec["workflow"]["steps"][1]["isActive"] = False
+        spec["workflow"]["steps"][1]["actions"][0]["isActive"] = False
+        result = build_rows(spec)
+        self.assertEqual(result.rows["WorkflowStep"][0]["IsActive"], 1)
+        self.assertEqual(result.rows["WorkflowStep"][1]["IsActive"], 0)
+        self.assertEqual(result.rows["WorkflowStepAction"][0]["IsActive"], 1)
+        self.assertEqual(result.rows["WorkflowStepAction"][1]["IsActive"], 0)
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        self.assertNotIn("isActive", extracted["workflow"]["steps"][0])
+        self.assertFalse(extracted["workflow"]["steps"][1]["isActive"])
+        self.assertNotIn("isActive", extracted["workflow"]["steps"][0]["actions"][0])
+        self.assertFalse(extracted["workflow"]["steps"][1]["actions"][0]["isActive"])

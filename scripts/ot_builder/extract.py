@@ -12,6 +12,7 @@ from typing import Any
 
 from ot_builder.language_table import extract_language_table
 from ot_builder.ongrid import layout_id_key
+from ot_builder.reopen import reopen_on_save_spec
 from ot_builder.parse import TransferIndex, collect_table_max_ids, find_object_row, load_transfer
 from ot_builder.object_actions import (
     condition_registry_key,
@@ -620,6 +621,8 @@ def _build_layout(
             field["saveAction"] = int(line["ObjectLineButtonSaveAction"])
         _apply_extracted_line_extras(field, line, ftype, index)
         _emit_true(field, "alwaysHidden", line.get("ObjectLineIsHidden"))
+        if not _boolish(line.get("IsActive", 1)):
+            field["isActive"] = False
 
         source_id = _int(line.get("ObjectLineSourceID"))
         filter_line_id = _int(line.get("ObjectLineSourceFilterObjectLineID"))
@@ -891,6 +894,11 @@ def _build_workflow(
             }
             if action_key != action_name:
                 action_spec["key"] = action_key
+            reopen = reopen_on_save_spec(action.get("WorkflowStepActionReopenTypeID"))
+            if reopen:
+                action_spec["reopenOnSave"] = reopen
+            if not _boolish(action.get("IsActive", 1)):
+                action_spec["isActive"] = False
             action_specs.append(action_spec)
 
         step_role = role_id_to_key.get(int(step["RoleID"]))
@@ -905,6 +913,10 @@ def _build_workflow(
         }
         if step_key != step_name:
             step_spec["key"] = step_key
+        if _boolish(step.get("WorkflowStepIsSuppressSave", 0)):
+            step_spec["suppressSave"] = True
+        if not _boolish(step.get("IsActive", 1)):
+            step_spec["isActive"] = False
         access_specs = _workflow_step_access_specs(
             index, step_id, step_key, field_id_to_code or {}, explicit_step_access
         )
@@ -1061,6 +1073,9 @@ def _build_update_actions(
 
         if _boolish(row.get("ObjectUpdateActionIsQuick", 0)):
             spec_action["isQuick"] = True
+        reopen = reopen_on_save_spec(row.get("ObjectUpdateActionReopenTypeID"))
+        if reopen:
+            spec_action["reopenOnSave"] = reopen
 
         left = _tab_name(index, _int(row.get("ObjectLineTabFocusLeftID")))
         right = _tab_name(index, _int(row.get("ObjectLineTabFocusRightID")))
@@ -1282,6 +1297,7 @@ def _build_templates_spec(
     }
     any_extended = False
     any_access = False
+    any_reopen = False
     legacy = len(defaults) <= 1
 
     for row in defaults:
@@ -1312,6 +1328,10 @@ def _build_templates_spec(
             spec_tmpl["isExternal"] = 1
         if row.get("ObjectDefaultExternalLink"):
             spec_tmpl["externalLink"] = row["ObjectDefaultExternalLink"]
+        reopen = reopen_on_save_spec(row.get("ObjectDefaultReopenTypeID"))
+        if reopen:
+            spec_tmpl["reopenOnSave"] = reopen
+            any_reopen = True
 
         fields_spec: dict[str, Any] = {}
         for tl in index.rows_for("ObjectDefaultLine", "ObjectDefaultID", template_id):
@@ -1364,7 +1384,7 @@ def _build_templates_spec(
 
         templates.append(spec_tmpl)
 
-    emit = len(templates) > 1 or any_extended or any_access
+    emit = len(templates) > 1 or any_extended or any_access or any_reopen
     return templates, explicit, emit
 
 
@@ -1373,6 +1393,8 @@ def _build_object_actions(
     object_id: int,
     field_id_to_code: dict[int, str],
     step_id_to_key: dict[int, str] | None = None,
+    role_id_to_key: dict[int, str] | None = None,
+    status_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     actions_rows = [
         row
@@ -1422,7 +1444,11 @@ def _build_object_actions(
             param_id = int(param["ObjectActionParamID"])
             explicit["objectActionParams"][param_registry_key(key, param_code)] = param_id
             params[param_code] = param_spec_value(
-                param_code, param.get("ObjectActionParamValue"), field_id_to_code
+                param_code,
+                param.get("ObjectActionParamValue"),
+                field_id_to_code,
+                role_id_to_key=role_id_to_key,
+                status_id_to_key=status_id_to_key,
             )
         if params:
             spec_action["params"] = params
@@ -1509,6 +1535,8 @@ def extract_spec_from_index(
         oid,
         field_id_to_code,
         step_id_to_key={int(v): k for k, v in (wf_explicit.get("workflowSteps") or {}).items()},
+        role_id_to_key={int(v): k for k, v in (wf_explicit.get("roles") or {}).items()},
+        status_id_to_key={int(v): k for k, v in (wf_explicit.get("statuses") or {}).items()},
     )
 
     ot_id = int(obj["ObjectTypeID"])

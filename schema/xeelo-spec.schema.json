@@ -239,12 +239,24 @@
         },
         "descMemoPadding": { "type": "integer", "minimum": 0 },
         "buttonMessage": { "type": "string" },
-        "colorFont": { "type": "string", "maxLength": 50 },
-        "colorBack": { "type": "string", "maxLength": 50 },
+        "colorFont": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "ObjectLineColorFont — button text CustomColorCode (not HEX), e.g. white"
+        },
+        "colorBack": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "ObjectLineColorBack — button background CustomColorCode (not HEX), e.g. blue"
+        },
         "isReferenceLink": { "type": "boolean" },
         "alwaysHidden": {
           "type": "boolean",
           "description": "ObjectLineIsHidden — line is not shown in GUI (definition-level, not template extended validation)"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "ObjectLine.IsActive — false soft-disables the line (OT does not delete). Omit and the site row stays active."
         }
       }
     },
@@ -493,7 +505,12 @@
         "role": { "type": "string", "minLength": 1 },
         "status": { "type": "string", "minLength": 1 },
         "styleId": { "type": "integer", "minimum": 1 },
-        "order": { "type": "integer", "minimum": 1 }
+        "order": { "type": "integer", "minimum": 1 },
+        "reopenOnSave": { "$ref": "#/$defs/reopenOnSave" },
+        "isActive": {
+          "type": "boolean",
+          "description": "WorkflowStepAction.IsActive — false soft-disables the footer button (OT does not delete)"
+        }
       }
     },
     "workflowStep": {
@@ -516,6 +533,14 @@
         "access": {
           "type": "array",
           "items": { "$ref": "#/$defs/workflowStepAccessLine" }
+        },
+        "suppressSave": {
+          "type": "boolean",
+          "description": "WorkflowStepIsSuppressSave — hide footer Save; form buttons still save"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "WorkflowStep.IsActive — false soft-disables the step (OT does not delete). spRefreshWorkflowStep may still deactivate untargeted steps."
         }
       }
     },
@@ -591,6 +616,17 @@
         }
       }
     },
+    "reopenOnSave": {
+      "type": "string",
+      "enum": [
+        "none",
+        "close",
+        "open-only-everytime",
+        "open-with-actions",
+        "open-only-assigned"
+      ],
+      "description": "ObjectDefaultReopenTypeID / ObjectUpdateActionReopenTypeID / WorkflowStepActionReopenTypeID. Omit or none/close = NULL (request closes after save). open-only-assigned stays open only if the user still has the request in Inbox."
+    },
     "template": {
       "type": "object",
       "required": ["name"],
@@ -603,6 +639,7 @@
         "accessOwnerLevel": { "type": "integer", "minimum": 0 },
         "isExternal": { "type": "integer", "enum": [0, 1] },
         "externalLink": { "type": "string" },
+        "reopenOnSave": { "$ref": "#/$defs/reopenOnSave" },
         "fields": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/templateField" }
@@ -623,6 +660,18 @@
           "required": ["field"],
           "additionalProperties": false,
           "properties": { "field": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["role"],
+          "additionalProperties": false,
+          "properties": { "role": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["status"],
+          "additionalProperties": false,
+          "properties": { "status": { "type": "string" } }
         }
       ]
     },
@@ -658,7 +707,8 @@
         "field": { "type": "string" },
         "type": { "type": "string" },
         "param1": { "type": ["string", "number"] },
-        "param2": { "type": ["string", "number"] }
+        "param2": { "type": ["string", "number"] },
+        "isActive": { "type": "boolean" }
       }
     },
     "updateActionMessage": {
@@ -701,6 +751,7 @@
         "template": { "type": "string" },
         "workflow": { "type": "string" },
         "isQuick": { "type": "boolean" },
+        "reopenOnSave": { "$ref": "#/$defs/reopenOnSave" },
         "isActive": { "type": "boolean" },
         "tabFocus": {
           "type": "object",
