@@ -729,7 +729,7 @@ objectActions:
 
 ```yaml
 source:
-  transfer: projects/account-object/output/object-transfer.xml
+  transfer: projects/account-object/output/object-transfer.json
   objectId: 9002
   objectCode: ACCOUNT
   extractedAt: "2026-08-11"
@@ -815,8 +815,7 @@ Use **Grid** when the inbox card should stack (typical mobile `Small`). Use **Ta
 
 ```bash
 python scripts/generate-object-transfer.py my-spec.yaml \
-  -o output/object-transfer.xml \
-  --zip output/object-transfer.zip
+  -o output/object-transfer.json
 ```
 
 See [object-transfer-format.md](object-transfer-format.md).

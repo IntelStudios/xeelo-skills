@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload Object Transfer XML and process it via GraphQL (dry-run or real)."""
+"""Upload Object Transfer JSON via GraphQL (dry-run or real)."""
 
 from __future__ import annotations
 
@@ -14,13 +14,14 @@ from ot_builder.graphql_client import (  # noqa: E402
     DEFAULT_TIMEOUT_SECONDS,
     ConnectionConfig,
     collect_transfer_paths,
+    format_mutation_messages,
     push_object_transfer,
 )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Upload and process Object Transfer XML via Xeelo GraphQL"
+        description="Upload Object Transfer JSON via Xeelo GraphQL"
     )
     parser.add_argument(
         "--connection",
@@ -29,24 +30,17 @@ def main() -> None:
         help="Path to .xeelo-connection.json (xeeloUrl, token)",
     )
     parser.add_argument(
-        "--xml",
+        "--json",
         type=Path,
         action="append",
         default=[],
-        help="Object Transfer XML path (repeatable)",
-    )
-    parser.add_argument(
-        "--zip",
-        type=Path,
-        action="append",
-        default=[],
-        help="Object Transfer ZIP path (repeatable; XML is read from the archive)",
+        help="Object Transfer JSON path (repeatable)",
     )
     parser.add_argument(
         "--loop",
         type=Path,
         default=None,
-        help="Change loop directory; uses output/*-object-transfer.xml (or .zip)",
+        help="Change loop directory; uses output/*-object-transfer.json",
     )
     parser.add_argument(
         "--timeout",
@@ -57,12 +51,12 @@ def main() -> None:
     parser.add_argument(
         "--only-test",
         action="store_true",
-        help="Process as test only (isTestOnly=true)",
+        help="Dry-run (isTest=true)",
     )
     args = parser.parse_args()
 
     try:
-        paths = collect_transfer_paths(loop=args.loop, xmls=args.xml, zips=args.zip)
+        paths = collect_transfer_paths(loop=args.loop, jsons=args.json)
     except FileNotFoundError as exc:
         raise SystemExit(str(exc)) from exc
 
@@ -73,16 +67,18 @@ def main() -> None:
         f"{config.graphql_url} ({mode})"
     )
     for path in paths:
-        print(f"Uploading {path} (isTestOnly={str(args.only_test).lower()})")
+        print(f"Uploading {path} (isTest={str(args.only_test).lower()})")
         result = push_object_transfer(
             config,
             path,
             only_test=args.only_test,
             timeout_seconds=args.timeout,
         )
+        extra = format_mutation_messages(result.messages)
+        suffix = f" {extra}" if extra else ""
         print(
-            f"Processed xmlId={result.object_setup_xml_id} {result.filename} "
-            f"success={result.success} onlyTest={result.only_test}"
+            f"Uploaded {result.filename} success={result.success} "
+            f"isTest={str(result.only_test).lower()}{suffix}"
         )
 
 

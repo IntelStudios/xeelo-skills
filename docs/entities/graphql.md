@@ -174,26 +174,23 @@ Public HTTP is `POST {SiteServerAddress}/graphql` with `Authorization: Bearer <t
 
 ## Admin transfer and precompile
 
-Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. Object Transfer XML between GraphQL string and SQL `varbinary` is **UTF-16 LE**. DB-transfer download is a JSON string (`nvarchar`); no varbinary conversion.
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). `/publish` does not send XML.
 
 | Operation | Skill | Role |
 |-----------|-------|------|
 | `Select_admin_transfer_download { json }` | `/download-db` | Whole-site DB-transfer JSON |
-| `Mutate_admin_transfer_upload(fileName, xml)` | dry-run after generate; `/publish` | Insert Object Transfer; returns `objectSetupXmlId` |
-| `Mutate_admin_transfer_process(id, isTestOnly)` | dry-run (`true`); `/publish` (`false`) | Apply or dry-run the uploaded transfer |
-| `Mutate_admin_precompile` | `/publish` (after process) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
+| `Mutate_admin_transfer_upload(json, isTest)` | dry-run after generate; `/publish` | Apply Object Transfer JSON (`isTest: true` dry-run, `false` apply) |
+| `Mutate_admin_precompile` | `/publish` (after upload) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
+
+There is **no** `Mutate_admin_transfer_process`. Upload and apply are one mutation.
 
 After precompile, wait until `{xeeloUrl}/graphql-api/health` (or `query { health }`) responds again.
 
 ```graphql
 query { Select_admin_transfer_download { json } }
 
-mutation ($fileName: String!, $xml: String!) {
-  Mutate_admin_transfer_upload(fileName: $fileName, xml: $xml) { objectSetupXmlId }
-}
-
-mutation ($id: Int!, $isTestOnly: Boolean!) {
-  Mutate_admin_transfer_process(id: $id, isTestOnly: $isTestOnly) {
+mutation ($json: String!, $isTest: Boolean!) {
+  Mutate_admin_transfer_upload(json: $json, isTest: $isTest) {
     success
     messages { procedure msgType msgText }
   }
@@ -207,4 +204,4 @@ mutation {
 }
 ```
 
-`isTestOnly: true` verifies the package without applying it (loop dry-run). `/publish` uploads again with `isTestOnly: false`, then precompiles. Use `/precompile` when the transfer is already on the site.
+`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). `/publish` uploads again with `isTest: false`, then precompiles. Use `/precompile` when the transfer is already on the site.

@@ -22,7 +22,7 @@ from ot_builder.graphql_client import (  # noqa: E402
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Upload and process Object Transfer XML, then precompile via Xeelo GraphQL"
+        description="Upload Object Transfer JSON (isTest=false), then precompile via Xeelo GraphQL"
     )
     parser.add_argument(
         "--connection",
@@ -31,24 +31,17 @@ def main() -> None:
         help="Path to .xeelo-connection.json (xeeloUrl, token)",
     )
     parser.add_argument(
-        "--xml",
+        "--json",
         type=Path,
         action="append",
         default=[],
-        help="Object Transfer XML path (repeatable)",
-    )
-    parser.add_argument(
-        "--zip",
-        type=Path,
-        action="append",
-        default=[],
-        help="Object Transfer ZIP path (repeatable; XML is read from the archive)",
+        help="Object Transfer JSON path (repeatable)",
     )
     parser.add_argument(
         "--loop",
         type=Path,
         default=None,
-        help="Change loop directory; uses output/*-object-transfer.xml (or .zip)",
+        help="Change loop directory; uses output/*-object-transfer.json",
     )
     parser.add_argument(
         "--timeout",
@@ -59,24 +52,23 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        paths = collect_transfer_paths(loop=args.loop, xmls=args.xml, zips=args.zip)
+        paths = collect_transfer_paths(loop=args.loop, jsons=args.json)
     except FileNotFoundError as exc:
         raise SystemExit(str(exc)) from exc
 
     config = ConnectionConfig.load(args.connection)
     print(f"Publishing {len(paths)} Object Transfer package(s) to {config.graphql_url}")
     for path in paths:
-        print(f"Uploading {path} (isTestOnly=false)")
+        print(f"Uploading {path} (isTest=false)")
         result = push_object_transfer(
             config,
             path,
             only_test=False,
             timeout_seconds=args.timeout,
         )
-        print(
-            f"Processed xmlId={result.object_setup_xml_id} {result.filename} "
-            f"success={result.success}"
-        )
+        extra = format_mutation_messages(result.messages)
+        suffix = f" {extra}" if extra else ""
+        print(f"Uploaded {result.filename} success={result.success}{suffix}")
     print(f"Precompiling settings at {config.graphql_url}")
     payload = precompile_settings(config, timeout_seconds=args.timeout)
     extra = format_mutation_messages(payload.get("messages"))

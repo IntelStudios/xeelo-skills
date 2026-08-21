@@ -71,15 +71,12 @@ Edges: `Object → Workflow → WorkflowStep → WorkflowStepAction`, `Object �
 
 ```bash
 python scripts/generate-object-transfer.py my-spec.yaml \
-  -o output/object-transfer.xml \
-  --zip output/object-transfer.zip
+  -o output/object-transfer.json
 ```
 
 ### 9. Deploy (partial)
 
-1. Upload ZIP in Admin → Object Transfer
-2. Review tree — uncheck rows for later batches
-3. Process selected rows
+`/publish` uploads the JSON (`isTest: false`) and precompiles.
 
 ### 10. Sync IDs after import
 
@@ -99,7 +96,7 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 ## Validate
 
 - User chose new vs existing workflow (not a silent minimal default)
-- Single XML file with ObjectSetup + ObjectMap + rows
-- `TransferType=OBJECT`, `Version=1.3.0`
+- JSON object keyed by table name (same shape as DB-transfer download)
+- Only tables the spec emits; no TransferInfo / ObjectSetup
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`
 - onGrid `field` codes match layout field codes

@@ -26,8 +26,8 @@ make validate-account
 | | DB Transfer | Object Transfer |
 |---|-------------|-----------------|
 | **xeelo-skills reads** | Download + parse → `env/` | OT → spec extract |
-| **xeelo-skills generates** | No | **Yes** — change-loop ZIPs |
-| **Deploy** | Full site replace | **Partial** — `/publish` applies generated OT |
+| **xeelo-skills generates** | No | **Yes** — change-loop JSON |
+| **Deploy** | Full site replace | **Partial** — `/publish` applies generated OT JSON |
 
 ## Regenerate data from source repos
 
@@ -53,15 +53,15 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 | `projects/` | One folder per Xeelo site (not KB; gitignored — [docs/projects.md](docs/projects.md)) |
 | [data/](data/) | Schemas, enums, hints, object-transfer-map, Font Awesome catalog |
 | [scripts/download-db-transfer.py](scripts/download-db-transfer.py) | GraphQL DB-transfer download |
-| [scripts/push-object-transfer.py](scripts/push-object-transfer.py) | GraphQL OT upload + process (dry-run `--only-test`) |
-| [scripts/publish-object-transfer.py](scripts/publish-object-transfer.py) | Real OT process + precompile |
+| [scripts/push-object-transfer.py](scripts/push-object-transfer.py) | GraphQL OT JSON upload (dry-run `--only-test` → `isTest`) |
+| [scripts/publish-object-transfer.py](scripts/publish-object-transfer.py) | Real OT upload (`isTest: false`) + precompile |
 | [scripts/precompile-settings.py](scripts/precompile-settings.py) | GraphQL precompile only |
 | [scripts/extract-db-transfer-to-env.py](scripts/extract-db-transfer-to-env.py) | DB → env |
-| [scripts/generate-change-loop.py](scripts/generate-change-loop.py) | Loop → OT ZIPs |
+| [scripts/generate-change-loop.py](scripts/generate-change-loop.py) | Loop → OT JSON |
 
 ## Spec v2 highlights
 
 - **Multiple tabs** (left/right) and **sections** per tab
 - **onGrid** — inbox grid field flags + layout placements
 - **subgrids** — ObjectSub trees on object specs
-- **Object transfer** output with hierarchy (`ObjectSetup` / `ObjectMap`)
+- **Object transfer** output as JSON (table → rows, same shape as DB download)

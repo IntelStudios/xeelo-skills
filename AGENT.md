@@ -44,7 +44,7 @@ flowchart LR
   Snap --> Env[extract-db-transfer-to-env]
   Env --> Loop[changes/slug notes + specs]
   Loop --> OT[generate-change-loop]
-  OT --> Test["dry-run isTestOnly"]
+  OT --> Test["dry-run isTest"]
   Test --> Pub["/publish ask or auto"]
   Pub --> DL
 ```
@@ -53,7 +53,7 @@ flowchart LR
 2. **Download** DB transfer JSON → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
-5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload + `isTestOnly: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`.
+5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload with `isTest: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`.
 6. **Publish** — only after a successful dry-run. `/publish` applies the OT for real and precompiles; then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**.
 
 There is **no** `/push` skill. `/precompile` is precompile only (not part of the loop).
@@ -95,7 +95,7 @@ Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract
 | Parse / env | [`scripts/extract-db-transfer-to-env.py`](scripts/extract-db-transfer-to-env.py), [db-transfer-format.md](docs/transfer/db-transfer-format.md) |
 | Init loop | [`scripts/init-change-loop.py`](scripts/init-change-loop.py) |
 | Generate change OT | [`scripts/generate-change-loop.py`](scripts/generate-change-loop.py) |
-| Dry-run OT (`isTestOnly`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
+| Dry-run OT (`isTest`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
 | Publish (real OT + precompile) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
 | Precompile only | [`scripts/precompile-settings.py`](scripts/precompile-settings.py) |
 | Spec language | [spec-format.md](docs/transfer/spec-format.md) |
@@ -218,7 +218,7 @@ projects/ovnet/
     notes.md                      # requested vs done (prompt/plan excerpts OK)
     baseline.yaml
     objects/<slug>/...
-    output/*-object-transfer.zip
+    output/*-object-transfer.json
 ```
 
 ## Commands
@@ -243,13 +243,13 @@ python scripts/init-change-loop.py \
 python scripts/generate-change-loop.py \
   projects/ovnet/changes/20260811-loop-01-short-name
 
-# 4) Dry-run OT (isTestOnly) — run automatically after generate
+# 4) Dry-run OT (isTest) — run automatically after generate
 python scripts/push-object-transfer.py \
   --connection projects/ovnet/.xeelo-connection.json \
   --loop projects/ovnet/changes/20260811-loop-01-short-name \
   --only-test
 
-# 5) Publish: real process + precompile (only if the user says yes)
+# 5) Publish: apply JSON (isTest false) + precompile (only if the user says yes)
 python scripts/publish-object-transfer.py \
   --connection projects/ovnet/.xeelo-connection.json \
   --loop projects/ovnet/changes/20260811-loop-01-short-name
@@ -360,18 +360,13 @@ Recipe: [`recipes/add-reference-field.md`](recipes/add-reference-field.md).
 
 ## Object transfer output
 
-UTF-16 LE XML file with **multiple concatenated `<XMLData>` blocks**:
+UTF-8 JSON object (same shape as DB-transfer download): table name → array of row objects. Only tables the spec emits; no `TransferInfo` / `ObjectSetup` / `ObjectMap`. Empty tables and null cells omitted; `bit` columns are JSON booleans.
 
-1. `ObjectSetup` — all parent→child instance edges
-2. `ObjectMap` — full schema map (~124 pairs)
-3. `TransferInfo` — `TransferType=OBJECT`, `Version=1.3.0`
-4. One block per data table (`Object`, `ObjectLine`, `Workflow`, …)
+Change-loop generator emits **one JSON file per touched object** (object subtree, Orig. ID).
 
-Change-loop generator emits **one OT package per touched object** (full object subtree, Orig. ID). Validate with `make validate-account` for golden samples.
+## ID round-trip (legacy Object Transfer XML)
 
-## ID round-trip (Object Transfer extract)
-
-Still available for OT XML → spec:
+Still available for **Admin XML** → spec:
 
 ```bash
 python scripts/extract-object-transfer-to-spec.py path/to/object-transfer.xml \
@@ -382,7 +377,7 @@ Cars reference: [`projects/cars/xeelo-spec.yaml`](projects/cars/xeelo-spec.yaml)
 
 ## Partial deployment
 
-Full apply via `/publish` (upload + process all selected rows, then precompile; generator defaults all rows Orig. ID). Manual Admin UI still works for partial batches:
+Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; generator defaults Orig. ID). Manual Admin UI still works for XML ZIP batches:
 
 1. Upload ZIP in Admin → Object Transfer
 2. Uncheck rows not ready for this batch
@@ -419,7 +414,7 @@ Full apply via `/publish` (upload + process all selected rows, then precompile; 
 - [ ] Multiple templates / extended validation / client calc: `spec/templates.yaml` if used ([xeelo-grammar.md](docs/entities/xeelo-grammar.md))
 - [ ] Tree icon = FA **6.5.1** class via `search-fa-icons.py` (local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)); color = existing CustomColorCode on `object.color` / `objectType.color` (not HEX; do not spec obsolete `CompanyTreeColor` / `ObjectTypeTreeColorFont`)
 - [ ] `ids.explicit` populated for Orig. ID import
-- [ ] `output/*-object-transfer.zip` validated
+- [ ] `output/*-object-transfer.json` generated
 - [ ] After generate, dry-run `--only-test`; on success `/publish` per conventions (`ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
 
 ## Key data files
