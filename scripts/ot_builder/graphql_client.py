@@ -1,4 +1,4 @@
-"""Xeelo GraphQL client: connection, admin transfer download/upload/process, precompile."""
+"""Xeelo GraphQL client: connection, admin transfer download/upload, precompile."""
 
 from __future__ import annotations
 
@@ -28,16 +28,8 @@ query AdminTransferDownload {
 """
 
 MUTATION_UPLOAD = """
-mutation AdminTransferUpload($fileName: String!, $xml: String!) {
-  Mutate_admin_transfer_upload(fileName: $fileName, xml: $xml) {
-    objectSetupXmlId
-  }
-}
-"""
-
-MUTATION_PROCESS = """
-mutation AdminTransferProcess($id: Int!, $isTestOnly: Boolean!) {
-  Mutate_admin_transfer_process(id: $id, isTestOnly: $isTestOnly) {
+mutation AdminTransferUpload($json: String!, $isTest: Boolean!) {
+  Mutate_admin_transfer_upload(json: $json, isTest: $isTest) {
     success
     messages { procedure msgType msgText }
   }
@@ -121,24 +113,20 @@ def transfer_path_to_xml(path: Path) -> tuple[str, str]:
 
 
 def packages_from_loop(loop: Path) -> list[Path]:
-    """Prefer output/*-object-transfer.xml; fall back to .zip."""
+    """Return output/*-object-transfer.json packages."""
     output = Path(loop) / "output"
-    xmls = sorted(output.glob("*-object-transfer.xml"))
-    if xmls:
-        return xmls
-    zips = sorted(output.glob("*-object-transfer.zip"))
-    if zips:
-        return zips
-    raise FileNotFoundError(f"No Object Transfer XML/ZIP under {output}")
+    jsons = sorted(output.glob("*-object-transfer.json"))
+    if jsons:
+        return jsons
+    raise FileNotFoundError(f"No Object Transfer JSON under {output}")
 
 
 def collect_transfer_paths(
     *,
     loop: Path | None = None,
-    xmls: list[Path] | None = None,
-    zips: list[Path] | None = None,
+    jsons: list[Path] | None = None,
 ) -> list[Path]:
-    paths: list[Path] = list(xmls or []) + list(zips or [])
+    paths: list[Path] = list(jsons or [])
     if loop:
         paths.extend(packages_from_loop(loop))
     seen: set[Path] = set()
@@ -150,8 +138,25 @@ def collect_transfer_paths(
         seen.add(resolved)
         unique.append(path)
     if not unique:
-        raise FileNotFoundError("Provide --xml, --zip, and/or --loop")
+        raise FileNotFoundError("Provide --json and/or --loop")
     return unique
+
+
+def transfer_path_to_json(path: Path) -> tuple[str, str]:
+    """Return (fileName, json string) from a .json Object Transfer."""
+    from ot_builder.jsonout import parse_object_transfer_json_text
+
+    path = Path(path)
+    if not path.is_file():
+        raise FileNotFoundError(f"Object Transfer not found: {path}")
+    if path.suffix.lower() != ".json":
+        raise GraphqlError(f"Object Transfer must be a .json file, got {path}")
+    text = path.read_text(encoding="utf-8")
+    try:
+        parse_object_transfer_json_text(text)
+    except ValueError as exc:
+        raise GraphqlError(f"{path}: {exc}") from exc
+    return path.name, text.lstrip("\ufeff")
 
 
 def format_mutation_messages(messages: list[dict[str, Any]] | None) -> str:
@@ -226,7 +231,6 @@ class ConnectionConfig:
 
 @dataclass
 class TransferResult:
-    object_setup_xml_id: int
     filename: str
     only_test: bool
     success: bool
@@ -377,33 +381,24 @@ def push_object_transfer(
     only_test: bool = False,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
 ) -> TransferResult:
-    filename, xml = transfer_path_to_xml(path)
-    if not xml.strip():
-        raise GraphqlError(f"Empty Object Transfer XML: {path}")
+    filename, payload = transfer_path_to_json(path)
+    if not payload.strip():
+        raise GraphqlError(f"Empty Object Transfer JSON: {path}")
     with XeeloGraphqlClient(config, timeout=timeout_seconds) as client:
         uploaded = client.request(
             MUTATION_UPLOAD,
-            {"fileName": filename, "xml": xml},
+            {"json": payload, "isTest": only_test},
         )
-        raw_id = (uploaded.get("Mutate_admin_transfer_upload") or {}).get("objectSetupXmlId")
-        if raw_id is None:
-            raise GraphqlError(f"Mutate_admin_transfer_upload returned no objectSetupXmlId for {filename}")
-        xml_id = int(raw_id)
-        processed = client.request(
-            MUTATION_PROCESS,
-            {"id": xml_id, "isTestOnly": only_test},
-        )
-    result = processed.get("Mutate_admin_transfer_process") or {}
+    result = uploaded.get("Mutate_admin_transfer_upload") or {}
     messages = list(result.get("messages") or [])
     success = bool(result.get("success"))
     if not success:
         detail = format_mutation_messages(messages) or "unknown error"
-        kind = "test" if only_test else "process"
+        kind = "test" if only_test else "apply"
         raise GraphqlError(
-            f"Mutate_admin_transfer_process {kind} failed xmlId={xml_id} {filename}: {detail}"
+            f"Mutate_admin_transfer_upload {kind} failed {filename}: {detail}"
         )
     return TransferResult(
-        object_setup_xml_id=xml_id,
         filename=filename,
         only_test=only_test,
         success=True,

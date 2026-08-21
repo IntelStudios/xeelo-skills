@@ -18,7 +18,6 @@ from ot_builder.graphql_client import (  # noqa: E402
     ConnectionConfig,
     GraphqlAuthError,
     GraphqlError,
-    MUTATION_PROCESS,
     MUTATION_UPLOAD,
     QUERY_DOWNLOAD,
     XeeloGraphqlClient,
@@ -27,6 +26,7 @@ from ot_builder.graphql_client import (  # noqa: E402
     download_db_transfer_json,
     packages_from_loop,
     push_object_transfer,
+    transfer_path_to_json,
     transfer_path_to_xml,
     xml_to_utf16_le_bytes,
 )
@@ -132,19 +132,27 @@ class XmlHelperTests(unittest.TestCase):
         self.assertEqual(name, "object-transfer.xml")
         self.assertEqual(text, xml)
 
-    def test_packages_from_loop_prefers_xml(self) -> None:
+    def test_packages_from_loop_uses_json(self) -> None:
         loop = Path(tempfile.mkdtemp())
         output = loop / "output"
         output.mkdir()
+        json_path = output / "account-object-transfer.json"
         xml_path = output / "account-object-transfer.xml"
-        zip_path = output / "account-object-transfer.zip"
+        json_path.write_text('{"Object":[{"ObjectID":1}]}', encoding="utf-8")
         xml_path.write_text("<XMLData/>", encoding="utf-8")
-        zip_path.write_bytes(b"unused")
-        self.assertEqual(packages_from_loop(loop), [xml_path])
+        self.assertEqual(packages_from_loop(loop), [json_path])
         self.assertEqual(
             collect_transfer_paths(loop=loop),
-            [xml_path],
+            [json_path],
         )
+
+    def test_transfer_path_to_json(self) -> None:
+        tmp = Path(tempfile.mkdtemp())
+        path = tmp / "account-object-transfer.json"
+        path.write_text('{"Object":[{"ObjectID":1,"ObjectName":"A"}]}', encoding="utf-8")
+        name, text = transfer_path_to_json(path)
+        self.assertEqual(name, "account-object-transfer.json")
+        self.assertIn("Object", text)
 
 
 class GraphqlClientTests(unittest.TestCase):
@@ -260,10 +268,17 @@ class DownloadDbTransferJsonTests(unittest.TestCase):
 
 
 class PushObjectTransferTests(unittest.TestCase):
-    def test_upload_then_process_with_is_test_only(self) -> None:
+    def _json_path(self) -> Path:
         tmp = Path(tempfile.mkdtemp())
-        xml_path = tmp / "account-object-transfer.xml"
-        xml_path.write_bytes(xml_to_utf16_le_bytes("<XMLData>ot</XMLData>"))
+        path = tmp / "account-object-transfer.json"
+        path.write_text(
+            '{"Object":[{"ObjectID":1,"ObjectName":"Account"}]}',
+            encoding="utf-8",
+        )
+        return path
+
+    def test_single_upload_with_is_test(self) -> None:
+        json_path = self._json_path()
         config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
         calls: list[tuple[str, dict | None]] = []
 
@@ -280,10 +295,8 @@ class PushObjectTransferTests(unittest.TestCase):
             def request(self, document, variables=None):
                 calls.append((document, variables))
                 if document == MUTATION_UPLOAD:
-                    return {"Mutate_admin_transfer_upload": {"objectSetupXmlId": 17}}
-                if document == MUTATION_PROCESS:
                     return {
-                        "Mutate_admin_transfer_process": {
+                        "Mutate_admin_transfer_upload": {
                             "success": True,
                             "messages": [],
                         }
@@ -291,21 +304,23 @@ class PushObjectTransferTests(unittest.TestCase):
                 raise AssertionError(document)
 
         with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
-            result = push_object_transfer(config, xml_path, only_test=True)
+            result = push_object_transfer(config, json_path, only_test=True)
 
-        self.assertEqual(result.object_setup_xml_id, 17)
+        self.assertTrue(result.success)
         self.assertTrue(result.only_test)
-        self.assertEqual(calls[1][1], {"id": 17, "isTestOnly": True})
+        self.assertEqual(result.filename, "account-object-transfer.json")
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][0], MUTATION_UPLOAD)
+        self.assertEqual(calls[0][1]["isTest"], True)
+        self.assertIn("Object", calls[0][1]["json"])
 
         calls.clear()
         with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
-            push_object_transfer(config, xml_path, only_test=False)
-        self.assertEqual(calls[1][1], {"id": 17, "isTestOnly": False})
+            push_object_transfer(config, json_path, only_test=False)
+        self.assertEqual(calls[0][1]["isTest"], False)
 
-    def test_process_failure_raises(self) -> None:
-        tmp = Path(tempfile.mkdtemp())
-        xml_path = tmp / "account-object-transfer.xml"
-        xml_path.write_bytes(xml_to_utf16_le_bytes("<XMLData>ot</XMLData>"))
+    def test_upload_failure_raises(self) -> None:
+        json_path = self._json_path()
         config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
 
         class FakeClient:
@@ -319,14 +334,12 @@ class PushObjectTransferTests(unittest.TestCase):
                 return None
 
             def request(self, document, variables=None):
-                if document == MUTATION_UPLOAD:
-                    return {"Mutate_admin_transfer_upload": {"objectSetupXmlId": 1}}
                 return {
-                    "Mutate_admin_transfer_process": {
+                    "Mutate_admin_transfer_upload": {
                         "success": False,
                         "messages": [
                             {
-                                "procedure": "dbo.spAdminObjectSetupXMLProcess",
+                                "procedure": "dbo.spAdminObjectSetupJSONProcess",
                                 "msgType": "DANGER",
                                 "msgText": "bad row",
                             }
@@ -336,7 +349,7 @@ class PushObjectTransferTests(unittest.TestCase):
 
         with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
             with self.assertRaisesRegex(GraphqlError, "bad row"):
-                push_object_transfer(config, xml_path, only_test=True)
+                push_object_transfer(config, json_path, only_test=True)
 
 
 if __name__ == "__main__":

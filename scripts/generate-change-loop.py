@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Object Transfer ZIP(s) for all object specs in a change loop."""
+"""Generate Object Transfer JSON for all object specs in a change loop."""
 
 from __future__ import annotations
 
@@ -10,28 +10,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from ot_builder.hierarchy import build_object_map, dedupe_edges  # noqa: E402
+from ot_builder.jsonout import build_object_transfer_json, write_json  # noqa: E402
 from ot_builder.rows import build_rows  # noqa: E402
 from ot_builder.spec_loader import load_spec  # noqa: E402
-from ot_builder.validate import validate_object_transfer_xml  # noqa: E402
-from ot_builder.xml import build_object_transfer_xml  # noqa: E402
-from ot_builder.zipout import write_xml, write_zip  # noqa: E402
 
 
-def _generate_one(spec_path: Path, xml_path: Path, zip_path: Path) -> None:
+def _generate_one(spec_path: Path, json_path: Path) -> None:
     spec = load_spec(spec_path)
-    transfer_version = spec.get("transferVersion", "1.3.0")
     result = build_rows(spec)
-    edges = dedupe_edges(result.edges)
-    object_map = build_object_map(edges)
-    xml_bytes = build_object_transfer_xml(result.rows, edges, object_map, transfer_version)
-    write_xml(xml_bytes, xml_path)
-    validate_object_transfer_xml(xml_bytes, str(xml_path))
-    write_zip(xml_bytes, zip_path)
-    validate_object_transfer_xml(xml_bytes, str(zip_path))
+    text = build_object_transfer_json(result.rows)
+    write_json(text, json_path)
     print(
-        f"Wrote {zip_path} "
-        f"({len(edges)} edges, {sum(len(v) for v in result.rows.values())} rows)"
+        f"Wrote {json_path} "
+        f"({sum(len(v) for v in result.rows.values())} source rows)"
     )
 
 
@@ -56,9 +47,8 @@ def main() -> None:
 
     for spec_path in specs:
         slug = spec_path.parent.name
-        xml_path = output_dir / f"{slug}-object-transfer.xml"
-        zip_path = output_dir / f"{slug}-object-transfer.zip"
-        _generate_one(spec_path, xml_path, zip_path)
+        json_path = output_dir / f"{slug}-object-transfer.json"
+        _generate_one(spec_path, json_path)
 
     print(f"Generated {len(specs)} Object Transfer package(s) in {output_dir}")
 

@@ -1,93 +1,47 @@
 # Object Transfer Format
 
-Xeelo Admin **Object Transfer** exports one or more objects and their dependency subtree as a **single XML file** inside a ZIP.
+xeelo-skills **generates Object Transfer** as UTF-8 JSON and applies it through GraphQL. The payload uses the **same table→rows shape as DB-transfer download**, but only the tables and rows that the spec emits (the changing object subtree — not the whole site).
 
 ## Why Object Transfer (vs DB Transfer)
 
 | Feature | Object Transfer | DB Transfer |
 |---------|-----------------|-------------|
 | Scope | Selected object(s) + dependencies | Entire site (~110 tables) |
-| Apply | **Partial** — select rows in tree | Full replace |
-| Hierarchy | `ObjectSetup` + `ObjectMap` tree | Flat table list |
-| Upload type | `TransferType=OBJECT` | `TransferType=DB` |
+| Apply | **Partial** — generated rows only | Full replace (Admin DB import) |
+| Shape | JSON object keyed by table name | Same JSON shape |
+| GraphQL | `Mutate_admin_transfer_upload` | `Select_admin_transfer_download` |
 
-xeelo-skills **generates Object Transfer**. DB transfer docs/schemas are kept as **reference** for table/column semantics only.
+DB transfer docs/schemas are **reference** for table/column semantics. xeelo-skills does not generate or upload DB transfers.
 
-## ZIP contents
+## JSON structure
 
-One XML file (e.g. `object-transfer.xml`) inside the ZIP — not one file per table.
+One UTF-8 object. Each key is a table name; each value is a non-empty array of row objects. No `TransferInfo`, `ObjectSetup`, or `ObjectMap`. Empty tables and `null` cells are omitted. `bit` columns are JSON `true` / `false`.
 
-## XML structure
-
-Xeelo Admin export uses **concatenated `<XMLData>` blocks** (UTF-16 LE with BOM, no `<?xml` declaration). Upload SP (`spAdminObjectSetupXMLUpload`) parses **each block separately** — a single monolithic block breaks import.
-
-```text
-<XMLData>...all ObjectSetup edges...</XMLData>
-<XMLData>...all ObjectMap pairs (~124)...</XMLData>
-<XMLData><TransferInfo>...</TransferInfo></XMLData>
-<XMLData>...ObjectType rows...</XMLData>
-<XMLData>...Object rows...</XMLData>
-<XMLData>...ObjectLine rows...</XMLData>
-...
+```json
+{
+  "Object": [
+    { "ObjectID": 1, "ObjectName": "Account", "IsActive": true }
+  ],
+  "ObjectLine": [
+    { "ObjectLineID": 10, "ObjectID": 1, "ObjectLineName": "Name", "IsActive": true }
+  ]
+}
 ```
 
-Golden references:
-
-- Generated: [`projects/account-object/output/object-transfer.xml`](../../projects/account-object/output/object-transfer.xml)
-- Xeelo export: [`projects/cars/ObjectSetup_20260811_084036.xml`](../../projects/cars/ObjectSetup_20260811_084036.xml)
-
-Validate output:
-
-```bash
-make validate-account
-# or
-python scripts/validate-object-transfer.py path/to/object-transfer.xml
-```
-
-Upload **rejects** packages unless:
-- `TransferType = OBJECT`
-- `Version` matches site `OT_Version` (currently `1.3.0`)
-
-## Hierarchy edges (ObjectSetup)
-
-Each edge links a **parent row** to a **child row** in the admin tree.
-
-Layout chain for form fields:
-
-```
-Object → ObjectLine → ObjectLineTab → ObjectLineSection
-Object → ObjectLineOnGrid  (direct; references ObjectLineID)
-Object → ObjectDefault → ObjectDefaultLine → ObjectLineLookup → ObjectLineLookupValue
-ObjectDefaultLine → ObjectLineAutoNumber
-Object → Workflow → WorkflowStep → WorkflowStepAction
-```
-
-Schema pairs (ObjectMap): full map from [`data/object-transfer-map.json`](../../data/object-transfer-map.json) (~124 parent→child table types), same as Xeelo download. Generator also adds `Parent → LanguageTable` pairs when `spec/language-table.yaml` is present.
-
-## Partial deployment
-
-KB `/publish` applies the generated package (all rows, Orig. ID) then precompiles. Manual Admin UI still works for selecting rows:
-
-1. Upload ZIP in Admin → **Object Transfer**
-2. Review hierarchy tree — uncheck rows not ready (`IsSelected=0`)
-3. Per row: **Import as New** (`IsCreateNewID=1`) or **Import with Orig. ID** (`=0`, default)
-4. **Process** — only selected rows apply
-5. Repeat with next batch
-
-Generator defaults match upload SP: all rows included, Orig. ID mode.
+Change-loop generator emits **one JSON file per touched object** (`output/<slug>-object-transfer.json`), Orig. ID rows.
 
 ## Publish from xeelo-skills
 
-After generate, the loop **automatically** dry-runs the transfer (`isTestOnly: true`). `/publish` is the real apply + precompile (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
+After generate, the loop **automatically** dry-runs (`isTest: true`). `/publish` applies for real (`isTest: false`) then precompiles (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
 
 ```bash
-# Dry-run (automatic after generate)
+# Dry-run (automatic after generate) — CLI flag --only-test maps to isTest
 python scripts/push-object-transfer.py \
   --connection projects/<project>/.xeelo-connection.json \
   --loop projects/<project>/changes/<slug> \
   --only-test
 
-# Real process + precompile (/publish)
+# Real apply + precompile (/publish)
 python scripts/publish-object-transfer.py \
   --connection projects/<project>/.xeelo-connection.json \
   --loop projects/<project>/changes/<slug>
@@ -97,41 +51,57 @@ python scripts/precompile-settings.py \
   --connection projects/<project>/.xeelo-connection.json
 ```
 
-Dry-run / publish transfer flow (GraphQL, synchronous, 10 min SQL timeout):
+GraphQL flow (synchronous, 10 min SQL timeout):
 
 1. Load `.xeelo-connection.json` (`xeeloUrl`, admin `token`)
-2. `Mutate_admin_transfer_upload(fileName, xml)` — XML as GraphQL string (UTF-16 LE on the server)
-3. `Mutate_admin_transfer_process(id, isTestOnly)` — `true` for dry-run, `false` for `/publish`
+2. `Mutate_admin_transfer_upload(json, isTest)` — JSON string of table→rows; `isTest: true` dry-run, `false` apply. There is **no** separate process mutation.
+3. `/publish` then `Mutate_admin_precompile` and poll `{xeeloUrl}/graphql-api/health` (process may restart)
 
-`/publish` then:
-
-4. `Mutate_admin_precompile`
-5. Poll `{xeeloUrl}/graphql-api/health` until GraphQL is back (process may restart)
+```graphql
+mutation AdminTransferUpload($json: String!, $isTest: Boolean!) {
+  Mutate_admin_transfer_upload(json: $json, isTest: $isTest) {
+    success
+    messages { procedure msgType msgText }
+  }
+}
+```
 
 Skills: [`.agents/skills/publish/SKILL.md`](../../.agents/skills/publish/SKILL.md), [`.agents/skills/precompile/SKILL.md`](../../.agents/skills/precompile/SKILL.md).
 
+## Table relationships (no ObjectSetup in JSON)
+
+FK columns on the rows replace the old XML `ObjectSetup` tree. Typical chains:
+
+```
+Object → ObjectLine → ObjectLineTab → ObjectLineSection
+Object → ObjectLineOnGrid  (direct; references ObjectLineID)
+Object → ObjectDefault → ObjectDefaultLine → ObjectLineLookup → ObjectLineLookupValue
+ObjectDefaultLine → ObjectLineAutoNumber
+Object → Workflow → WorkflowStep → WorkflowStepAction
+```
+
+Schema pairs: [`data/object-transfer-map.json`](../../data/object-transfer-map.json).
+
+## Partial deployment
+
+`/publish` applies the generated JSON (all rows in the file, Orig. ID) then precompiles.
+
 ## Import modes
 
-| Mode | Flag | When to use |
-|------|------|-------------|
-| Import with Orig. ID | `IsCreateNewID=0` | Known IDs, replace existing row |
-| Import as New | `IsCreateNewID=1` | Clone object on target site |
+Generator emits Orig. ID rows (replace existing). Cloning as new IDs is an Admin-UI concern, not the GraphQL JSON path.
 
 ## Reference data
 
 `Role` and `RequestStatus` are defined in spec (`roles` / `statuses`) and **always emitted** in transfer together with `Company` and `ObjectType`.
 
-`LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After process, **/publish** (or `/precompile` if the OT is already applied).
+`LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After apply, **/publish** (or `/precompile` if the OT is already applied).
 
 ## Generate
 
 ```bash
 python scripts/generate-object-transfer.py projects/account-object/xeelo-spec.yaml \
-  -o projects/account-object/output/object-transfer.xml \
-  --zip projects/account-object/account-object-transfer.zip
+  -o projects/account-object/output/object-transfer.json
 ```
-
-Golden example: [`projects/account-object/output/object-transfer.xml`](../../projects/account-object/output/object-transfer.xml)
 
 ## onGrid in transfer
 
@@ -141,3 +111,7 @@ Two layers:
 2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). `Type` is `Grid` or `Table`; Table is one visual row (spec pseudo-rows do not wrap — horizontal scroll).
 
 Spec: `onGrid.fields` + `onGrid.layouts` in [`spec-format.md`](spec-format.md)
+
+## Legacy XML
+
+Older Object Transfers were UTF-16 LE concatenated `<XMLData>` blocks (`ObjectSetup`, `ObjectMap`, `TransferInfo`, `TransferType=OBJECT`, `Version=1.3.0`) inside a ZIP. Admin UI upload/process of that XML still exists separately. xeelo-skills GraphQL **does not** send XML. `extract-object-transfer-to-spec.py` and `validate-object-transfer.py` still read legacy XML (e.g. [`projects/cars/ObjectSetup_20260811_084036.xml`](../../projects/cars/ObjectSetup_20260811_084036.xml)).

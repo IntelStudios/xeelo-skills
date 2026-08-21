@@ -20,7 +20,7 @@ GraphQL download returns the setup as a **JSON string**. xeelo-skills saves it a
 |----------|--------|
 | Encoding | UTF-8 |
 | Wrapper | None — no `TransferInfo` / `TransferType` / `Version` |
-| Hierarchy | **No** `ObjectSetup` / `ObjectMap` (unlike Object Transfer) |
+| Hierarchy | **No** `ObjectSetup` / `ObjectMap` |
 | Scope | Whole site configuration (~110 tables) |
 | `bit` columns | JSON `true` / `false` |
 | `NULL` columns | Omitted from the row |
@@ -68,7 +68,7 @@ Flow:
 | Table columns / FKs | [`data/schemas/`](../data/schemas/) |
 | Full table list | [`data/transfer-tables.json`](../data/transfer-tables.json) |
 | Field hints | [`data/table-hints.json`](../data/table-hints.json) |
-| **Generate deployable changes** | [Object Transfer](object-transfer-format.md) |
+| **Generate deployable changes** | [Object Transfer](object-transfer-format.md) (same JSON shape, subset of tables) |
 
 ## Import behaviour (DB transfer)
 
