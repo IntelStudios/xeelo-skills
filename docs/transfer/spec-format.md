@@ -1,6 +1,6 @@
 # Xeelo Spec Format (v2)
 
-**Xeelo Spec** is the agent's structured input before generating **Object Transfer** XML. It may be a single YAML file or a **multi-file** directory with an entry `xeelo-spec.yaml` and `includes`.
+**Xeelo Spec** is the agent's structured input before generating **Object Transfer** JSON. It may be a single YAML file or a **multi-file** directory with an entry `xeelo-spec.yaml` and `includes`.
 
 JSON Schema (merged spec): [`schema/xeelo-spec.schema.json`](../../schema/xeelo-spec.schema.json)
 
@@ -89,7 +89,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `source` | no | Provenance after extract from transfer |
 | `transferVersion` | no | `OT_Version` — default `1.3.0` |
 
-Generator **always** creates `Company`, `ObjectType`, `Role`, and `RequestStatus` rows from spec definitions and `ids.explicit`.
+Generator diffs against the latest DB-transfer snapshot. It **omits** any row whose Orig. ID already exists unchanged, including `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` when this package only references them. Recycled workflow also uses `workflow.reuse: true` so the shared process definition is not generated.
 
 ## Tree icons and colors
 
@@ -509,6 +509,27 @@ Keys are required when two statuses share the same `name` (e.g. two `Saved` rows
 ```
 
 ## Workflow modes
+
+### `reuse: true` (existing workflow)
+
+Share a site `Workflow` Orig. ID. Spec still lists steps (keys + `access` for this object’s lines). Generate **does not** emit the shared `Workflow` / `WorkflowStep` / `WorkflowStepAction` definition. `ObjectDefault.WorkflowID` and `WorkflowStepAccess` still go out. Unchanged `Company` / `Role` / … rows are omitted the same way as any other table vs download.
+
+```yaml
+workflow:
+  mode: full
+  reuse: true
+  name: Temporary - CREATE
+  steps:
+    - key: added_by_system_10
+      name: Added by system
+      role: requestor
+      status: saved
+      access:
+        - field: TITLE
+          editable: true
+```
+
+`ids.explicit.workflowId` / `workflowSteps` must be the live Orig. IDs. Omit `languageTable.workflow` / `roles` / `statuses` / `stepActions` (or they are ignored on generate).
 
 ### `minimal`
 

@@ -174,7 +174,7 @@ Public HTTP is `POST {SiteServerAddress}/graphql` with `Authorization: Bearer <t
 
 ## Admin transfer and precompile
 
-Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). `/publish` does not send XML.
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
 
 | Operation | Skill | Role |
 |-----------|-------|------|

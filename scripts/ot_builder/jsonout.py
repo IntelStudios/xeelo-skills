@@ -1,4 +1,4 @@
-"""Assemble Object transfer JSON (same table→rows shape as DB-transfer download)."""
+"""Assemble Object transfer JSON (download shape; only changing rows)."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from ot_builder.delta import omit_unchanged_rows
 from ot_builder.xml import _sorted_tables
 
 DATA = Path(__file__).resolve().parent.parent.parent / "data"
@@ -42,8 +43,29 @@ def _json_cell(table: str, column: str, value: Any) -> Any:
     return value
 
 
-def build_object_transfer_json(rows: dict[str, list[dict]]) -> str:
-    """UTF-8 JSON object: table name → row arrays. Omit empty tables and null cells."""
+def _clean_row(table: str, row: dict) -> dict[str, Any]:
+    cleaned: dict[str, Any] = {}
+    for key, value in row.items():
+        if value is None:
+            continue
+        cleaned[str(key)] = _json_cell(table, str(key), value)
+    return cleaned
+
+
+def build_object_transfer_json(
+    rows: dict[str, list[dict]],
+    *,
+    baseline: dict[str, Any] | None = None,
+) -> tuple[str, int]:
+    """UTF-8 JSON object: table name → row arrays.
+
+    When ``baseline`` is a DB-transfer download, rows whose Orig. ID already
+    exists with the same generated cells are omitted. FK references to those
+    IDs stay on changing rows. Returns ``(json_text, omitted_count)``.
+    """
+    omitted = 0
+    if baseline:
+        rows, omitted = omit_unchanged_rows(rows, baseline, clean_row=_clean_row)
     payload: dict[str, list[dict[str, Any]]] = {}
     for table in _sorted_tables(rows):
         table_rows = rows.get(table) or []
@@ -53,18 +75,14 @@ def build_object_transfer_json(rows: dict[str, list[dict]]) -> str:
         for row in table_rows:
             if not isinstance(row, dict):
                 continue
-            cleaned: dict[str, Any] = {}
-            for key, value in row.items():
-                if value is None:
-                    continue
-                cleaned[str(key)] = _json_cell(table, str(key), value)
+            cleaned = _clean_row(table, row)
             if cleaned:
                 out_rows.append(cleaned)
         if out_rows:
             payload[table] = out_rows
     if not payload:
         raise ValueError("Object Transfer JSON has no table rows")
-    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    return json.dumps(payload, ensure_ascii=False, indent=2) + "\n", omitted
 
 
 def write_json(text: str, path: Path) -> None:

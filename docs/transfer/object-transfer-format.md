@@ -1,6 +1,10 @@
 # Object Transfer Format
 
-xeelo-skills **generates Object Transfer** as UTF-8 JSON and applies it through GraphQL. The payload uses the **same table→rows shape as DB-transfer download**, but only the tables and rows that the spec emits (the changing object subtree — not the whole site).
+xeelo-skills **generates Object Transfer** as UTF-8 JSON and applies it through GraphQL. The payload uses the **same table→rows shape as DB-transfer download**, but **only changing rows**.
+
+A row is omitted when its Orig. ID already exists in the latest site snapshot **and** every generated cell matches that download row. Other rows may still reference that ID (`Object.CompanyID`, `ObjectDefault.WorkflowID`, …). New rows and rows whose generated cells differ are emitted. Generate diffs against `projects/<site>/snapshots/` (override with `--baseline`, skip with `--no-baseline`).
+
+`workflow.reuse: true` also skips **generating** the shared `Workflow` / `WorkflowStep` / `WorkflowStepAction` definition so a copied spec cannot upsert the process. New object lines still get `WorkflowStepAccess` on the shared steps.
 
 ## Why Object Transfer (vs DB Transfer)
 
@@ -92,7 +96,7 @@ Generator emits Orig. ID rows (replace existing). Cloning as new IDs is an Admin
 
 ## Reference data
 
-`Role` and `RequestStatus` are defined in spec (`roles` / `statuses`) and **always emitted** in transfer together with `Company` and `ObjectType`.
+`Role` and `RequestStatus` live in spec (`roles` / `statuses`) so steps can use keys. Generate emits those tables only when the row is new or changed vs download — same rule as `Company`, `ObjectType`, `Workflow`, and every other table.
 
 `LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After apply, **/publish** (or `/precompile` if the OT is already applied).
 

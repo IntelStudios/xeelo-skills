@@ -48,10 +48,17 @@ KNOWN_TYPES = frozenset(
         *CATEGORY_TARGETS,
         "lines",
         "stepActions",
-        "objectMessages",
         "templateHints",
+        "objectMessages",
     }
 )
+
+# Recycled workflow: do not upsert shared WF / role / status labels.
+REUSED_WORKFLOW_SKIP_KINDS = frozenset({"workflow", "roles", "statuses", "stepActions"})
+
+
+def _workflow_reused(spec: dict) -> bool:
+    return bool((spec.get("workflow") or {}).get("reuse"))
 
 
 def _as_int(value: Any) -> int | None:
@@ -167,9 +174,12 @@ def emit_language_table(spec: dict, registry: IdRegistry, result: Any) -> None:
     if not isinstance(payload, dict):
         raise ValueError("languageTable must be a mapping")
 
+    skip_kinds = REUSED_WORKFLOW_SKIP_KINDS if _workflow_reused(spec) else frozenset()
     for kind, body in payload.items():
         if kind not in KNOWN_TYPES:
             raise ValueError(f"languageTable: unknown type {kind!r}")
+        if kind in skip_kinds:
+            continue
         if kind in SCALAR_TARGETS:
             table, column, scalar = SCALAR_TARGETS[kind]
             langs = _lang_map(body)

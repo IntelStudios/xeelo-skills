@@ -106,9 +106,9 @@ Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
-Object Transfer **upserts** by Orig. ID — it does not delete. Soft-disable with `isActive: false` on the same ID (`ObjectUpdateAction`, `ObjectAction`, …). Omit the row and the site copy stays active.
+Object Transfer JSON is a **delta vs the latest DB-transfer download**: emit a row only when it is **new** or its generated cells **differ** from the snapshot. FK columns may point at Orig. IDs that already exist on the site — do not re-send the referenced row. `/publish` applies that subset (Orig. ID upsert). Manual Admin UI still works for selecting rows in batches.
 
-Object Transfer allows **partial deployment** — `/publish` applies the generated package (all rows, Orig. ID). Manual Admin UI still works for selecting rows in batches.
+Object Transfer **upserts** by Orig. ID — it does not delete. Soft-disable with `isActive: false` on the same ID (`ObjectUpdateAction`, `ObjectAction`, …). Omit the row and the site copy stays active.
 
 ## Creating a new project
 
@@ -146,14 +146,14 @@ File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo
 
 List existing workflows from `projects/<site>/env/`: `catalog.yaml` (`objects[].name`, `slug`, `workflowIds`), `env/objects/<slug>/spec/workflow.yaml` (`workflow.name`, steps), `env/objects/<slug>/spec/ids.yaml` (`ids.explicit.workflowId`). Each option: **object — workflow name — id** (optional step summary). Empty or stale env → only “new workflow”, or `/download-db` first.
 
-**Use existing** = share the same `Workflow` row (Orig. ID), not a clone of steps. Copy `spec/workflow.yaml` + `ids.explicit` (`workflowId`, `workflowSteps`, `workflowStepActions`, roles/statuses). `WorkflowStepAccess` is per `(step, object line)` — the new object’s lines get access rows on the shared steps; do not change steps/actions unless the user asks.
+**Use existing** = share the same `Workflow` row (Orig. ID), not a clone of steps. Copy `spec/workflow.yaml` (for step keys / access) + `ids.explicit` (`workflowId`, `workflowSteps`, `workflowStepActions`, roles/statuses) and set **`workflow.reuse: true`** so generate does not rewrite the shared process. Bind `ObjectDefault.WorkflowID` to that Orig. ID. Unchanged catalog rows (`Company`, `ObjectType`, `Role`, …) are omitted vs the download even when Object FKs still reference them. `WorkflowStepAccess` is per `(step, object line)` — the new object’s lines get access rows on the shared steps; do not change steps/actions unless the user asks.
 
 ### Creating a new object
 
 Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
 
 1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless the user described steps).
-2. **Existing workflow** — pick from the env list. Bind `ObjectDefault.WorkflowID` to that Orig. ID.
+2. **Existing workflow** — pick from the env list. Set `workflow.reuse: true` and bind `ObjectDefault.WorkflowID` to that Orig. ID.
 
 Never create an object with a silent new minimal workflow. Recipe: [create-object.md](recipes/create-object.md).
 
@@ -436,4 +436,4 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 
 `User`, `UserAccess` — configure separately per environment.
 
-Always emitted in Object Transfer: `Company`, `ObjectType`, `Role`, `RequestStatus` (from spec definitions + `ids.explicit`). Workflow steps use role/status **keys**.
+Object Transfer JSON is a **delta vs the latest download**: omit any entity row that already exists and is unchanged, even when other rows still reference its Orig. ID (`CompanyID`, `WorkflowID`, …). Emit the row when it is new or any generated cell differs. `workflow.reuse: true` additionally skips generating the shared workflow definition. Workflow steps in spec still use role/status **keys**.

@@ -544,9 +544,52 @@ def _emit_roles_and_statuses(spec: dict, registry: IdRegistry, result: BuildResu
         result.rows["RequestStatus"] = status_rows
 
 
+def _workflow_reused(spec: dict) -> bool:
+    """True when the object binds an existing Workflow Orig. ID (do not upsert WF definition)."""
+    return bool((spec.get("workflow") or {}).get("reuse"))
+
+
+def _emit_workflow_step_access(
+    spec: dict, registry: IdRegistry, result: BuildResult, steps: list
+) -> None:
+    """Per-(step, line) access for this object's fields. Safe when the Workflow already exists."""
+    for step in steps:
+        step_key = workflow_step_key(step)
+        step_id = registry.require("workflowSteps", step_key)
+        for access in step.get("access") or []:
+            field_code = str(access["field"])
+            subline_id = access.get("sublineId")
+            reg_key = step_access_registry_key(step_key, field_code, subline_id)
+            access_id = registry.require("workflowStepAccess", reg_key)
+            editable_bit, visible_bit = resolve_access_flags(access)
+            access_row: dict[str, Any] = {
+                "WorkflowStepID": step_id,
+                "WorkflowStepAccessID": access_id,
+                "ObjectLineID": registry.require("fields", field_code),
+                "WorkflowStepAccessIsEditable": editable_bit,
+                "WorkflowStepAccessIsVisible": visible_bit,
+                "IsActive": 1,
+            }
+            if subline_id is not None:
+                access_row["ObjectSubLineID"] = int(subline_id)
+            result.rows.setdefault("WorkflowStepAccess", []).append(access_row)
+            result.edges.append(
+                {
+                    "TableName": "WorkflowStep",
+                    "TableRowID": step_id,
+                    "ChildTableName": "WorkflowStepAccess",
+                    "ChildTableRowID": access_id,
+                }
+            )
+
+
 def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: BuildResult) -> int:
     wf = spec["workflow"]
     wf_id = registry.require_scalar("workflowId")
+    if _workflow_reused(spec):
+        _emit_workflow_step_access(spec, registry, result, wf.get("steps") or [])
+        return wf_id
+
     wf_name = wf.get("name") or f"{spec['object']['name']} Workflow"
     first_step = wf["steps"][0]
     first_role_id, first_status_id = _track_role_status(
@@ -630,31 +673,7 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
                 ]
             )
 
-        for access in step.get("access") or []:
-            field_code = str(access["field"])
-            subline_id = access.get("sublineId")
-            reg_key = step_access_registry_key(step_key, field_code, subline_id)
-            access_id = registry.require("workflowStepAccess", reg_key)
-            editable_bit, visible_bit = resolve_access_flags(access)
-            access_row: dict[str, Any] = {
-                "WorkflowStepID": step_id,
-                "WorkflowStepAccessID": access_id,
-                "ObjectLineID": registry.require("fields", field_code),
-                "WorkflowStepAccessIsEditable": editable_bit,
-                "WorkflowStepAccessIsVisible": visible_bit,
-                "IsActive": 1,
-            }
-            if subline_id is not None:
-                access_row["ObjectSubLineID"] = int(subline_id)
-            result.rows.setdefault("WorkflowStepAccess", []).append(access_row)
-            result.edges.append(
-                {
-                    "TableName": "WorkflowStep",
-                    "TableRowID": step_id,
-                    "ChildTableName": "WorkflowStepAccess",
-                    "ChildTableRowID": access_id,
-                }
-            )
+    _emit_workflow_step_access(spec, registry, result, wf.get("steps") or [])
     return wf_id
 
 
@@ -1542,10 +1561,14 @@ def build_rows(spec: dict) -> BuildResult:
     wf_cfg = spec.get("workflow", {})
     if wf_cfg.get("mode") == "full" and wf_cfg.get("steps"):
         wf_id = _build_workflow_full(spec, registry, oid, result)
+    elif _workflow_reused(spec):
+        wf_id = registry.require_scalar("workflowId")
+        _emit_workflow_step_access(spec, registry, result, wf_cfg.get("steps") or [])
     else:
         wf_id = _build_workflow_minimal(spec, registry, oid, result)
 
-    _emit_roles_and_statuses(spec, registry, result)
+    if not _workflow_reused(spec):
+        _emit_roles_and_statuses(spec, registry, result)
 
     _build_templates(spec, registry, oid, wf_id, result)
 
