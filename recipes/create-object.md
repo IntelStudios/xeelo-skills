@@ -1,13 +1,13 @@
 # Recipe: Create Object
 
-Minimal path to a usable Xeelo object — outputs **Object Transfer** XML (not DB transfer).
+Minimal path to a usable Xeelo object — outputs **Object Transfer** JSON (not DB transfer).
 
 ## Prerequisites
 
 - Define **roles** and **statuses** in spec (or rely on minimal defaults); set `ids.explicit.roles` / `statuses` after site sync
 - **WorkflowStepActionStyle** ID 1 must exist on target site (referenced by ID, not emitted)
 
-Transfer package always includes **Company**, **ObjectType**, **Role**, and **RequestStatus** rows from spec.
+Transfer JSON is a **delta vs download**: omit any entity row that already exists unchanged, even when FKs still point at it. **New** `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` rows are emitted; recycled ones are not. `workflow.reuse: true` skips generating the shared workflow definition.
 
 ## Steps
 
@@ -59,13 +59,13 @@ One section edge per section (not per field). Translations: `Parent → Language
 1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless they described steps).
 2. **Existing workflow** — pick from site `env/` (`catalog.yaml` `workflowIds`, `spec/workflow.yaml` name, `ids.explicit.workflowId`). Each option: **object — workflow name — id**.
 
-**Use existing** = share the same `Workflow` Orig. ID on `ObjectDefault.WorkflowID` (copy that object’s `spec/workflow.yaml` + workflow `ids.explicit`), not a clone of steps. Playbook: [AGENT.md § Ask which workflow](../AGENT.md#ask-which-workflow).
+**Use existing** = share the same `Workflow` Orig. ID on `ObjectDefault.WorkflowID` (copy that object’s `spec/workflow.yaml` + workflow `ids.explicit`, set `workflow.reuse: true`). Unchanged rows stay out of the JSON. Playbook: [AGENT.md § Ask which workflow](../AGENT.md#ask-which-workflow).
 
 ### 7. Workflow + template
 
-Workflow, WorkflowStep, WorkflowStepAction, ObjectDefault, ObjectDefaultLine — after the user chose.
+**New workflow:** Workflow, WorkflowStep, WorkflowStepAction, ObjectDefault, ObjectDefaultLine.
 
-Edges: `Object → Workflow → WorkflowStep → WorkflowStepAction`, `Object → ObjectDefault → ObjectDefaultLine`.
+**Existing workflow (`reuse: true`):** ObjectDefault (`WorkflowID` = shared Orig. ID), ObjectDefaultLine, WorkflowStepAccess for this object’s lines. No Workflow / WorkflowStep / WorkflowStepAction rows.
 
 ### 8. Generate
 

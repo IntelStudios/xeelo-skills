@@ -549,6 +549,10 @@
       "additionalProperties": false,
       "properties": {
         "mode": { "type": "string", "enum": ["minimal", "full"] },
+        "reuse": {
+          "type": "boolean",
+          "description": "Bind an existing Workflow Orig. ID. Generate omits Workflow, WorkflowStep, WorkflowStepAction, Role, and RequestStatus (and their LanguageTable). Still emits WorkflowStepAccess and ObjectDefault.WorkflowID."
+        },
         "name": { "type": "string" },
         "steps": {
           "type": "array",

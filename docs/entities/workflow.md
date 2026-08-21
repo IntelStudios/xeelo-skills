@@ -71,7 +71,7 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 
 **UI:** Role · Request Status
 
-Reference data defined in spec — **always emitted** in transfer with stable IDs from `ids.explicit.roles` / `statuses`. Workflow steps reference role/status **keys**.
+Reference data defined in spec. Emitted in Object Transfer only when the row is **new or changed** vs the latest download — same delta rule as every other table. Recycled workflow (`workflow.reuse: true`) skips generating the shared process; bind `ObjectDefault.WorkflowID` to the existing Orig. ID. Workflow steps in spec still reference role/status **keys**.
 
 ## Soft-delete (`IsActive`)
 

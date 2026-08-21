@@ -34,7 +34,7 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Tree icon / color:** Font Awesome **6.5.1** class string on `object.icon` / `objectType.icon` / `company.icon` (search `python scripts/search-fa-icons.py --query bank`; local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)). Color = existing `CustomColorCode` on `object.color` / `objectType.color` (not HEX). Do not spec obsolete `CompanyTreeColor` or `ObjectTypeTreeColorFont`. See [AGENT.md](AGENT.md) and [spec-format.md](docs/transfer/spec-format.md#tree-icons-and-colors).
 
-**New object workflow:** always ask whether to create a **new** workflow or **reuse** an existing one (list from site `env/`: object — name — id). Do not silent-default `workflow.mode: minimal`. See [AGENT.md § Ask which workflow](AGENT.md#ask-which-workflow).
+**New object workflow:** always ask whether to create a **new** workflow or **reuse** an existing one (list from site `env/`: object — name — id). Reuse = `workflow.reuse: true`. OT JSON is a delta vs download: unchanged entity rows are omitted even when FKs still reference them. Do not silent-default `workflow.mode: minimal`. See [AGENT.md § Ask which workflow](AGENT.md#ask-which-workflow).
 
 **Update action workflow:** always ask which workflow the new request version should use. **Default (Recommended)** = default `ObjectDefault` workflow — omit `updateActions[].workflow`. See [AGENT.md](AGENT.md) and [recipes/add-update-action.md](recipes/add-update-action.md).
 
