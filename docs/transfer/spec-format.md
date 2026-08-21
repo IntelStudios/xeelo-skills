@@ -75,7 +75,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`, `icon`, `color`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`, `gridSort`, `icon`, `color`) |
 | `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
@@ -184,6 +184,17 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `isActive` | `ObjectLine.IsActive`. `false` soft-disables the line (OT does not delete). Omit the field from spec and the site row stays **active**. |
 
 `object.requestTitleField` is a **field code** on the object (not a layout extra). It sets `Object.RequestTitleObjectLineID` — that line’s value is the request title in inbox, header, and links.
+
+`object.gridSort` is default inbox sort (Admin Object → Sorting), not a template setting:
+
+```yaml
+object:
+  gridSort:
+    field: DATE        # field code → ObjectGridSortObjectLineID
+    type: DESC         # ASC | DESC → ObjectGridSortType
+```
+
+Omit the block when there is no default line sort. After deploy, **/publish** so the sort cache SQL is rebuilt. A user filter can override. See [object-model.md](../entities/object-model.md).
 
 Combo / radio / multi **require** `reference`. Lookup on the same field is allowed (query map). Do not use lookup instead of a číselník.
 
@@ -751,6 +762,7 @@ Sets **ObjectLine** display flags for inbox grid:
 | `name` | `ObjectLineOnGridName` |
 | `isTag` | `ObjectLineOnGridIsTag` — **only** `text` / `textarea` (types 3, 4). Field values become request-grid tag filters (AND). See [object-line-types.md](../entities/object-line-types.md#on-grid-tag). |
 | `isSearch` | `ObjectLineOnGridIsSearch` — typed search; types 3, 4, 8, 12 |
+| `isTotal` | `ObjectLineOnGridIsTotal` — **number** (12) only. Inbox Summarization sums the stored slot. See [object-line-types.md](../entities/object-line-types.md#on-grid-total). |
 
 ```yaml
 onGrid:
@@ -758,9 +770,15 @@ onGrid:
     CATEGORY:
       allowed: true
       isTag: true
+    AMOUNT:
+      allowed: true
+      isTotal: true
+    INCOME:
+      allowed: false
+      isTotal: true
 ```
 
-`CATEGORY` must be `type: text` or `textarea`. Extract emits `onGrid.fields` when `allowed`, `isTag`, or `isSearch` is set (tag-only helpers: `allowed: false`, `isTag: true`). After deploy, **/publish** so the tag cache SQL is rebuilt.
+`CATEGORY` must be `type: text` or `textarea`. Extract emits `onGrid.fields` when `allowed`, `isTag`, `isSearch`, or `isTotal` is set (tag-only / total-only helpers: `allowed: false`). After deploy, **/publish** so the tag / total / sort cache SQL is rebuilt.
 
 Inbox cells parse `[badge:{CustomColorCode}_{text}]` as a colored chip (`.xe-badge-{code}`). Do **not** store badge tokens on an `isTag` line — use a separate display text line (`isTag: false`). Combo cannot be `isTag`. See [object-line-types.md](../entities/object-line-types.md#on-grid-badge).
 

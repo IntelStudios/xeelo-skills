@@ -75,6 +75,8 @@ Same keys (`sanitize(line.code)`), both `String` or null. Different DB columns:
 
 For Node.js arithmetic (balance += amount) always use `lines`, then `parseFloat` / write `String` or `.toFixed`. Use `linesFormatted` only for UI/export text.
 
+GraphQL `lines` inputs are **String**. A JSON number in mutation variables (`line_income: 200`) fails `GraphQLString` and aborts the whole `Mutate_` — Client-Math can still save the slot when the user changes the source field. Always write numeric lines as strings.
+
 ## Date picker (type 8)
 
 Stored **valueData** / GraphQL `lines.{code}` is **`dd-MM-yyyy`** (day-month-year with hyphens), e.g. `19-08-2026`. Empty is `""`. Save (`fnDateCheck`) parses with `cs-cz` and normalizes to that string.
@@ -172,11 +174,11 @@ Public HTTP is `POST {SiteServerAddress}/graphql` with `Authorization: Bearer <t
 
 ## Admin transfer and precompile
 
-Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. XeeloKB connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. XML between GraphQL string and SQL `varbinary` is **UTF-16 LE**.
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. Object Transfer XML between GraphQL string and SQL `varbinary` is **UTF-16 LE**. DB-transfer download is a JSON string (`nvarchar`); no varbinary conversion.
 
 | Operation | Skill | Role |
 |-----------|-------|------|
-| `Select_admin_transfer_download { xml }` | `/download-db` | Whole-site DB-transfer XML |
+| `Select_admin_transfer_download { json }` | `/download-db` | Whole-site DB-transfer JSON |
 | `Mutate_admin_transfer_upload(fileName, xml)` | dry-run after generate; `/publish` | Insert Object Transfer; returns `objectSetupXmlId` |
 | `Mutate_admin_transfer_process(id, isTestOnly)` | dry-run (`true`); `/publish` (`false`) | Apply or dry-run the uploaded transfer |
 | `Mutate_admin_precompile` | `/publish` (after process) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
@@ -184,7 +186,7 @@ Fixed operations, **not** bound to an object. They require a GraphQL token with 
 After precompile, wait until `{xeeloUrl}/graphql-api/health` (or `query { health }`) responds again.
 
 ```graphql
-query { Select_admin_transfer_download { xml } }
+query { Select_admin_transfer_download { json } }
 
 mutation ($fileName: String!, $xml: String!) {
   Mutate_admin_transfer_upload(fileName: $fileName, xml: $xml) { objectSetupXmlId }

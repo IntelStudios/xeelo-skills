@@ -19,6 +19,8 @@ Root form definition. Belongs to Company + ObjectType.
 | `ObjectTreeIcon` | Font Awesome 6.5.1 class string (`fa-{id} fa-{variant} fa-fw`). Spec: `object.icon` |
 | `ObjectTreeColor` | Treeview icon color = `CustomColor.CustomColorCode` (not HEX). Spec: `object.color` |
 | `RequestTitleObjectLineID` | ObjectLine whose value is the **request title** in GUI (inbox, header, links). Spec: `object.requestTitleField` |
+| `ObjectGridSortObjectLineID` | Default inbox sort line. Spec: `object.gridSort.field` (field **code**) |
+| `ObjectGridSortType` | `ASC` or `DESC`. Spec: `object.gridSort.type`. Admin also offers `None` (no line sort). After precompile, date (type 8) is parsed as `date`; tie-break is always `RequestID DESC`. A user filter can override. Subgrid analog: `ObjectSubGridSortObjectSubLineID` / `ObjectSubGridSortType` (not in spec yet). |
 | `IsActive` | Inactive = hidden from Admin, Inbox, Browser |
 
 ## Company and ObjectType (tree)
@@ -78,6 +80,7 @@ Note: no direct `ObjectID` FK — association is via sections → lines → obje
 | `ObjectLineOnGridIsAllowed` | Line may appear on the request grid |
 | `ObjectLineOnGridIsTag` | Tag filter: field **values** as chips on the request grid. Admin enables only types **3, 4** — [object-line-types.md](object-line-types.md#on-grid-tag) |
 | `ObjectLineOnGridIsSearch` | Typed search on the request grid (types 3, 4, 8, 12) |
+| `ObjectLineOnGridIsTotal` | Sum this **number** line in inbox Summarization. Spec: `onGrid.fields.<code>.isTotal`. Type 12 only — [object-line-types.md](object-line-types.md#on-grid-total) |
 
 Type-dependent extras (precision, source, attachment, preview, web frame, unique, …): [object-line-types.md](object-line-types.md). Spec slugs: [`data/field-type-mapping.json`](../data/field-type-mapping.json). Display-name translations: [localization.md](localization.md).
 

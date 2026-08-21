@@ -57,7 +57,7 @@ See [nodejs-esm.md](nodejs-esm.md) and [nodejs-graphql-patterns.md](../../recipe
 
 ## Agent guidance
 
-1. Generate config (objects, workflows) via XeeloKB
+1. Generate config (objects, workflows) via xeelo-skills
 2. Process DB transfer on target site
 3. **Manually** create/sync users and access in Admin or via separate tooling — including **WRITE for service account 0** when Node.js GraphQL mutates objects
 

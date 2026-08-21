@@ -1457,6 +1457,8 @@ def build_rows(spec: dict) -> BuildResult:
                     line_row["ObjectLineOnGridIsTag"] = 1 if ongrid_field["isTag"] else 0
                 if ongrid_field.get("isSearch"):
                     line_row["ObjectLineOnGridIsSearch"] = 1
+                if ongrid_field.get("isTotal"):
+                    line_row["ObjectLineOnGridIsTotal"] = 1
 
                 line_rows.append(line_row)
                 result.edges.extend(
@@ -1525,6 +1527,17 @@ def build_rows(spec: dict) -> BuildResult:
     title_field = obj.get("requestTitleField")
     if title_field:
         object_row["RequestTitleObjectLineID"] = registry.require("fields", str(title_field))
+
+    grid_sort = obj.get("gridSort") or {}
+    sort_field = grid_sort.get("field")
+    if sort_field:
+        sort_type = str(grid_sort.get("type") or "").upper()
+        if sort_type not in ("ASC", "DESC"):
+            raise ValueError(
+                f"object.gridSort.type must be ASC or DESC, got {grid_sort.get('type')!r}"
+            )
+        object_row["ObjectGridSortObjectLineID"] = registry.require("fields", str(sort_field))
+        object_row["ObjectGridSortType"] = sort_type
 
     wf_cfg = spec.get("workflow", {})
     if wf_cfg.get("mode") == "full" and wf_cfg.get("steps"):

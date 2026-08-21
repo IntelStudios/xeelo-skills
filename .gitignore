@@ -10,5 +10,5 @@ venv/
 # Local product-source index — never in the public KB
 /internal/
 
-# Per-project Admin credentials (never commit)
+# Per-project GraphQL connection (xeeloUrl + token) — never commit
 **/.xeelo-connection.json

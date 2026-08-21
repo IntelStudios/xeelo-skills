@@ -20,9 +20,11 @@ from ot_builder.graphql_client import (  # noqa: E402
     GraphqlError,
     MUTATION_PROCESS,
     MUTATION_UPLOAD,
+    QUERY_DOWNLOAD,
     XeeloGraphqlClient,
     collect_transfer_paths,
     decode_transfer_xml_bytes,
+    download_db_transfer_json,
     packages_from_loop,
     push_object_transfer,
     transfer_path_to_xml,
@@ -98,7 +100,7 @@ class ConnectionConfigTests(unittest.TestCase):
                 "siteId": 8,
             }
         )
-        with self.assertRaisesRegex(ValueError, "no longer supported"):
+        with self.assertRaisesRegex(ValueError, "xeeloUrl and token"):
             ConnectionConfig.load(path)
 
     def test_rejects_empty_token(self) -> None:
@@ -188,6 +190,73 @@ class GraphqlClientTests(unittest.TestCase):
         client._client = fake  # type: ignore[method-assign]
         with self.assertRaises(GraphqlAuthError):
             client.request("query { health }")
+
+
+class DownloadDbTransferJsonTests(unittest.TestCase):
+    def test_reads_json_field(self) -> None:
+        payload = '{"Company":[],"Object":[]}'
+        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                seen.append(document)
+                return {"Select_admin_transfer_download": {"json": payload}}
+
+        seen: list[str] = []
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            text = download_db_transfer_json(config)
+        self.assertEqual(text, payload)
+        self.assertEqual(seen, [QUERY_DOWNLOAD])
+        self.assertIn("json", QUERY_DOWNLOAD)
+
+    def test_rejects_empty_json(self) -> None:
+        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                return {"Select_admin_transfer_download": {"json": ""}}
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            with self.assertRaisesRegex(GraphqlError, "empty json"):
+                download_db_transfer_json(config)
+
+    def test_rejects_xml_field_only(self) -> None:
+        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                return {"Select_admin_transfer_download": {"xml": "<XMLData/>"}}
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            with self.assertRaisesRegex(GraphqlError, "empty json"):
+                download_db_transfer_json(config)
 
 
 class PushObjectTransferTests(unittest.TestCase):

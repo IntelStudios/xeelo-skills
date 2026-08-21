@@ -22,7 +22,7 @@ HEALTH_POLL_SECONDS = 2.0
 QUERY_DOWNLOAD = """
 query AdminTransferDownload {
   Select_admin_transfer_download {
-    xml
+    json
   }
 }
 """
@@ -56,9 +56,8 @@ mutation AdminPrecompile {
 QUERY_HEALTH = "query Health { health }"
 
 NEW_FORMAT_HELP = (
-    ".xeelo-connection.json now needs xeeloUrl and token "
-    "(Xeelo GraphQL admin token with isAdmin). "
-    "The Admin format (adminBaseUrl, siteId, credentials) is no longer supported. "
+    ".xeelo-connection.json needs xeeloUrl and token "
+    "(Xeelo GraphQL access token with isAdmin). "
     'Example: { "xeeloUrl": "https://<site>.xeelo.online/", "token": "..." }'
 )
 
@@ -348,7 +347,7 @@ def _is_precompile_interrupt(exc: BaseException) -> bool:
     return any(token in text for token in ("GraphQL HTTP 502", "GraphQL HTTP 503", "GraphQL HTTP 504"))
 
 
-def download_db_transfer_xml(
+def download_db_transfer_json(
     config: ConnectionConfig,
     *,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
@@ -356,10 +355,19 @@ def download_db_transfer_xml(
     with XeeloGraphqlClient(config, timeout=timeout_seconds) as client:
         data = client.request(QUERY_DOWNLOAD)
     payload = data.get("Select_admin_transfer_download") or {}
-    xml = payload.get("xml") if isinstance(payload, dict) else None
-    if not xml or not str(xml).strip():
-        raise GraphqlError("Select_admin_transfer_download returned empty xml")
-    return str(xml)
+    raw = payload.get("json") if isinstance(payload, dict) else None
+    if not raw or not str(raw).strip():
+        raise GraphqlError("Select_admin_transfer_download returned empty json")
+    text = str(raw)
+    try:
+        parsed = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise GraphqlError(
+            f"Select_admin_transfer_download returned invalid json: {exc}"
+        ) from exc
+    if not isinstance(parsed, dict) or isinstance(parsed, list):
+        raise GraphqlError("Select_admin_transfer_download json must be an object")
+    return text
 
 
 def push_object_transfer(

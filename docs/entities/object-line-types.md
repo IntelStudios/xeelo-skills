@@ -37,7 +37,7 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
 
 | Type | Required / typical extras |
 |------|---------------------------|
-| `number` | `precision` required in Admin; `numberSeparator`, `numberMin`, `numberMax`; onGrid total |
+| `number` | `precision` required in Admin; `numberSeparator`, `numberMin`, `numberMax`; on-grid **total** (`onGrid.fields.<code>.isTotal`) |
 | `button` | `saveAction` required; optional `buttonMessage`; **`colorBack` / `colorFont`** = `CustomColorCode` from the site palette (Admin Color Back / Color Font; not HEX). GUI classes `xe-back-{code}` / `xe-font-{code}`. Palette: [`CustomColor.json`](../data/enums/CustomColor.json). |
 | `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` |
 | `attachment_preview` | `previewField` (attachment field **code**) required → `ObjectLineAttPreviewObjectLineID`; optional `previewDownload` |
@@ -88,6 +88,7 @@ Example (preview bound to the Invoice attachment on the same object):
 | Search | 1, 2, 3, 4, 7, 8, 9, 11, 12, 14, 15, 19, 20 |
 | On-grid tag | 3, 4 |
 | On-grid search | 3, 4, 8, 12 |
+| On-grid total | **12** only (`ObjectLineOnGridIsTotal`) |
 | Color | 18 |
 | On-grid allowed | **not** 5, 6, 13, 16 |
 
@@ -104,6 +105,16 @@ Do not put commas in tag values — split is by comma. Prefer short discrete lab
 Not the same as **On-grid search** (`isSearch`): that is typed search on types 3, 4, 8, 12.
 
 Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec/generator do not emit subgrid tags.
+
+## On-grid total
+
+Admin checkbox **Total** (`ObjectLineOnGridIsTotal`) on Object Line, On-grid group. Spec: `onGrid.fields.<code>.isTotal`.
+
+Only **number** (12). After precompile, inbox grid SQL adds `TOTAL_{ObjectLineID}` (`isnull` of the slot, `'0'` when empty). Inbox **Summarization** sums those columns for the current filter and shows the **line name** + total. The field does **not** need to be on the inbox card (`allowed`); `isTotal: true` with `allowed: false` is enough.
+
+Changing Total requires **/publish** after OT (or `/precompile` if already deployed) so the cache SQL is rebuilt.
+
+Subgrid analog: `ObjectSubLineIsTotal` on types **3** and **12**. Spec/generator do not emit subgrid totals.
 
 ## On-grid badge
 

@@ -22,7 +22,7 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 - [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md)
 - [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md)
 
-**New project:** after the `projects/` check, create `projects/<name>/` + empty `snapshots/`, `env/`, `changes/` + `.xeelo-connection.json` with **empty** `token` (never copy from other projects). Infer `xeeloUrl` as `https://<name>.xeelo.online/` only when reasonable; then tell the user what to fill in — see [AGENT.md § Creating a new project](AGENT.md). Commit in the nested `projects/` repo, not in XeeloKB.
+**New project:** after the `projects/` check, create `projects/<name>/` + empty `snapshots/`, `env/`, `changes/` + `.xeelo-connection.json` with **empty** `token` (never copy from other projects). Infer `xeeloUrl` as `https://<name>.xeelo.online/` only when reasonable; then tell the user what to fill in — see [AGENT.md § Creating a new project](AGENT.md). Commit in the nested `projects/` repo, not in xeelo-skills.
 
 **Combo-box:** **reference** = ObjectLineSource on ObjectLine (číselník; `spec/references.yaml`). **lookup** = ObjectLineLookup query map on template (`spec/lookups.yaml` + `sourceField`). Combo always needs a reference; lookup may sit on the same field. New `references.*` default **`styleId: 4`** (Value). See [AGENT.md](AGENT.md). If `internal/` exists, use it when the KB is incomplete.
 

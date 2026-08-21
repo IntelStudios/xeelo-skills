@@ -1,30 +1,59 @@
-"""Parse Xeelo DB transfer (UTF-16 multi-block ZIP/XML, TransferType=DB)."""
+"""Parse Xeelo DB transfer JSON (table name → row arrays)."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
-from ot_builder.parse import TransferIndex, load_transfer, parse_transfer_bytes
+from ot_builder.parse import TransferIndex
+
+
+def parse_db_transfer_json(data: bytes | str) -> dict[str, Any]:
+    """Parse GraphQL DB-transfer JSON into the shared transfer dict shape."""
+    text = data.decode("utf-8-sig") if isinstance(data, (bytes, bytearray)) else data
+    try:
+        obj = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid DB transfer JSON: {exc}") from exc
+    if not isinstance(obj, dict) or isinstance(obj, list):
+        raise ValueError("DB transfer JSON must be an object keyed by table name")
+
+    rows: dict[str, list[dict]] = {}
+    for table, table_rows in obj.items():
+        if not isinstance(table, str) or not table:
+            raise ValueError(f"Invalid table name in DB transfer JSON: {table!r}")
+        if not isinstance(table_rows, list):
+            raise ValueError(
+                f"DB transfer table {table!r} must be an array of rows, "
+                f"got {type(table_rows).__name__}"
+            )
+        parsed_rows: list[dict] = []
+        for i, row in enumerate(table_rows):
+            if not isinstance(row, dict) or isinstance(row, list):
+                raise ValueError(
+                    f"DB transfer {table}[{i}] must be an object, got {type(row).__name__}"
+                )
+            parsed_rows.append(row)
+        rows[table] = parsed_rows
+
+    return {
+        "edges": [],
+        "objectMap": [],
+        "transferInfo": {},
+        "rows": rows,
+    }
 
 
 def load_db_transfer(path: Path) -> dict[str, Any]:
-    """Load DB transfer ZIP/XML and validate TransferType=DB."""
-    parsed = load_transfer(path)
-    info = parsed.get("transferInfo") or {}
-    transfer_type = str(info.get("TransferType") or info.get("transferType") or "")
-    if transfer_type and transfer_type.upper() != "DB":
+    """Load a DB transfer JSON file (no XML/ZIP)."""
+    path = Path(path)
+    if path.suffix.lower() != ".json":
         raise ValueError(
-            f"Expected TransferType=DB, got {transfer_type!r} in {path}. "
-            "Use extract-object-transfer-to-spec.py for Object transfers."
+            f"DB transfer must be a .json file, got {path}. "
+            "Use extract-object-transfer-to-spec.py for Object Transfer XML."
         )
-    if not transfer_type:
-        # Still accept packages that look like DB (no ObjectSetup edges, has table blocks).
-        if parsed.get("edges"):
-            raise ValueError(
-                f"Transfer has ObjectSetup edges but no TransferType=DB in {path}"
-            )
-    return parsed
+    return parse_db_transfer_json(path.read_bytes())
 
 
 def db_index(path: Path) -> TransferIndex:
@@ -205,10 +234,9 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
 
 # re-export for callers
 __all__ = [
+    "parse_db_transfer_json",
     "load_db_transfer",
     "db_index",
     "collect_object_by_table",
-    "parse_transfer_bytes",
-    "load_transfer",
     "TransferIndex",
 ]

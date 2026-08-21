@@ -40,7 +40,7 @@ Announce once at the start of site work (`Režim: project` or `Režim: project-k
 ```mermaid
 flowchart LR
   Creds["xeeloUrl + token"] --> DL[download-db-transfer]
-  DL --> Snap[snapshots XML]
+  DL --> Snap[snapshots JSON]
   Snap --> Env[extract-db-transfer-to-env]
   Env --> Loop[changes/slug notes + specs]
   Loop --> OT[generate-change-loop]
@@ -50,7 +50,7 @@ flowchart LR
 ```
 
 1. **Connect** — user provides Xeelo URL + GraphQL admin token → `projects/<project>/.xeelo-connection.json` (gitignored)
-2. **Download** DB transfer XML → `projects/<project>/snapshots/<stamp>/`
+2. **Download** DB transfer JSON → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
 5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload + `isTestOnly: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`.
@@ -138,7 +138,7 @@ Template (empty values for user to complete):
 | `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
 | `token` | GraphQL **admin** access token (`isAdmin`). Fixed; no refresh |
 
-File is gitignored in both XeeloKB and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in XeeloKB. Do not download DB transfer until the user has filled connection details.
+File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in xeelo-skills. Do not download DB transfer until the user has filled connection details.
 
 ## Ask which workflow
 
@@ -174,7 +174,7 @@ Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini;
 | Skill | When | File |
 |-------|------|------|
 | `/new-project` | New empty Xeelo site under `projects/<name>/` | [`.agents/skills/new-project/SKILL.md`](.agents/skills/new-project/SKILL.md) |
-| `/download-db` | Download DB transfer XML and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
+| `/download-db` | Download DB transfer JSON and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
 | `/publish` | Apply Object Transfer for real and precompile | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
 | `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 
@@ -208,7 +208,7 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 projects/ovnet/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
   .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL admin token
-  snapshots/<stamp>/*.xml         # DB transfer XML from GraphQL (UTF-16 LE)
+  snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
     catalog.yaml
     shared/{companies,object-types,roles,statuses,sources,custom-colors}.yaml
@@ -230,7 +230,7 @@ python scripts/download-db-transfer.py \
 
 # 1) Extract env (all objects from the site)
 python scripts/extract-db-transfer-to-env.py \
-  projects/ovnet/snapshots/<stamp>/<name>.xml \
+  projects/ovnet/snapshots/<stamp>/<name>.json \
   -o projects/ovnet/env
 
 # 2) Start a change loop

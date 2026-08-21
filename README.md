@@ -9,7 +9,7 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
 3. Per project (`projects/<name>/` = one Xeelo):
    - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL admin `token`
    - `python scripts/download-db-transfer.py --connection projects/<name>/.xeelo-connection.json`
-   - `python scripts/extract-db-transfer-to-env.py <snapshot.xml> -o projects/<name>/env`
+   - `python scripts/extract-db-transfer-to-env.py <snapshot.json> -o projects/<name>/env`
    - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
    - Edit `changes/<slug>/objects/...` then `python scripts/generate-change-loop.py projects/<name>/changes/<slug>`
 4. After generate the loop dry-runs the OT (`--only-test`). **`/publish`** applies it and precompiles (`ask` unless the site’s `conventions.md` says `auto`). Same for **`/download-db`** after a successful publish.
@@ -25,8 +25,8 @@ make validate-account
 
 | | DB Transfer | Object Transfer |
 |---|-------------|-----------------|
-| **XeeloKB reads** | Download + parse → `env/` | OT → spec extract |
-| **XeeloKB generates** | No | **Yes** — change-loop ZIPs |
+| **xeelo-skills reads** | Download + parse → `env/` | OT → spec extract |
+| **xeelo-skills generates** | No | **Yes** — change-loop ZIPs |
 | **Deploy** | Full site replace | **Partial** — `/publish` applies generated OT |
 
 ## Regenerate data from source repos

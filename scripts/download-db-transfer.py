@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download Xeelo DB transfer XML via GraphQL Select_admin_transfer_download."""
+"""Download Xeelo DB transfer JSON via GraphQL Select_admin_transfer_download."""
 
 from __future__ import annotations
 
@@ -14,13 +14,12 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from ot_builder.graphql_client import (  # noqa: E402
     DEFAULT_TIMEOUT_SECONDS,
     ConnectionConfig,
-    download_db_transfer_xml,
-    xml_to_utf16_le_bytes,
+    download_db_transfer_json,
 )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Download DB transfer XML from Xeelo GraphQL")
+    parser = argparse.ArgumentParser(description="Download DB transfer JSON from Xeelo GraphQL")
     parser.add_argument(
         "--connection",
         type=Path,
@@ -47,15 +46,14 @@ def main() -> None:
         project = project.parent
 
     print(f"Downloading DB transfer from {config.graphql_url}")
-    xml = download_db_transfer_xml(config, timeout_seconds=args.timeout)
-    data = xml_to_utf16_le_bytes(xml)
+    payload = download_db_transfer_json(config, timeout_seconds=args.timeout)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{project.name}_{stamp}.xml"
+    filename = f"{project.name}_{stamp}.json"
     out_dir = project / "snapshots" / stamp
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / filename
-    out_path.write_bytes(data)
-    print(f"Wrote {out_path} ({len(data)} bytes)")
+    out_path.write_text(payload, encoding="utf-8")
+    print(f"Wrote {out_path} ({out_path.stat().st_size} bytes)")
 
 
 if __name__ == "__main__":

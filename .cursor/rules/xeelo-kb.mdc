@@ -1,5 +1,5 @@
 ---
-description: When creating Xeelo configuration, read XeeloKB AGENT.md and work via DB transfer → env → change-loop Object Transfer
+description: When creating Xeelo configuration, read xeelo-skills AGENT.md and work via DB transfer → env → change-loop Object Transfer
 globs:
 alwaysApply: false
 ---

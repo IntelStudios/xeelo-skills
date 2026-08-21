@@ -257,6 +257,69 @@ class OnGridExtractTests(unittest.TestCase):
         self.assertIn("amount", fields_in_layout)
         self.assertNotIn("label_tag", fields_in_layout)
 
+    def test_extract_is_total_without_allowed(self) -> None:
+        index = TransferIndex(
+            edges=[],
+            rows={
+                "ObjectLine": [
+                    {
+                        "ObjectLineID": 1,
+                        "ObjectID": 9,
+                        "ObjectLineCode": "amount",
+                        "ObjectLineOnGridIsAllowed": 1,
+                        "ObjectLineOnGridIsTotal": 1,
+                    },
+                    {
+                        "ObjectLineID": 2,
+                        "ObjectID": 9,
+                        "ObjectLineCode": "income",
+                        "ObjectLineOnGridIsAllowed": 0,
+                        "ObjectLineOnGridIsTotal": 1,
+                    },
+                ],
+                "ObjectLineOnGrid": [],
+            },
+            transfer_info={},
+        )
+        ongrid, _explicit = _build_ongrid(
+            index, 9, {1: "amount", 2: "income"}
+        )
+        self.assertEqual(
+            ongrid["fields"]["amount"],
+            {"allowed": True, "isTotal": True},
+        )
+        self.assertEqual(
+            ongrid["fields"]["income"],
+            {"allowed": False, "isTotal": True},
+        )
+
+
+class OnGridTotalGenerateTests(unittest.TestCase):
+    def test_emits_is_total(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["fields"]["amount"]["isTotal"] = True
+        spec["onGrid"]["fields"]["income"] = {
+            "allowed": False,
+            "isTotal": True,
+        }
+        spec["layout"]["tabs"][0]["sections"][0]["fields"].append(
+            {
+                "name": "Income",
+                "code": "income",
+                "type": "number",
+                "slot": 3,
+                "width": 50,
+                "order": 30,
+                "precision": 2,
+            }
+        )
+        result = build_rows(spec)
+        by_code = {r["ObjectLineCode"]: r for r in result.rows["ObjectLine"]}
+        self.assertEqual(by_code["amount"]["ObjectLineOnGridIsTotal"], 1)
+        self.assertEqual(by_code["income"]["ObjectLineOnGridIsAllowed"], 0)
+        self.assertEqual(by_code["income"]["ObjectLineOnGridIsTotal"], 1)
+        self.assertNotIn("ObjectLineOnGridIsTotal", by_code["invoice"])
+
 
 if __name__ == "__main__":
     unittest.main()

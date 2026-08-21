@@ -22,7 +22,7 @@ Determine from the user message or ask once:
 ## Steps
 
 0. **Check `projects/`** (required). Ready = at least one site folder (`projects/<other>/`) **or** nested `projects/.git`. If missing, empty, or neither git nor a site:
-   - Explain: public XeeloKB has no sites; one **private** git repo = the whole `projects/` directory; credentials and DB snapshots stay out of that git via [templates/projects-repo/.gitignore](../../../templates/projects-repo/.gitignore).
+   - Explain: public xeelo-skills has no sites; one **private** git repo = the whole `projects/` directory; GraphQL connection files and DB snapshots stay out of that git via [templates/projects-repo/.gitignore](../../../templates/projects-repo/.gitignore).
    - **Offer** to initialize the nested repo. Do **not** run it until the user says yes. Do **not** scaffold `projects/<name>/` first.
    - If they agree: `mkdir -p projects`, copy `templates/projects-repo/.gitignore` and `README.md` into `projects/`, `git init` inside `projects/`. Then tell them to host a **private** remote (GitHub/GitLab/… — you do not create the remote) and:
 
@@ -73,4 +73,4 @@ Determine from the user message or ask once:
 | `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
 | `token` | GraphQL **admin** access token (`isAdmin` from site GraphQL access tokens). Fixed; no refresh. |
 
-Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not XeeloKB). Next step after filling connection: `/download-db`.
+Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling connection: `/download-db`.

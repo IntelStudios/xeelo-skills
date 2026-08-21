@@ -11,7 +11,7 @@ Xeelo Admin **Object Transfer** exports one or more objects and their dependency
 | Hierarchy | `ObjectSetup` + `ObjectMap` tree | Flat table list |
 | Upload type | `TransferType=OBJECT` | `TransferType=DB` |
 
-XeeloKB **generates Object Transfer**. DB transfer docs/schemas are kept as **reference** for table/column semantics only.
+xeelo-skills **generates Object Transfer**. DB transfer docs/schemas are kept as **reference** for table/column semantics only.
 
 ## ZIP contents
 
@@ -76,7 +76,7 @@ KB `/publish` applies the generated package (all rows, Orig. ID) then precompile
 
 Generator defaults match upload SP: all rows included, Orig. ID mode.
 
-## Publish from XeeloKB
+## Publish from xeelo-skills
 
 After generate, the loop **automatically** dry-runs the transfer (`isTestOnly: true`). `/publish` is the real apply + precompile (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
 

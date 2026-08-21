@@ -14,7 +14,7 @@ Read this file before creating or editing objects for this site.
 - Extra languages only when the user asks.
 - After `/publish` of translations (or `/precompile` if the OT is already applied).
 
-Platform details: parent XeeloKB [docs/entities/localization.md](../../docs/entities/localization.md).
+Platform details: parent xeelo-skills [docs/entities/localization.md](../../docs/entities/localization.md).
 
 ## Agent loop
 

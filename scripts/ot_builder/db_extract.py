@@ -111,13 +111,16 @@ def build_catalog(index: TransferIndex, *, transfer_path: Path) -> dict[str, Any
             }
         )
 
+    source: dict[str, Any] = {
+        "transfer": str(transfer_path),
+        "transferType": (index.transfer_info or {}).get("TransferType") or "DB",
+        "extractedAt": date.today().isoformat(),
+    }
+    version = (index.transfer_info or {}).get("Version")
+    if version:
+        source["version"] = version
     return {
-        "source": {
-            "transfer": str(transfer_path),
-            "transferType": (index.transfer_info or {}).get("TransferType", "DB"),
-            "version": (index.transfer_info or {}).get("Version"),
-            "extractedAt": date.today().isoformat(),
-        },
+        "source": source,
         "companies": companies,
         "objectTypes": object_types,
         "objects": objects,

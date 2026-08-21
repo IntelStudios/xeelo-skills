@@ -1,7 +1,7 @@
 ---
 name: download-db
 description: >-
-  Download the latest Xeelo DB transfer XML via GraphQL and extract it into
+  Download the latest Xeelo DB transfer JSON via GraphQL and extract it into
   projects/<project>/env/. Use when the user asks to download, refresh, or pull
   a DB transfer or snapshot, sync env from the site, or invokes /download-db.
 disable-model-invocation: true
@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 # Download DB Transfer & Extract Env
 
-Download the latest DB transfer from Xeelo GraphQL (`Select_admin_transfer_download`), then extract `env/` (catalog + shared + object specs). Read [AGENT.md](../../AGENT.md) for the full development loop.
+Download the latest DB transfer from Xeelo GraphQL (`Select_admin_transfer_download { json }`), then extract `env/` (catalog + shared + object specs). Read [AGENT.md](../../AGENT.md) for the full development loop.
 
 ## Prerequisites
 
@@ -56,38 +56,34 @@ Optional flags:
 - `--project projects/<project>` — override project directory (default: parent of connection file)
 - `--timeout 600` — HTTP timeout seconds (default 600; GraphQL SQL limit is 10 minutes)
 
-Note the XML path from stdout (`Wrote projects/<project>/snapshots/<stamp>/<project>_<stamp>.xml`).
+Note the JSON path from stdout (`Wrote projects/<project>/snapshots/<stamp>/<project>_<stamp>.json`).
 
 ## Step 2 — Extract env
 
-Run immediately after a successful download, using the XML from step 1:
+Run immediately after a successful download, using the JSON from step 1:
 
 ```bash
 $PYTHON scripts/extract-db-transfer-to-env.py \
-  projects/<project>/snapshots/<stamp>/<filename>.xml \
+  projects/<project>/snapshots/<stamp>/<filename>.json \
   -o projects/<project>/env
 ```
 
 Extract always writes **all** objects from the transfer (every company). Each object spec still records its `companyId` in metadata.
 
-The extract script also accepts a ZIP (legacy Admin snapshots). New downloads are XML only — keep the XML; do not delete it after extract.
+Keep the JSON snapshot; do not delete it after extract. The extract script does **not** accept XML or ZIP.
 
 ## Output
 
 Report both steps:
 
-1. **Snapshot XML** — `projects/<project>/snapshots/<stamp>/<filename>.xml` and byte size
+1. **Snapshot JSON** — `projects/<project>/snapshots/<stamp>/<filename>.json` and byte size
 2. **Env** — `projects/<project>/env/` with catalog object count and list of extracted object slugs from extract stdout
 
 Remove `.gitkeep` files under `env/` if real content was written.
 
 ### Empty site is OK
 
-`catalog=0`, `extracted=0` on a **new or empty site** is expected — not a failed extract. `env/` still gets `catalog.yaml`, `shared/*.yaml`, and `extract-summary.yaml`; there is simply no `objects/<slug>/` yet. See [AGENT.md § Empty site](../../AGENT.md). Reference: [`projects/lz/`](projects/lz/) before deploy.
-
-### After greenfield deploy
-
-Expect `catalog=1`, `extracted=1` (e.g. lz Transakce). Reference snapshot: [`projects/lz/snapshots/20260813_132321/`](projects/lz/snapshots/20260813_132321/).
+`catalog=0`, `extracted=0` on a **new or empty site** is expected — not a failed extract. `env/` still gets `catalog.yaml`, `shared/*.yaml`, and `extract-summary.yaml`; there is simply no `objects/<slug>/` yet. See [AGENT.md § Empty site](../../AGENT.md).
 
 ## On success — suggest next step
 
@@ -97,4 +93,4 @@ Offer to start a change loop (`/change-loop` when available) or edit specs under
 
 - **Auth / ACCESS_DENIED** — token is missing `isAdmin`. Ask the user to put an admin GraphQL token in `.xeelo-connection.json`. There is no refresh.
 - **Timeout** — large-site download can take up to 10 minutes on GraphQL; retry with higher `--timeout` if needed.
-- **Extract fails** — verify the XML path.
+- **Extract fails** — verify the JSON path (`.json`, UTF-8 object keyed by table name).

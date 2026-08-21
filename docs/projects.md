@@ -2,15 +2,15 @@
 
 **KB** = this repository except `projects/`. **One private git repo = the whole `projects/` directory.** Each Xeelo site is `projects/<name>/` (not its own git repo).
 
-Site working copies (env, snapshots, change loops, credentials) must not appear in the public XeeloKB repository. The public clone gitignores `/projects/` entirely — there is no `projects/README.md` in the KB, so `git clone <private> projects` can use an empty path.
+Site working copies (env, snapshots, change loops, GraphQL connection) must not appear in the public xeelo-skills repository. The public clone gitignores `/projects/` entirely — there is no `projects/README.md` in the KB, so `git clone <private> projects` can use an empty path.
 
-Scripts and skills still use `projects/<name>/`. Pull KB updates in the XeeloKB root; pull site updates inside `projects/`.
+Scripts and skills still use `projects/<name>/`. Pull KB updates in the xeelo-skills root; pull site updates inside `projects/`.
 
-Do **not** use git submodules. Do **not** `git add -f projects/` in XeeloKB. Forks of the KB stay empty of sites.
+Do **not** use git submodules. Do **not** `git add -f projects/` in xeelo-skills. Forks of the KB stay empty of sites.
 
-Copy [templates/projects-repo/](../templates/projects-repo/) into the private repo root (`.gitignore` + `README.md`). The parent XeeloKB `.gitignore` does **not** apply inside `projects/.git` — without that nested ignore, credentials and DB snapshots would be committed.
+Copy [templates/projects-repo/](../templates/projects-repo/) into the private repo root (`.gitignore` + `README.md`). The parent xeelo-skills `.gitignore` does **not** apply inside `projects/.git` — without that nested ignore, `.xeelo-connection.json` and DB snapshots would be committed.
 
-Version `env/` and `changes/`. Snapshot ZIP/XML files are gitignored; refresh them with `/download-db`.
+Version `env/` and `changes/`. Snapshot JSON files are gitignored; refresh them with `/download-db`.
 
 ## Setup A — empty `projects/` (fresh KB clone)
 
@@ -53,7 +53,7 @@ Before creating a site, downloading a DB transfer, or otherwise using `projects/
 1. Look at `projects/`. It is ready if it contains at least one site folder (`projects/<name>/`) **or** a nested `projects/.git`.
 2. **If ready** — continue. A new site belongs in the same private repo.
 3. **If not** (`projects/` missing, empty, or neither git nor a site):
-   - Explain the intent (public KB, one private git for all sites, nested `.gitignore` for credentials and snapshots).
+   - Explain the intent (public KB, one private git for all sites, nested `.gitignore` for GraphQL connection files and snapshots).
    - **Offer** to initialize the nested repo. Do not run it until the user says yes. Do not silently create only `projects/<name>/`.
    - After init, tell the user to host a **private** remote themselves (the agent does not create the remote) and connect it.
 
@@ -80,7 +80,7 @@ git commit -m "Initial projects repo"
 git push -u origin main
 ```
 
-`/new-project` adds `projects/<name>/` into this same private repo (including `conventions.md` from [`templates/project/conventions.md`](../templates/project/conventions.md)). Commit there, not in XeeloKB.
+`/new-project` adds `projects/<name>/` into this same private repo (including `conventions.md` from [`templates/project/conventions.md`](../templates/project/conventions.md)). Commit there, not in xeelo-skills.
 
 ## Site conventions
 

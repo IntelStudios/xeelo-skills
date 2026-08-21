@@ -738,7 +738,8 @@ def _build_ongrid(
         allowed = _boolish(line.get("ObjectLineOnGridIsAllowed"))
         is_tag = _boolish(line.get("ObjectLineOnGridIsTag"))
         is_search = _boolish(line.get("ObjectLineOnGridIsSearch"))
-        if not (allowed or is_tag or is_search):
+        is_total = _boolish(line.get("ObjectLineOnGridIsTotal"))
+        if not (allowed or is_tag or is_search or is_total):
             continue
         entry: dict[str, Any] = {"allowed": allowed}
         if line.get("ObjectLineOnGridName"):
@@ -747,6 +748,8 @@ def _build_ongrid(
             entry["isTag"] = is_tag
         if is_search:
             entry["isSearch"] = True
+        if is_total:
+            entry["isTotal"] = True
         og_fields[str(code)] = entry
 
     layouts_map: dict[tuple, dict] = {}
@@ -1631,6 +1634,13 @@ def extract_spec_from_index(
         title_code = _object_line_code(index, title_line_id)
         if title_code:
             spec["object"]["requestTitleField"] = title_code
+
+    sort_line_id = _int(obj.get("ObjectGridSortObjectLineID"))
+    sort_type = (_nonempty_str(obj, "ObjectGridSortType") or "").upper()
+    if sort_line_id is not None and sort_type in ("ASC", "DESC"):
+        sort_code = _object_line_code(index, sort_line_id)
+        if sort_code:
+            spec["object"]["gridSort"] = {"field": sort_code, "type": sort_type}
 
     if ongrid:
         spec["onGrid"] = ongrid
