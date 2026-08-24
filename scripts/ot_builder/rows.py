@@ -23,6 +23,7 @@ from ot_builder.object_messages import (
     condition_registry_key as object_message_condition_registry_key,
     style_id as object_message_style_id,
 )
+from ot_builder.periodics import build_periodics
 from ot_builder.spec_loader import normalize_spec, spec_references
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
@@ -1623,6 +1624,7 @@ def build_rows(spec: dict) -> BuildResult:
     _build_object_messages(spec, registry, oid, result)
     _build_update_actions(spec, registry, oid, result)
     _build_object_actions(spec, registry, oid, result)
+    build_periodics(spec, registry, oid, result)
     emit_language_table(spec, registry, result)
 
     return result

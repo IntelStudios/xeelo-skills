@@ -10,7 +10,8 @@ Replace `OBJECTCODE`, `FIELD_CODE`, `OTHERCODE`, `TEMPLATE_ID` with **site** cod
 - [ ] External HTTP failures: `log.error` status + body (no tokens/URLs); empty optional config = message without `log.error`
 - [ ] Select reads `lines` (valueData), not `linesFormatted`
 - [ ] Date picker `lines` are `dd-MM-yyyy` — split the string, do not use `new Date(s)`
-- [ ] Self-update: no `createType`, `withRefresh: false`
+- [ ] ObjectAction self-update: no `createType`, `withRefresh: false`
+- [ ] Periodic GraphQL mutate: **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — [nodejs-esm.md](../docs/entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)
 - [ ] `CREATE` only on a **different** object; `template` = `ObjectDefaultID`
 - [ ] Bulk CREATE: several items per `input` array **and** a small pool of concurrent `client.request` calls; raise `EndPointRunTimeout` — [§6](#6-batch--parallel-create)
 - [ ] Refresh **open** other requests: `withRefresh: true` without `lines`; batch + pool — [§7](#7-refresh-other-requests-in-parallel-no-line-writes)
@@ -255,7 +256,9 @@ Find targets with `Select_OTHERCODE` + `lineFilters` `EQ` on the bind (two queri
 
 ## 8. Start update action on completed requests
 
-Completed requests need `spRequestInsert` `@RequestTypeID = 2` (copy lines, new version), not a refresh of the finished row. GraphQL: `createType: "UPDATE"` + `updateAction` (`ObjectUpdateActionID` from env `ids.explicit.updateActions.<key>`). Omit `lines` so the new version keeps copied data; Last then runs on the **new** `requestId`. Do **not** use `UPDATE_EMPTY` when Last reads those lines. Do **not** use this on `Context.RequestID`.
+Completed requests need `spRequestInsert` `@RequestTypeID = 2` (copy lines, new version), not a refresh of the finished row. GraphQL: `createType: "UPDATE"` + `updateAction` (`ObjectUpdateActionID` from env `ids.explicit.updateActions.<key>`). Omit `lines` so the new version keeps copied data; Last then runs on the **new** `requestId`. Do **not** use `UPDATE_EMPTY` when Last reads those lines.
+
+From an **ObjectAction** on the current request, do **not** use this on `Context.RequestID` (self-update is simple mutate, `withRefresh: false`). From a **Periodic** Node.js action (`EventType = Periodic`), `Context.RequestID` **is** the completed batch entity — call `UPDATE` on that id. See [add-periodic.md](add-periodic.md).
 
 Each item creates a **new request version** (same `RequestCode`). Same batch + pool as §6. `EndPointRunWait: "0"` if the user must not wait. User **0** needs WRITE on the target object; the `updateAction` id must exist on that object.
 

@@ -26,6 +26,9 @@ flowchart TB
     Object --> ObjectAction
     ObjectAction --> ObjectActionParam
     ObjectAction --> ObjectActionCondition
+    Object --> Periodic
+    Periodic --> PeriodicAction
+    Periodic --> PeriodicCondition
     ObjectLineLookup --> ObjectLineLookupValue
     ObjectDefaultLine --> ObjectLineLookup
   end

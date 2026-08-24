@@ -102,6 +102,7 @@ Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract
 | Update actions | [docs/entities/update-actions.md](docs/entities/update-actions.md), [recipes/add-update-action.md](recipes/add-update-action.md) |
 | Object messages | [docs/entities/object-messages.md](docs/entities/object-messages.md) (HTML modal on create/update/workflow) |
 | Object actions / Node.js | [object-actions.md](docs/entities/object-actions.md), [nodejs-esm.md](docs/entities/nodejs-esm.md), [recipes/add-object-action.md](recipes/add-object-action.md), [nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md) |
+| Periodic / Scheduler | [integrations.md](docs/entities/integrations.md#periodic), [recipes/add-periodic.md](recipes/add-periodic.md) |
 | GraphQL schema | [docs/entities/graphql.md](docs/entities/graphql.md) (`Select_` / `Mutate_`, `lines` vs `linesFormatted`) |
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
@@ -308,6 +309,7 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 - `spec/templates.yaml` — ObjectDefault rows, extended validation, client calc (optional)
 - `spec/object-actions.yaml` — ObjectAction + WorkflowStepObjectAction (optional)
 - `spec/update-actions.yaml` — ObjectUpdateAction (optional)
+- `spec/periodics.yaml` — Periodic + optional Scheduler CRON (optional)
 - `spec/subgrids.yaml` — ObjectSub trees referenced from subgrid fields
 - `spec/ids.yaml` — `ids.explicit` + `ids.byTable` for Import with Orig. ID; new rows from per-table `ids.base[table]` (not one global block)
 
@@ -411,6 +413,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
 - [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))
+- [ ] Periodics: `spec/periodics.yaml` on the **batch** object; Node.js type `spEndPointRunNodeJSMain`; `cron` is Quartz 7-field; GraphQL mutate **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — not the ObjectAction no-refresh rule ([add-periodic.md](recipes/add-periodic.md))
 - [ ] Workflow step field access: `workflow.steps[].access` when a line must be editable after create ([add-workflow.md](recipes/add-workflow.md))
 - [ ] Template create access: `templates[].access` only to hide or lock fields on create (refresh default is visible+editable) — not `hidden` / `alwaysDisabled`
 - [ ] Multiple templates / extended validation / client calc: `spec/templates.yaml` if used ([xeelo-grammar.md](docs/entities/xeelo-grammar.md))

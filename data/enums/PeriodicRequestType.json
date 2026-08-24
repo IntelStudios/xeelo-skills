@@ -1,0 +1,5 @@
+[
+  {"id": 0, "code": "all", "name": "All requests"},
+  {"id": 10, "code": "in_progress", "name": "In progress"},
+  {"id": 20, "code": "completed", "name": "Only completed"}
+]

@@ -78,7 +78,7 @@ Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNode
 
 With `EndPointRunWait=1`, `spRequestUpdate` writes `EndPointRunResponseText` to `ResponseTextObjectLineID`.
 
-**When mutating the current request, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops.
+**When mutating the current request from an ObjectAction, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops. Periodic JS is the opposite: GraphQL mutate **must** refresh ([nodejs-esm.md](nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
 
 To re-run Last on **another completed** request, `withRefresh` on that id is not an update action — use `createType: UPDATE` + that object’s `updateAction` ([nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests)).
 

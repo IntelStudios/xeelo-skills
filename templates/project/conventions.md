@@ -9,7 +9,7 @@ Read this file before creating or editing objects for this site.
 
 ## Localization
 
-- Always add Czech in `spec/language-table.yaml` for user-visible labels: `object`, `tabs`, `sections`, `lines`, `workflow`, `roles`, `statuses`, `stepActions`, `objectActions`, `updateActions`, `objectMessages`, `templates`.
+- Always add Czech in `spec/language-table.yaml` for user-visible labels: `object`, `tabs`, `sections`, `lines`, `workflow`, `roles`, `statuses`, `stepActions`, `objectActions`, `updateActions`, `objectMessages`, `templates`, `periodics`, `periodicActions`, `schedulers`.
 - Inbox / `onGrid` column titles stay **English** — do not set `lines.<code>.onGrid` unless the user asks.
 - Extra languages only when the user asks.
 - After `/publish` of translations (or `/precompile` if the OT is already applied).

@@ -133,11 +133,13 @@ const current = parseFloat(
 ) || 0;
 ```
 
-## Mutating the current request — no refresh
+## Mutating the current request — no refresh (ObjectAction only)
+
+This rule is **ObjectAction** (`EventType` Save / SaveNew / WorkflowAction / …). It does **not** apply to Periodic Node.js — there you **must** refresh; see [below](#periodic--graphql-mutate-must-refresh).
 
 The object action already runs **inside** `spRequestRefreshGeneral`. A nested `spRequestRefresh` on **`Context.RequestID`** re-enters object actions. Last types still see the button value `1` → loop / timeout.
 
-**When mutating the request the action is currently handling, do not trigger refresh in the mutation.**
+**When mutating the request the ObjectAction is currently handling, do not trigger refresh in the mutation.**
 
 | Target | Shape | Re-runs **this** action? |
 |--------|-------|--------------------------|
@@ -190,6 +192,20 @@ Replace `OBJECTCODE` / `FIELD_CODE` with sanitized site codes from env. **Omit `
 If a **button** gated the action (`equals_text` / `1`), that line stays `1` after save. Later Save events will run the action again unless the same mutation clears the button (e.g. `BUTTON_CODE: ""`).
 
 `main()` return value (with `EndPointRunWait: "1"`) writes to `ResponseTextObjectLineID` (use a memo). GraphQL `lines` writes are separate — both can be used in one script.
+
+## Periodic — GraphQL mutate must refresh
+
+A Periodic Node.js action (`EventType = Periodic`) does **not** run inside `spRequestRefreshGeneral`. Line writes with the ObjectAction self-update shape (`withRefresh: false`, no `createType`) persist values but **do not** run Last / calculations / object actions on that request.
+
+**From Periodic JS, every GraphQL mutate that changes a request must trigger refresh** — `withRefresh: true` on a simple update, or a `createType` that always refreshes (`CREATE`, `UPDATE`, `UPDATE_EMPTY`). `withRefreshCache` is not enough. This is the opposite of ObjectAction on the current request.
+
+| Intent | Shape |
+|--------|--------|
+| Edit lines on an **open** request (including `Context.RequestID` if it is still refreshable) | `{ requestId, withRefresh: true, lines }` — omit `createType` |
+| Start an **update action** (completed request, new version + Last) | `{ requestId, createType: "UPDATE", updateAction }` — omit `lines`; refresh is on the **new** version |
+| CREATE another object | `{ createType: "CREATE", template, lines }` — refresh is on the **new** request |
+
+Do not copy ObjectAction `withRefresh: false` into Periodic `CustomJS`. Recipe: [add-periodic.md](../../recipes/add-periodic.md).
 
 ## CREATE another object
 

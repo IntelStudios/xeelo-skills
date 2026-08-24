@@ -1,0 +1,120 @@
+{
+  "table": "PeriodicCondition",
+  "columns": [
+    {
+      "name": "PeriodicID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicConditionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicConditionTypeID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicConditionParam1",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicConditionParam2",
+      "type": "NVARCHAR(50)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "PeriodicID",
+      "referencesTable": "Periodic",
+      "referencesColumn": "PeriodicID"
+    },
+    {
+      "column": "ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "PeriodicConditionTypeID",
+      "referencesTable": "PeriodicConditionType",
+      "referencesColumn": "PeriodicConditionTypeID"
+    }
+  ]
+}

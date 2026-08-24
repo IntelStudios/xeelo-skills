@@ -1,0 +1,96 @@
+{
+  "table": "PeriodicActionParam",
+  "columns": [
+    {
+      "name": "PeriodicActionID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicActionParamID",
+      "type": "int",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "PeriodicActionTypeParamCode",
+      "type": "varchar(50)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PeriodicActionParamValue",
+      "type": "NVARCHAR(max)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "bit",
+      "nullable": true,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "PeriodicActionID",
+      "referencesTable": "PeriodicAction",
+      "referencesColumn": "PeriodicActionID"
+    }
+  ]
+}

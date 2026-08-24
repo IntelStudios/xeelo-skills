@@ -213,6 +213,50 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
         if row.get("WorkflowStepID") is not None:
             add("WorkflowStep", row["WorkflowStepID"])
 
+    periodic_ids: set[int] = set()
+    periodic_action_ids: set[int] = set()
+    for row in index.rows_for("Periodic", "ObjectID", object_id):
+        pid = int(row["PeriodicID"])
+        periodic_ids.add(pid)
+        add("Periodic", pid)
+
+    for row in index.rows_for_any("PeriodicCondition", "PeriodicID", periodic_ids):
+        add("PeriodicCondition", row.get("PeriodicConditionID"))
+    for row in index.rows_for_any("PeriodicCalculation", "PeriodicID", periodic_ids):
+        add("PeriodicCalculation", row.get("PeriodicCalculationID"))
+    for row in index.rows_for_any("PeriodicAction", "PeriodicID", periodic_ids):
+        paid = int(row["PeriodicActionID"])
+        periodic_action_ids.add(paid)
+        add("PeriodicAction", paid)
+    for row in index.rows_for_any("PeriodicActionParam", "PeriodicActionID", periodic_action_ids):
+        add("PeriodicActionParam", row.get("PeriodicActionParamID"))
+    for row in index.rows_for_any(
+        "PeriodicActionCondition", "PeriodicActionID", periodic_action_ids
+    ):
+        add("PeriodicActionCondition", row.get("PeriodicActionConditionID"))
+
+    periodic_id_texts = {str(pid) for pid in periodic_ids}
+    scheduler_ids: set[int] = set()
+    scheduler_line_ids: set[int] = set()
+    for param in index.rows.get("SchedulerLineParam") or []:
+        if str(param.get("SchedulerLineTypeParamCode") or "") != "PeriodicID":
+            continue
+        if str(param.get("SchedulerLineParamValue") or "").strip() not in periodic_id_texts:
+            continue
+        add("SchedulerLineParam", param.get("SchedulerLineParamID"))
+        if param.get("SchedulerLineID") is None:
+            continue
+        line_id = int(param["SchedulerLineID"])
+        scheduler_line_ids.add(line_id)
+        add("SchedulerLine", line_id)
+        line = index.row_by_id("SchedulerLine", line_id)
+        if line and line.get("SchedulerID") is not None:
+            scheduler_ids.add(int(line["SchedulerID"]))
+            add("Scheduler", line["SchedulerID"])
+    for lid in scheduler_line_ids:
+        for row in index.rows_for("SchedulerLineParam", "SchedulerLineID", lid):
+            add("SchedulerLineParam", row.get("SchedulerLineParamID"))
+
     obj = index.row_by_id("Object", object_id)
     if obj:
         add("ObjectType", obj.get("ObjectTypeID"))

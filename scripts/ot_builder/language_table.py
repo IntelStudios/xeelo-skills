@@ -40,6 +40,9 @@ CATEGORY_TARGETS: dict[str, tuple[str, str, str]] = {
     "statuses": ("RequestStatus", "RequestStatusName", "statuses"),
     "objectActions": ("ObjectAction", "ObjectActionName", "objectActions"),
     "updateActions": ("ObjectUpdateAction", "ObjectUpdateActionName", "updateActions"),
+    "periodics": ("Periodic", "PeriodicName", "periodics"),
+    "periodicActions": ("PeriodicAction", "PeriodicActionName", "periodicActions"),
+    "schedulers": ("Scheduler", "SchedulerName", "schedulers"),
 }
 
 KNOWN_TYPES = frozenset(

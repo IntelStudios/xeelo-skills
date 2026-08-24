@@ -32,7 +32,15 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 21 | `ObjectActionParam` | ObjectAction |
 | 22 | `ObjectActionCondition` | ObjectAction, ObjectLine |
 | 23 | `WorkflowStepObjectAction` | WorkflowStep, ObjectAction |
-| 24 | `LanguageTable` | Parent entity PK in `RowID` (Object, ObjectLine, …) |
+| 24 | `Periodic` | Object |
+| 25 | `PeriodicCondition` | Periodic, ObjectLine |
+| 26 | `PeriodicAction` | Periodic |
+| 27 | `PeriodicActionParam` | PeriodicAction |
+| 28 | `PeriodicActionCondition` | PeriodicAction, ObjectLine |
+| 29 | `Scheduler` | — |
+| 30 | `SchedulerLine` | Scheduler |
+| 31 | `SchedulerLineParam` | SchedulerLine (`PeriodicID` value) |
+| 32 | `LanguageTable` | Parent entity PK in `RowID` (Object, ObjectLine, Periodic, …) |
 
 ## Full transfer table list
 

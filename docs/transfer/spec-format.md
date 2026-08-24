@@ -746,6 +746,51 @@ objectActions:
 
 **IDs:** `objectActions`, `objectActionParams` (`action/paramCode`), `objectActionConditions` (`action/field/type`), `workflowStepObjectActions` (`action/stepName`).
 
+## Periodics (`spec/periodics.yaml`)
+
+Optional fragment for **Periodic** + optional **Scheduler** CRON. See [entities/integrations.md](../entities/integrations.md#periodic). Recipe: [add-periodic.md](../../recipes/add-periodic.md).
+
+Periodic selects last-version requests of **this** object, filters them, and runs ordered `PeriodicAction`s. `cron` (Quartz **7-field**) emits `Scheduler` / `SchedulerLine` (`spPeriodicExecute`) / `PeriodicID` param. Omit `cron` for on-demand `Execute_Periodic` only.
+
+```yaml
+periodics:
+  - key: load_fio_hourly
+    name: Load FIO transactions
+    requestType: completed   # all | in_progress | completed  (or 0 / 10 / 20)
+    cron: "0 0 * ? * * *"    # hourly at :00, Europe/Prague
+    conditions:
+      - field: TYPE
+        type: equals_text
+        param1: FIO
+    actions:
+      - key: start_load
+        name: Start load
+        typeCode: spEndPointRunNodeJSMain
+        order: 10
+        params:
+          CustomJS: |
+            import { XeeloGraphQLClient } from "@xeelo/graphql-client";
+            export async function main() { return "OK"; }
+          EndPointRunWait: "1"
+          EndPointRunESM: "1"
+          EndPointRunTimeout: "300000"
+        conditions:
+          - field: TYPE
+            type: equals_text
+            param1: FIO
+```
+
+Include in `xeelo-spec.yaml`:
+
+```yaml
+includes:
+  - spec/periodics.yaml
+```
+
+Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing ESM/wait/timeout params default to `"1"` / `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs-esm.md](../entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
+
+**IDs:** `periodics`, `periodicConditions` (`periodic/field/type`), `periodicActions` (`periodic/action`), `periodicActionParams` (`periodic/action/paramCode`), `periodicActionConditions` (`periodic/action/field/type`), `schedulers` (periodic key), `schedulerLines` (`periodic/execute`), `schedulerLineParams` (`periodic/execute/PeriodicID`).
+
 ### `source`
 
 ```yaml

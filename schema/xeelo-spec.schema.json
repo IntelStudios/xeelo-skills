@@ -123,6 +123,10 @@
     "objectMessages": {
       "type": "array",
       "items": { "$ref": "#/$defs/objectMessage" }
+    },
+    "periodics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/periodic" }
     }
   },
   "$defs": {
@@ -715,6 +719,56 @@
         "isActive": { "type": "boolean" }
       }
     },
+    "periodicAction": {
+      "type": "object",
+      "required": ["typeCode"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "typeCode": { "type": "string" },
+        "order": { "type": "integer", "minimum": 1 },
+        "isActive": { "type": "boolean" },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/objectActionParamValue" }
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        }
+      }
+    },
+    "periodic": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "requestType": {
+          "oneOf": [
+            { "type": "string", "enum": ["all", "in_progress", "completed"] },
+            { "type": "integer", "enum": [0, 10, 20] }
+          ]
+        },
+        "cron": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Quartz 7-field CRON; emits Scheduler + spPeriodicExecute line"
+        },
+        "schedulerName": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "isActive": { "type": "boolean" },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        },
+        "actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/periodicAction" }
+        }
+      }
+    },
     "updateActionMessage": {
       "type": "object",
       "required": ["key"],
@@ -822,6 +876,14 @@
         "objectActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "workflowStepObjectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "periodics": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "periodicConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "periodicActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "periodicActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "periodicActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "schedulers": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "schedulerLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "schedulerLineParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "languageTables": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
       }
     },
@@ -921,6 +983,18 @@
           "additionalProperties": { "$ref": "#/$defs/langMap" }
         },
         "updateActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "periodics": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "periodicActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "schedulers": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/langMap" }
         },

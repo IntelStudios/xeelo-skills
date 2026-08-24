@@ -26,6 +26,7 @@ from ot_builder.object_messages import (
     message_key,
     style_slug,
 )
+from ot_builder.periodics import extract_periodics
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
@@ -1541,6 +1542,14 @@ def extract_spec_from_index(
         role_id_to_key={int(v): k for k, v in (wf_explicit.get("roles") or {}).items()},
         status_id_to_key={int(v): k for k, v in (wf_explicit.get("statuses") or {}).items()},
     )
+    periodics, pe_explicit = extract_periodics(
+        index,
+        oid,
+        field_id_to_code,
+        _line_field_code,
+        role_id_to_key={int(v): k for k, v in (wf_explicit.get("roles") or {}).items()},
+        status_id_to_key={int(v): k for k, v in (wf_explicit.get("statuses") or {}).items()},
+    )
 
     ot_id = int(obj["ObjectTypeID"])
     ot_row = index.row_by_id("ObjectType", ot_id)
@@ -1563,6 +1572,7 @@ def extract_spec_from_index(
         **ua_explicit,
         **om_explicit,
         **oa_explicit,
+        **pe_explicit,
         "objectLineOnGrid": ongrid_explicit,
     }
     if explicit_autonumbers:
@@ -1664,6 +1674,8 @@ def extract_spec_from_index(
         spec["templates"] = templates
     if object_actions:
         spec["objectActions"] = object_actions
+    if periodics:
+        spec["periodics"] = periodics
 
     language_table, lt_explicit = extract_language_table(index, explicit)
     if language_table:
@@ -1700,6 +1712,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "updateActions",
         "objectMessages",
         "objectActions",
+        "periodics",
         "templates",
         "objectDefault",
         "roles",

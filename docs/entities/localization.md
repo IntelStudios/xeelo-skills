@@ -86,6 +86,9 @@ languageTable:
 | `workflow` | `WorkflowName` |
 | `stepActions.<stepName>/<actionName>` | `WorkflowStepActionName` |
 | `objectActions.<key>` / `updateActions.<key>` | action display names |
+| `periodics.<key>` | `PeriodicName` |
+| `periodicActions.<periodicKey>/<actionKey>` | `PeriodicActionName` |
+| `schedulers.<periodicKey>` | `SchedulerName` (when `periodics[].cron` is set) |
 | `objectMessages.<key>` | `ObjectMessageName` |
 | `objectMessages.<key>.html` | HTML body — LanguageTable ColumnName `ObjectMessageFormat` (DB column is `ObjectMessageFromat`) |
 | `templateHints.<templateKey>.<code>` | `ObjectDefaultLineHint` — canonical English stays on `templates.fields.<code>.hint`; RowID is the template-line PK |

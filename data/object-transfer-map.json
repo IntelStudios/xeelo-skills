@@ -356,6 +356,14 @@
     "child": "ObjectLineLookup"
   },
   {
+    "parent": "Scheduler",
+    "child": "SchedulerLine"
+  },
+  {
+    "parent": "SchedulerLine",
+    "child": "SchedulerLineParam"
+  },
+  {
     "parent": "Printout",
     "child": "PrintoutCalculation"
   },

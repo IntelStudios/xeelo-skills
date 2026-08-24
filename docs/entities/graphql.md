@@ -35,7 +35,7 @@ Example: `object_9100_account` → `Select_object_9100_account`, `Mutate_object_
 
 **SubGrid** uses the same prefixes from `subgrid.code`.
 
-Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` is documented next.
+Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` is documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
 
 ## Query `Select_{code}`
 
@@ -152,7 +152,7 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 
 Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks for lines whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique).
 
-From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). `CREATE` / `UPDATE` on a **different** object or request may refresh. See [nodejs-esm.md](nodejs-esm.md#mutating-the-current-request--no-refresh).
+From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). From a **Periodic** Node.js action, GraphQL mutate **must refresh** (`withRefresh: true` or `createType` that always refreshes). See [nodejs-esm.md](nodejs-esm.md#mutating-the-current-request--no-refresh) and [nodejs-esm.md](nodejs-esm.md#periodic--graphql-mutate-must-refresh).
 
 ## Mutation `Delete_request`
 
