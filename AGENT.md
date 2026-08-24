@@ -169,7 +169,7 @@ Recipe: [add-update-action.md](recipes/add-update-action.md). Runtime fallback: 
 
 ## Skills
 
-Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, and `/precompile`.
+Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, `/precompile`, and `/graphql`.
 
 | Skill | When | File |
 |-------|------|------|
@@ -177,6 +177,7 @@ Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini;
 | `/download-db` | Download DB transfer JSON and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
 | `/publish` | Apply Object Transfer for real and precompile | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
 | `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
+| `/graphql` | Live schema + `access_rights` from `POST {xeeloUrl}/graphql` | [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md) |
 
 After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
@@ -208,6 +209,7 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 projects/ovnet/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
   .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL admin token
+  graphql/{schema,access_rights}.json  # live introspection — gitignored; refresh with /graphql
   snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
     catalog.yaml

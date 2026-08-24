@@ -10,7 +10,7 @@ Do **not** use git submodules. Do **not** `git add -f projects/` in xeelo-skills
 
 Copy [templates/projects-repo/](../templates/projects-repo/) into the private repo root (`.gitignore` + `README.md`). The parent xeelo-skills `.gitignore` does **not** apply inside `projects/.git` — without that nested ignore, `.xeelo-connection.json` and DB snapshots would be committed.
 
-Version `env/` and `changes/`. Snapshot JSON files are gitignored; refresh them with `/download-db`.
+Version `env/` and `changes/`. Snapshot JSON files are gitignored; refresh them with `/download-db`. GraphQL introspection JSON (`graphql/schema.json`, `graphql/access_rights.json`) is gitignored; refresh with `/graphql`.
 
 ## Setup A — empty `projects/` (fresh KB clone)
 
