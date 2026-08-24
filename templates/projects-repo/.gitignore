@@ -6,3 +6,7 @@
 **/snapshots/**/*.zip
 **/snapshots/**/*.xml
 **/snapshots/**/*.json
+
+# Live GraphQL introspection — refresh with /graphql
+**/graphql/schema.json
+**/graphql/access_rights.json
