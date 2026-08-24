@@ -100,6 +100,8 @@ Generator emits Orig. ID rows (replace existing). Cloning as new IDs is an Admin
 
 `LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After apply, **/publish** (or `/precompile` if the OT is already applied).
 
+`TableComments` (Admin HTML notes) is the same polymorphic pattern (`TableName` + `TableRowID`). Spec: [`spec/comments.yaml`](spec-format.md#admin-comments-speccommentsyaml). Upsert by Orig. ID; omitted comments stay.
+
 ## Generate
 
 ```bash

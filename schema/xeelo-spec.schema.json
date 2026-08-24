@@ -94,6 +94,7 @@
       "additionalProperties": { "$ref": "#/$defs/autonumberDefinition" }
     },
     "languageTable": { "$ref": "#/$defs/languageTable" },
+    "comments": { "$ref": "#/$defs/comments" },
     "ids": { "$ref": "#/$defs/ids" },
     "source": { "$ref": "#/$defs/source" },
     "transferVersion": { "type": "string", "default": "1.3.0" },
@@ -884,7 +885,8 @@
         "schedulers": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "schedulerLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "schedulerLineParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
-        "languageTables": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
+        "languageTables": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "tableComments": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
       }
     },
     "ids": {
@@ -1008,6 +1010,92 @@
           "additionalProperties": {
             "type": "object",
             "additionalProperties": { "$ref": "#/$defs/langMap" }
+          }
+        }
+      }
+    },
+    "commentItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["html"],
+      "description": "Admin TableComments HTML body. Simple tags: p, ul/ol/li, strong/em, br, a.",
+      "properties": {
+        "html": { "type": "string", "minLength": 1 },
+        "userName": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "minLength": 1 }
+      }
+    },
+    "commentList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/commentItem" }
+    },
+    "comments": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Admin HTML comments (TableComments). Keys match languageTable entity types. Values are lists (append changelog).",
+      "properties": {
+        "object": { "$ref": "#/$defs/commentList" },
+        "company": { "$ref": "#/$defs/commentList" },
+        "objectType": { "$ref": "#/$defs/commentList" },
+        "workflow": { "$ref": "#/$defs/commentList" },
+        "tabs": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "lines": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "templates": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "roles": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "statuses": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "stepActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "objectActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "updateActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "periodics": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "periodicActions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "schedulers": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "objectMessages": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/commentList" }
+        },
+        "templateHints": {
+          "type": "object",
+          "description": "Comments on ObjectDefaultLine. Nested template key then field code.",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/commentList" }
           }
         }
       }

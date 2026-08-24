@@ -14,6 +14,7 @@ projects/account-object/
     references.yaml     # numberedníky (optional)
     lookups.yaml        # dotazovací mapy (optional)
     language-table.yaml # LanguageTable translations (optional)
+    comments.yaml       # TableComments HTML notes (optional)
     workflow.yaml       # workflow
     ids.yaml            # ids (+ source after extract)
 ```
@@ -81,6 +82,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid display + placement (typically in `object.yaml`) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
+| `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
 | `objectMessages` | no | HTML modals — [`spec/object-messages.yaml`](#object-messages-specobject-messagesyaml) |
 | `workflow` | no | Defaults to minimal 2-step flow |
 | `ids.base` | no | Per-table max PK for **new** rows (`ObjectLine: 9112` → next is 9113). Omit for greenfield (default 9000 per table). Legacy: a single integer is the default for tables not in the map. |
@@ -258,6 +260,29 @@ languageTable:
 Generator emits `LanguageTable` rows and parent→`LanguageTable` ObjectSetup edges. Extract writes this fragment only when translations exist. After `/publish` (or `/precompile` if the OT is already applied) so User GUI picks up labels.
 
 Do not put Czech (or other languages) into `object.yaml` `name` fields. Site rules (always `cs`, onGrid stays English): `projects/<name>/conventions.md`.
+
+## Admin comments (`spec/comments.yaml`)
+
+HTML notes on configuration entities (`TableComments`), not request comments. Same entity keys as `languageTable`. Values are **lists** (append changelog). See [comments.md](../entities/comments.md). Recipe: [add-table-comment.md](../../recipes/add-table-comment.md).
+
+```yaml
+# spec/comments.yaml
+comments:
+  object:
+    - html: "<p>FIO accounts that drive payment import.</p>"
+  lines:
+    TYPE:
+      - html: "<p>Payment source. Hourly periodic matches FIO.</p>"
+  periodics:
+    load_fio_hourly:
+      - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
+```
+
+Generator emits `TableComments` rows (`UserID=0`, default `userName` `xeelo-skills`) and parent→`TableComments` ObjectSetup edges. Extract writes this fragment only when comments exist. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Object Transfer upserts by Orig. ID — omitted comments stay on the site.
+
+Whether the agent **writes** these comments is **Generate table comments** in `projects/<name>/conventions.md` (`ask` | `auto`). HTML language is **Comment language** in that file (missing = `en`). New entity → one description; change → append a dated item; unchanged → skip.
+
+**IDs:** `ids.explicit.tableComments` (`TableName:entityKey:index`, e.g. `ObjectLine:TYPE:0`).
 
 ## References (`spec/references.yaml`)
 

@@ -7,7 +7,7 @@
 When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 1. Read [AGENT.md](AGENT.md) first
-2. Prefer project loop: download DB transfer → extract `env/` → edit `changes/<slug>/` → generate Object Transfer. After generate, **dry-run** `--only-test`, then `/publish` per `projects/<name>/conventions.md` (**Publish after dry-run:** `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
+2. Prefer project loop: download DB transfer → extract `env/` → edit `changes/<slug>/` → generate Object Transfer. After generate, **dry-run** `--only-test`, then `/publish` per `projects/<name>/conventions.md` (**Publish after dry-run:** `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish. After spec edits, **Generate table comments** the same way (`spec/comments.yaml`).
 3. In each `changes/<slug>/`, keep `tasks.md` as a checklist and write/update **`notes.md`** for the next human/agent: **Requested** (user ask; prompt/plan excerpts OK, not the whole chat) vs **Done** (what actually changed). Update on later rounds in the same loop; do not silently rewrite history.
 4. Connection: `projects/<project>/.xeelo-connection.json` (gitignored) with `xeeloUrl` and GraphQL admin `token`
 5. Specs: `xeelo-spec.yaml` v2 — tabs → sections → fields + optional onGrid / subgrids
@@ -32,6 +32,8 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 **Description memo:** new `description_memo` fields default **`descMemoBorder: false`** (omit or false). Set `true` only when the user wants a visible box.
 
 **Labels:** canonical `name` in English; translations in `spec/language-table.yaml`. Read `projects/<name>/conventions.md` when present. See [AGENT.md](AGENT.md) and [docs/entities/localization.md](docs/entities/localization.md).
+
+**Admin comments:** `spec/comments.yaml` (`TableComments` HTML). Follow **Generate table comments** in conventions (`ask` default). See [docs/entities/comments.md](docs/entities/comments.md).
 
 **Tree icon / color:** Font Awesome **6.5.1** class string on `object.icon` / `objectType.icon` / `company.icon` (search `python scripts/search-fa-icons.py --query bank`; local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)). Color = existing `CustomColorCode` on `object.color` / `objectType.color` (not HEX). Do not spec obsolete `CompanyTreeColor` or `ObjectTypeTreeColorFont`. See [AGENT.md](AGENT.md) and [spec-format.md](docs/transfer/spec-format.md#tree-icons-and-colors).
 

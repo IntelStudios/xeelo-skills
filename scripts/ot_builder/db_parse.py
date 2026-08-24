@@ -273,6 +273,13 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
                 if row.get("LanguageTableID") is not None:
                     add("LanguageTable", row["LanguageTableID"])
 
+    tc_by_parent = index.group_by("TableComments", "TableName", "TableRowID")
+    for parent_table, ids in owned.items():
+        for rid in ids:
+            for row in tc_by_parent.get((parent_table, rid), []):
+                if row.get("TableCommentID") is not None:
+                    add("TableComments", row["TableCommentID"])
+
     return by_table
 
 

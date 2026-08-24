@@ -41,6 +41,7 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 30 | `SchedulerLine` | Scheduler |
 | 31 | `SchedulerLineParam` | SchedulerLine (`PeriodicID` value) |
 | 32 | `LanguageTable` | Parent entity PK in `RowID` (Object, ObjectLine, Periodic, …) |
+| 33 | `TableComments` | Parent entity PK in `TableRowID` (Object, ObjectLine, Periodic, …) |
 
 ## Full transfer table list
 

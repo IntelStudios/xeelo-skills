@@ -47,6 +47,7 @@ CATEGORY_TO_TABLE: dict[str, str] = {
     "roles": "Role",
     "statuses": "RequestStatus",
     "languageTables": "LanguageTable",
+    "tableComments": "TableComments",
 }
 
 SCALAR_TO_TABLE: dict[str, str] = {

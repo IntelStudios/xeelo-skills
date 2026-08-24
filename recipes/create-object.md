@@ -15,7 +15,7 @@ Transfer JSON is a **delta vs download**: omit any entity row that already exist
 
 See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
 
-Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
+Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
 
 ### 2. Allocate IDs
 
@@ -44,7 +44,7 @@ ObjectLine → ObjectLineTab
 ObjectLineTab → ObjectLineSection
 ```
 
-One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`.
+One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`. Comments: `Parent → TableComments` from `spec/comments.yaml`.
 
 ### 5. onGrid (optional)
 

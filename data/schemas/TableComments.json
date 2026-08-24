@@ -1,0 +1,62 @@
+{
+  "table": "TableComments",
+  "columns": [
+    {
+      "name": "TableCommentID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "TableName",
+      "type": "varchar(255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "TableRowID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "UserID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "UserName",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "TableCommentData",
+      "type": "NVARCHAR(MAX)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "AttachmentID",
+      "type": "BIGINT",
+      "nullable": true,
+      "identity": false,
+      "default": "-1"
+    },
+    {
+      "name": "TableCommentDate",
+      "type": "DATETIME",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": []
+}

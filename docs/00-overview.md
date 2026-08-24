@@ -22,6 +22,7 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |
 | **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted requests — [object-model.md](entities/object-model.md#unique) |
 | **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields — [localization.md](entities/localization.md) |
+| **Admin comments (TableComments)** | HTML notes on config entities — [comments.md](entities/comments.md) |
 
 ## Configuration vs runtime
 
@@ -61,5 +62,6 @@ See [01-entity-hierarchy.md](01-entity-hierarchy.md) for portlet-grouped entity 
 - [entities/object-line-types.md](entities/object-line-types.md) — 20 ObjectLine types, template capabilities, client calc
 - [entities/xeelo-grammar.md](entities/xeelo-grammar.md) — extended validation (`v#`), Client-Math/String, UserInfo/DeviceInfo
 - [entities/localization.md](entities/localization.md) — `LanguageTable`, `spec/language-table.yaml`
+- [entities/comments.md](entities/comments.md) — `TableComments`, `spec/comments.yaml`
 - [../AGENT.md](../AGENT.md) — project loop (download → env → change-loop OT)
 - [projects.md](projects.md) — nested private git for `projects/`

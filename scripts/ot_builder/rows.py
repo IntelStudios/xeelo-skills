@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from ot_builder.ids import IdRegistry, build_registry
+from ot_builder.comments import emit_comments
 from ot_builder.language_table import emit_language_table
 from ot_builder.ongrid import require_ongrid_id
 from ot_builder.reopen import reopen_on_save_id
@@ -1626,5 +1627,6 @@ def build_rows(spec: dict) -> BuildResult:
     _build_object_actions(spec, registry, oid, result)
     build_periodics(spec, registry, oid, result)
     emit_language_table(spec, registry, result)
+    emit_comments(spec, registry, result)
 
     return result

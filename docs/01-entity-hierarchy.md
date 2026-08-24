@@ -94,7 +94,7 @@ flowchart TB
 
 Priority tables for **create object** recipe:
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
 
 ## Entity docs
 
@@ -115,3 +115,4 @@ Detailed semantics from admin hints:
 | [entities/outputs.md](entities/outputs.md) | Notification, printout, report |
 | [entities/users-and-access.md](entities/users-and-access.md) | Users vs transfer scope |
 | [entities/localization.md](entities/localization.md) | `LanguageTable` translations |
+| [entities/comments.md](entities/comments.md) | `TableComments` HTML notes on config entities |

@@ -47,6 +47,7 @@ TABLE_ORDER = [
     "ObjectUpdateActionCondition",
     "ObjectUpdateMessage",
     "LanguageTable",
+    "TableComments",
 ]
 
 

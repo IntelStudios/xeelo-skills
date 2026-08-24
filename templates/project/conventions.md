@@ -22,6 +22,13 @@ Values: `ask` (default) or `auto`. Missing key = `ask`.
 
 - **Publish after dry-run:** ask
 - **Download-db after publish:** ask
+- **Generate table comments:** ask
+
+## Comments
+
+- **Comment language:** en
+- New entity → one description; change → append a dated changelog item; unchanged → skip.
+- Simple tags only: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`.
 
 ## Other
 

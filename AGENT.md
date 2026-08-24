@@ -64,17 +64,20 @@ Keys in `projects/<name>/conventions.md` (allowed: `ask` | `auto`; missing secti
 
 - **Publish after dry-run**
 - **Download-db after publish**
+- **Generate table comments**
 
-The two keys are independent. Template: [`templates/project/conventions.md`](templates/project/conventions.md).
+The keys are independent. Template: [`templates/project/conventions.md`](templates/project/conventions.md).
 
-| Value | After successful dry-run / after successful `/publish` |
-|-------|--------------------------------------------------------|
-| **`auto`** | Run the skill. **Announce** that this site’s conventions say so. |
+| Value | Behaviour |
+|-------|-----------|
+| **`auto`** | Do it. **Announce** that this site’s conventions say so. |
 | **`ask`** | Offer three options. Do not run unless they pick a run option or invoke the skill. |
 
-**Publish after dry-run** (`ask`): **Publish now** / **Publish now and remember for this site** / **Don't publish**.
+**Publish after dry-run** (`ask`): **Publish now** / **Publish now and remember for this site** / **Don't publish**. After successful dry-run.
 
 **Download-db after publish** (`ask`): **Refresh env now** (`/download-db`) / **Refresh now and remember** / **Don't download**. Offer this only after a successful `/publish`.
+
+**Generate table comments** (`ask`): after spec edits, **before** generate — **Generate comments now** / **Generate now and remember for this site** / **Skip comments**. `auto` → write HTML into `spec/comments.yaml` on **new and changed** entities (description for new, append changelog for edits), announce. Language: **Comment language** in that file (`en` | `cs` | …; missing = `en`). Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Details: [comments.md](docs/entities/comments.md), [add-table-comment.md](recipes/add-table-comment.md).
 
 **Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). User says stop doing it yourself → set that key back to `ask`. A one-loop exception (“don’t publish this time”) does **not** change conventions.
 
@@ -105,6 +108,7 @@ Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract
 | Periodic / Scheduler | [integrations.md](docs/entities/integrations.md#periodic), [recipes/add-periodic.md](recipes/add-periodic.md) |
 | GraphQL schema | [docs/entities/graphql.md](docs/entities/graphql.md) (`Select_` / `Mutate_`, `lines` vs `linesFormatted`) |
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
+| Admin comments | [docs/entities/comments.md](docs/entities/comments.md) (`TableComments`, `spec/comments.yaml`) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
 Object Transfer JSON is a **delta vs the latest DB-transfer download**: emit a row only when it is **new** or its generated cells **differ** from the snapshot. FK columns may point at Orig. IDs that already exist on the site — do not re-send the referenced row. `/publish` applies that subset (Orig. ID upsert). Manual Admin UI still works for selecting rows in batches.
@@ -305,6 +309,7 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 - `spec/lookups.yaml` — dotazovací mapy (`lookups:` map)
 - `spec/autonumbers.yaml` — sequences (`autonumbers:` map; bind on template line)
 - `spec/language-table.yaml` — `LanguageTable` translations (`languageTable:` map)
+- `spec/comments.yaml` — `TableComments` HTML notes (`comments:` map)
 - `spec/workflow.yaml` — roles, statuses, workflow
 - `spec/templates.yaml` — ObjectDefault rows, extended validation, client calc (optional)
 - `spec/object-actions.yaml` — ObjectAction + WorkflowStepObjectAction (optional)
@@ -410,6 +415,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
+- [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions (`ask` → offer now / remember / skip; `auto` → write HTML on new/changed entities) ([comments.md](docs/entities/comments.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
 - [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))

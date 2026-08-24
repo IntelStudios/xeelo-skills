@@ -97,6 +97,8 @@ Generator emits `LanguageTable` rows (`IsActive=1`) and ObjectSetup edges `Paren
 
 Site-specific “always Czech / onGrid stays English” rules: [`projects/<name>/conventions.md`](../projects.md) — not this doc.
 
+Admin HTML notes on the same entities: [comments.md](comments.md) (`spec/comments.yaml`).
+
 ## Object Transfer
 
 `LanguageTable` is a child of whichever entity owns the label. Import as New remaps `RowID` to the new parent PK. Generator defaults Orig. ID like other tables.

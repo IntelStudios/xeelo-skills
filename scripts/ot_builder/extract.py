@@ -10,6 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
+from ot_builder.comments import extract_comments
 from ot_builder.language_table import extract_language_table
 from ot_builder.ongrid import layout_id_key
 from ot_builder.reopen import reopen_on_save_spec
@@ -1683,6 +1684,12 @@ def extract_spec_from_index(
         explicit["languageTables"] = lt_explicit
         spec["ids"]["explicit"] = explicit
 
+    comments, tc_explicit = extract_comments(index, explicit)
+    if comments:
+        spec["comments"] = comments
+        explicit["tableComments"] = tc_explicit
+        spec["ids"]["explicit"] = explicit
+
     if merge:
         spec = _merge_spec(merge, spec)
 
@@ -1722,6 +1729,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "lookups",
         "autonumbers",
         "languageTable",
+        "comments",
         "object",
         "objectType",
         "company",
