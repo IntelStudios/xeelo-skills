@@ -1,4 +1,4 @@
-"""ObjectLineOnGrid layout identity (size × type × module × field)."""
+"""ObjectLineOnGrid layout identity (size × type × module × field or sys:{code})."""
 
 from __future__ import annotations
 
@@ -25,9 +25,10 @@ def require_ongrid_id(
 ) -> int:
     """Allocate or reuse an ObjectLineOnGrid ID.
 
-    Extract keys by ``{size}/{type}/{module}/{code}``. Older specs keyed only
-    by field code (one layout per field); that ID is reused for the first
-    layout that still has no composite key.
+    Extract keys by ``{size}/{type}/{module}/{code}``. System lines use
+    ``sys:{code}`` as the last segment (see ``system_line.explicit_key_token``).
+    Older specs keyed only by field code (one layout per field); that ID is
+    reused for the first layout that still has no composite key.
     """
     code = str(field_code)
     composite = layout_id_key(size, grid_type, module, code)

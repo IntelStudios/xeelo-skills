@@ -323,7 +323,7 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 Two layers in spec:
 
 - `onGrid.fields` — ObjectLine display flags (by field `code`)
-- `onGrid.layouts` — ObjectLineOnGrid placement (`size` × `type` × `module`). `size`: **Small** = mobile, **Medium** = tablet, **Large** = desktop. `type`: **Grid** or **Table**. The same field can sit in more than one layout (each row has its own ID). **Table** always paints **one visual row** — `placements[].row` letters (`T`, `A`–`E`) do not wrap; extra columns scroll horizontally. **Grid** stacks those placement rows.
+- `onGrid.layouts` — ObjectLineOnGrid placement (`size` × `type` × `module`). `size`: **Small** = mobile, **Medium** = tablet, **Large** = desktop. `type`: **Grid** or **Table**. `module`: desktop **Items** / **Tasks**; phone **MobileItems** / **MobileTasks**. The same field or **system line** can sit in more than one layout (each row has its own ID). **Table** always paints **one visual row** — `placements[].row` letters (`T`, `A`–`E`) do not wrap; extra columns scroll horizontally. **Grid** stacks those placement rows. Inbox Role / Status / Requestor / … are `columns[].systemLine` (`SystemLineID`, no `ObjectLineID`) — codes in [`SystemLine.json`](data/enums/SystemLine.json). Explicit ID key `{size}/{type}/{module}/sys:{code}`.
 
 `onGrid.fields.<code>.isTag` (`ObjectLineOnGridIsTag`) marks a line as a **request-grid tag filter**: distinct field values become finer filters (AND). Set it only on **`text` / `textarea`** (Admin types 3, 4) — not combo-box. After deploy, **/publish**. Details: [object-line-types.md](docs/entities/object-line-types.md#on-grid-tag).
 
@@ -440,6 +440,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 | [`data/fontawesome-icons.json`](data/fontawesome-icons.json) | Font Awesome 6.5.1 catalog (`search-fa-icons.py`) |
 | [`data/enums/ObjectLineUnique.json`](data/enums/ObjectLineUnique.json) | Unique level 1–4 |
 | [`data/enums/ObjectLineAutoNumberResetType.json`](data/enums/ObjectLineAutoNumberResetType.json) | Autonumber reset (`1` Yearly) |
+| [`data/enums/SystemLine.json`](data/enums/SystemLine.json) | Inbox system columns (`ObjectLineOnGrid.SystemLineID`) |
 | [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | onGrid columns |
 | [`data/schemas/LanguageTable.json`](data/schemas/LanguageTable.json) | Translated labels |
 

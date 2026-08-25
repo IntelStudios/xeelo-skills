@@ -430,7 +430,17 @@
             "properties": {
               "size": { "type": "string", "enum": ["Small", "Medium", "Large"] },
               "type": { "type": "string", "enum": ["Grid", "Table"] },
-              "module": { "type": "string", "enum": ["Items", "Tasks"] },
+              "module": {
+                "type": "string",
+                "enum": [
+                  "Items",
+                  "Tasks",
+                  "MobileItems",
+                  "MobileTasks",
+                  "Relation",
+                  "RelationMap"
+                ]
+              },
               "placements": {
                 "type": "array",
                 "items": {
@@ -443,10 +453,34 @@
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "required": ["field"],
                         "additionalProperties": false,
+                        "oneOf": [
+                          { "required": ["field"] },
+                          { "required": ["systemLine"] }
+                        ],
                         "properties": {
                           "field": { "type": "string" },
+                          "systemLine": {
+                            "type": "string",
+                            "enum": [
+                              "requestId",
+                              "created",
+                              "createdBy",
+                              "modified",
+                              "modifiedBy",
+                              "role",
+                              "status",
+                              "type",
+                              "priority",
+                              "requestor",
+                              "completed",
+                              "completedBy",
+                              "cancelled",
+                              "cancelledBy",
+                              "workflow",
+                              "template"
+                            ]
+                          },
                           "position": { "type": "integer", "minimum": 0 },
                           "length": { "type": "integer", "minimum": 1 },
                           "valueWidth": { "type": "integer", "minimum": 0 },

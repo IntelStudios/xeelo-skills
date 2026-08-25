@@ -1,0 +1,18 @@
+[
+  { "id": 1, "code": "requestId", "name": "ID" },
+  { "id": 20, "code": "created", "name": "Created" },
+  { "id": 21, "code": "createdBy", "name": "Created by" },
+  { "id": 30, "code": "modified", "name": "Modified" },
+  { "id": 31, "code": "modifiedBy", "name": "Modified by" },
+  { "id": 40, "code": "role", "name": "Role" },
+  { "id": 50, "code": "status", "name": "Status" },
+  { "id": 60, "code": "type", "name": "Type" },
+  { "id": 70, "code": "priority", "name": "Priority" },
+  { "id": 80, "code": "requestor", "name": "Requestor" },
+  { "id": 85, "code": "completed", "name": "Completed" },
+  { "id": 86, "code": "completedBy", "name": "Completed by" },
+  { "id": 87, "code": "cancelled", "name": "Cancelled" },
+  { "id": 88, "code": "cancelledBy", "name": "Cancelled by" },
+  { "id": 90, "code": "workflow", "name": "Workflow" },
+  { "id": 95, "code": "template", "name": "Template" }
+]

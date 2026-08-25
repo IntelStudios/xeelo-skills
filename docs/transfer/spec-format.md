@@ -875,23 +875,59 @@ Inbox cells parse `[badge:{CustomColorCode}_{text}]` as a colored chip (`.xe-bad
 
 ### `onGrid.layouts`
 
-Creates **ObjectLineOnGrid** rows — placement per layout variant. A variant is **`size` + `type`** (`Grid` / `Table`) + `module`. The same field may appear in several layouts; each variant is its own row (`ids.explicit.objectLineOnGrid` key `{size}/{type}/{module}/{code}`).
+Creates **ObjectLineOnGrid** rows — placement per layout variant. A variant is **`size` + `type`** (`Grid` / `Table`) + `module`. The same field or system line may appear in several layouts; each variant is its own row.
+
+`ids.explicit.objectLineOnGrid` keys:
+
+- field: `{size}/{type}/{module}/{code}`
+- system line: `{size}/{type}/{module}/sys:{code}` (prefix `sys:` so it cannot collide with a field code)
 
 | Spec key | DB column |
 |----------|-----------|
 | `size` | `ObjectLineOnGridSize` — `Small` (mobile), `Medium` (tablet), `Large` (desktop) |
 | `type` | `ObjectLineOnGridType` — `Grid` or `Table` |
-| `module` | `ObjectLineOnGridModule` — `Items` or `Tasks` |
+| `module` | `ObjectLineOnGridModule` — `Items`, `Tasks`, `MobileItems`, `MobileTasks`, `Relation`, `RelationMap`. Desktop inbox is usually `Items`; phone layouts use **`MobileItems`**. |
 | `placements[].row` | `ObjectLineOnGridRow` — `T`, `A`–`E` (spec “pseudo-rows”; see Grid vs Table) |
-| `placements[].columns[].field` | resolves to `ObjectLineID` |
+| `placements[].columns[].field` | resolves to `ObjectLineID` — **xor** `systemLine` |
+| `placements[].columns[].systemLine` | resolves to `SystemLineID` — **xor** `field`. Codes: [`SystemLine.json`](../../data/enums/SystemLine.json) (`role` = 40, `status` = 50, …). Row has **no** `ObjectLineID`. |
 | `position` | `ObjectLineOnGridPosition` — start column in percent (0–99) |
 | `length` | `ObjectLineOnGridLength` — column span in percent (1–100); row columns should sum to 100 |
 | `valueWidth` | `ObjectLineOnGridValueWidth` — percent of the cell for the **value**. `0` = auto. **`100` + Horizontal = hide the column label** (Admin ValueWidthLabelHidden). |
 | `labelType` | `ObjectLineOnGridLabelType` — **1 Horizontal** (default), **2 Vertical**. SQL also has `0` None; Admin does not offer it — do not spec `0`. |
 
-Omit a size to keep the platform default for that breakpoint. Add `Small` when the inbox on a phone should show fewer columns than desktop `Large`.
+Omit a size to keep the platform default for that breakpoint. Add `Small` + `module: MobileItems` when the inbox on a phone should show fewer columns than desktop `Large` / `Items`.
 
-To show chips without a column title on **Grid**, set `labelType: 1` and `valueWidth: 100`.
+To show chips without a column title on **Grid**, set `labelType: 1` and `valueWidth: 100`. Role / Status on the inbox are typically that plus `systemLine: role` / `systemLine: status` on the right of the title row.
+
+```yaml
+onGrid:
+  layouts:
+  - size: Large
+    type: Grid
+    module: Items
+    placements:
+    - row: T
+      columns:
+      - field: CUT_NO
+        position: 0
+        length: 80
+        valueWidth: 0
+        labelType: 1
+      - systemLine: role
+        position: 80
+        length: 10
+        valueWidth: 100
+        labelType: 1
+      - systemLine: status
+        position: 90
+        length: 10
+        valueWidth: 100
+        labelType: 1
+```
+
+**SystemLine vs ObjectLine.** Inbox Role, Status, Requestor, dates, … are **SystemLine** columns, not object fields. Extract used to drop rows with `ObjectLineID` null; generate now emits `SystemLineID` from `systemLine`. After upgrading the KB, **/download-db** so `ids.explicit.objectLineOnGrid` picks up `sys:role` keys — otherwise generate would allocate new IDs and duplicate columns.
+
+**Alignment** of a system column is `SystemLine.SystemLineAlignmentID` (0 left, 1 right, 2 center) — **site-wide**, not per object. It is not a column on `ObjectLineOnGrid`. Object Transfer cannot upsert `SystemLine` (no identity; not a transfer table). Field columns use `ObjectLine.ObjectLineOnGridAlignmentID` instead (not yet in spec).
 
 **Grid vs Table**
 

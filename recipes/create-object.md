@@ -49,7 +49,7 @@ One section edge per section (not per field). Translations: `Parent → Language
 ### 5. onGrid (optional)
 
 - `onGrid.fields.<code>` → ObjectLine display flags
-- `onGrid.layouts[]` → ObjectLineOnGrid placement (`size` × Grid/Table × `module`). Table = one visual row, no wrap (scroll right).
+- `onGrid.layouts[]` → ObjectLineOnGrid placement (`size` × Grid/Table × `module`). Table = one visual row, no wrap (scroll right). System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
 - Edge: `Object → ObjectLineOnGrid`
 
 ### 6. Ask which workflow
