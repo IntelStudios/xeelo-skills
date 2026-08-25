@@ -38,7 +38,7 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
 | Type | Required / typical extras |
 |------|---------------------------|
 | `number` | `precision` required in Admin; `numberSeparator`, `numberMin`, `numberMax`; on-grid **total** (`onGrid.fields.<code>.isTotal`) |
-| `button` | `saveAction` required; optional `buttonMessage`; **`colorBack` / `colorFont`** = `CustomColorCode` from the site palette (Admin Color Back / Color Font; not HEX). GUI classes `xe-back-{code}` / `xe-font-{code}`. Palette: [`CustomColor.json`](../data/enums/CustomColor.json). |
+| `button` | `saveAction` required — **0 Save** (stay on the request), **1 Save & close** ([`ObjectLineButtonSaveAction.json`](../data/enums/ObjectLineButtonSaveAction.json)). Use **0** when the click should run an ObjectAction / Node.js Last. Optional `buttonMessage`; **`colorBack` / `colorFont`** = `CustomColorCode` from the site palette (Admin Color Back / Color Font; not HEX). GUI classes `xe-back-{code}` / `xe-font-{code}`. Palette: [`CustomColor.json`](../data/enums/CustomColor.json). |
 | `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` |
 | `attachment_preview` | `previewField` (attachment field **code**) required → `ObjectLineAttPreviewObjectLineID`; optional `previewDownload` |
 
@@ -47,7 +47,7 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
   code: line_update
   type: button
   slot: 10
-  saveAction: 1
+  saveAction: 0
   colorBack: blue
   colorFont: white
 ```

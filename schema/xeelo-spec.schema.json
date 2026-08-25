@@ -216,7 +216,7 @@
         "objectSubId": { "type": "integer", "minimum": 1 },
         "lookup": { "$ref": "#/$defs/lookup" },
         "reference": { "$ref": "#/$defs/reference" },
-        "saveAction": { "type": "integer" },
+        "saveAction": { "type": "integer", "minimum": 0, "maximum": 1 },
         "attachmentStorageId": { "type": "integer", "minimum": 0 },
         "ocr": { "type": "boolean" },
         "ocrLang": { "type": "string", "maxLength": 5 },
