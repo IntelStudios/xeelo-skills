@@ -51,7 +51,7 @@ One section edge per section (not per field). Translations: `Parent → Language
 Canonical: [ongrid.md](../docs/entities/ongrid.md). YAML: [spec-format.md](../docs/transfer/spec-format.md#ongrid).
 
 - `onGrid.fields.<code>` → ObjectLine display flags
-- `onGrid.layouts[]` → ObjectLineOnGrid placement. For a **new object**, write **seven** layouts: Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. Copy the same columns across Items Grid sizes and across Items Table sizes. Phone card: `row: T` and optional `row: A` (not `B`).
+- `onGrid.layouts[]` → ObjectLineOnGrid placement. For a **new object**, write **seven** layouts: Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. **Grid and Table:** Medium ≈ ½ Large, Small ≈ ½ Medium — fewer columns per letter, extra `T`/`A`/`B` rows. Phone: `row: T` then `A` (not `B`).
 - Do not spec Tasks / Relation / Relation Map / Mobile Tasks unless asked.
 - System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
 - Edge: `Object → ObjectLineOnGrid`

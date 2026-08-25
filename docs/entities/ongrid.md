@@ -88,7 +88,14 @@ Write **seven** `onGrid.layouts` (generator does not invent them if omitted):
 6. Items / Table / Small
 7. Mobile Items / Grid / Small
 
-Copy the same column set to Items Grid L/M/S, and the same set to Items Table L/M/S. Mobile Items is usually a tighter card (`row: T` and optional `row: A`).
+Do **not** copy Large placements onto Medium or Small for **Grid or Table**. The surface is about **half as wide** each step down, so the same one-row percents are too cramped. Put fewer columns per letter and extra `T`/`A`–`E` rows. Lengths still sum to **100 on each letter**.
+
+- **Large** — one `T` row is fine when columns sum to 100
+- **Medium** — treat as ~½ Large: about **half as many columns per row** (typically `T` + `A`)
+- **Small** — treat as ~½ Medium: wrap again (typically `T` + `A` + `B`, or a full-width title on `T`)
+- **Mobile Items Grid Small** — same wrap as Items Small. Consecutive letters; never skip to `B` and leave `A` empty
+
+**Grid** stacks those letters into visual rows. **Table** in the User GUI is still one spreadsheet row of columns (`row` does not wrap on screen); spec the same T/A/B grouping so Medium/Small Table match Grid. Short fields (number, date) may share a Small letter; a long title usually takes the full `T` row.
 
 Do **not** spec Tasks, Relation, Relation Map, or Mobile Tasks unless the user wants a different layout. Tasks and Relation fall back (below). **Mobile Items does not fall back to desktop Items** — omit layout 7 and the phone inbox is empty.
 
@@ -115,7 +122,7 @@ Paint order on **Grid**:
 
 **T + A** is two stacked rows with no gap (typical phone card). **T + B** skips A; the runtime fills A with an empty 100% spacer. There is no KB rule to use T + B. **B is not “bottom”.**
 
-On **Table**, letters do not stack.
+On **Table**, letters do **not** stack in the User GUI (one line of columns). Still spec Medium/Small Table with the same wrap as Grid so grouping matches.
 
 ## Cells: position and length
 
@@ -134,7 +141,7 @@ Combo-box (**types 1, 2, 14**) may be `allowed` and placed; inbox shows the numb
 
 ## Example
 
-Items Grid Large (copy to Medium and Small; copy columns to Items Table L/M/S). Phone: MobileItems Grid Small with T then A.
+Large **Grid** and **Table** one `T` row; Medium wraps to `T`+`A`; Small wraps again (`T`+`A`+`B`). Mobile Items follows Small Grid.
 
 ```yaml
 onGrid:
@@ -147,9 +154,13 @@ onGrid:
       allowed: true
       name: Title
       isSearch: true
-    NOTE:
+    PRIORITY:
       allowed: true
-      name: Note
+      name: Priority
+    DATE:
+      allowed: true
+      name: Date
+      isSearch: true
   layouts:
   - size: Large
     type: Grid
@@ -157,119 +168,86 @@ onGrid:
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: REQ_NO, position: 0, length: 12, valueWidth: 0, labelType: 1 }
+      - { field: TITLE, position: 12, length: 48, valueWidth: 0, labelType: 1 }
+      - { field: PRIORITY, position: 60, length: 20, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 80, length: 20, valueWidth: 0, labelType: 1 }
   - size: Medium
     type: Grid
     module: Items
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: REQ_NO, position: 0, length: 25, valueWidth: 0, labelType: 1 }
+      - { field: TITLE, position: 25, length: 75, valueWidth: 0, labelType: 1 }
+    - row: A
+      columns:
+      - { field: PRIORITY, position: 0, length: 50, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 50, length: 50, valueWidth: 0, labelType: 1 }
   - size: Small
     type: Grid
     module: Items
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: TITLE, position: 0, length: 100, valueWidth: 0, labelType: 1 }
+    - row: A
+      columns:
+      - { field: REQ_NO, position: 0, length: 40, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 40, length: 60, valueWidth: 0, labelType: 1 }
+    - row: B
+      columns:
+      - { field: PRIORITY, position: 0, length: 100, valueWidth: 0, labelType: 1 }
   - size: Large
     type: Table
     module: Items
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: REQ_NO, position: 0, length: 12, valueWidth: 0, labelType: 1 }
+      - { field: TITLE, position: 12, length: 48, valueWidth: 0, labelType: 1 }
+      - { field: PRIORITY, position: 60, length: 20, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 80, length: 20, valueWidth: 0, labelType: 1 }
   - size: Medium
     type: Table
     module: Items
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: REQ_NO, position: 0, length: 25, valueWidth: 0, labelType: 1 }
+      - { field: TITLE, position: 25, length: 75, valueWidth: 0, labelType: 1 }
+    - row: A
+      columns:
+      - { field: PRIORITY, position: 0, length: 50, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 50, length: 50, valueWidth: 0, labelType: 1 }
   - size: Small
     type: Table
     module: Items
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 20
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 20
-        length: 80
-        valueWidth: 0
-        labelType: 1
+      - { field: TITLE, position: 0, length: 100, valueWidth: 0, labelType: 1 }
+    - row: A
+      columns:
+      - { field: REQ_NO, position: 0, length: 40, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 40, length: 60, valueWidth: 0, labelType: 1 }
+    - row: B
+      columns:
+      - { field: PRIORITY, position: 0, length: 100, valueWidth: 0, labelType: 1 }
   - size: Small
     type: Grid
     module: MobileItems
     placements:
     - row: T
       columns:
-      - field: REQ_NO
-        position: 0
-        length: 30
-        valueWidth: 0
-        labelType: 1
-      - field: TITLE
-        position: 30
-        length: 70
-        valueWidth: 0
-        labelType: 1
+      - { field: TITLE, position: 0, length: 100, valueWidth: 0, labelType: 1 }
     - row: A
       columns:
-      - field: NOTE
-        position: 0
-        length: 100
-        valueWidth: 0
-        labelType: 1
+      - { field: REQ_NO, position: 0, length: 40, valueWidth: 0, labelType: 1 }
+      - { field: DATE, position: 40, length: 60, valueWidth: 0, labelType: 1 }
+    - row: B
+      columns:
+      - { field: PRIORITY, position: 0, length: 100, valueWidth: 0, labelType: 1 }
 ```
 
 Inbox column titles stay English unless the site asks for `languageTable.lines.<code>.onGrid`.

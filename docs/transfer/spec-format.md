@@ -938,7 +938,7 @@ onGrid:
 | **Grid** | Each letter (`T`, `A`–`E`) is a visual row; cards wrap/stack. |
 | **Table** | Always **one** visual row. Pseudo-rows from the spec **do not wrap** — columns stay on a single line and the table **scrolls horizontally**. |
 
-Use **Grid** when the inbox card should stack (typical `MobileItems` Small). Use **Table** when the inbox is a spreadsheet-like list and overflow should scroll right, not wrap. Full catalog and new-object default: [ongrid.md](../entities/ongrid.md).
+Use **Grid** when the inbox card should stack. Use **Table** for a spreadsheet-like list. Medium/Small wrap is the same spec for both (`T`/`A`/`B`); Grid stacks letters, Table still one line of columns. Catalog: [ongrid.md](../entities/ongrid.md).
 
 ## Generate
 
