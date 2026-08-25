@@ -121,9 +121,9 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 ## Checklist
 
 - [ ] Template is bound (workflow header / action / step list / ObjectAction / Periodic)
-- [ ] Recipients: `sendTo` bits and/or `extra.to`
+- [ ] Recipients: `sendTo` bits and/or `extra.to` (`requestorManager` / `roleManager` are **Cc**; extra may be `{idNNNN}` raw or `{Variable,code}`)
 - [ ] `{idXXXX}` uses site `ObjectLineID` after extract (not `{idAMOUNT}`)
 - [ ] Memo HTML in `format` is `{idNNNN}` without `v` (combo bind is `{idNNNNv}`)
-- [ ] Single vs summary type matches the executable (`spNotificationDataInsert` vs `…Summary`)
+- [ ] Single vs summary type matches the executable (`spNotificationDataInsert` vs `…Summary`); summary body uses `{RequestGrid,…}` not `{RequestList}`
 - [ ] Reused workflow: do not expect header/action FK upserts
-- [ ] Conditions use the same slugs as update actions (`equals_text`, …)
+- [ ] Conditions use the same slugs as update actions (`equals_text`, …); OR on the same field, AND across fields

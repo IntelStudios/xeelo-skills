@@ -21,7 +21,7 @@ Spec fragment: [`spec/notifications.yaml`](../transfer/spec-format.md#notificati
 | ID | Spec `type` | Name | When |
 |----|-------------|------|------|
 | 1 | `single` | Single request | One request (`spNotificationDataInsert`) |
-| 2 | `summary` | Request summary | Batch (`spNotificationDataInsertSummary` + `{RequestList}`) |
+| 2 | `summary` | Request summary | Batch (`spNotificationDataInsertSummary` + `{RequestGrid,…}`) |
 
 `NotificationType` is **not** in Object Transfer (site seed).
 
@@ -30,7 +30,9 @@ Spec fragment: [`spec/notifications.yaml`](../transfer/spec-format.md#notificati
 ```text
 event (SaveNew / WorkflowAction / …)
   → spNotificationDataInsert(RequestID, event, optional NotificationID)
-      → resolve template(s)
+      → resolve template(s)  # this proc: NotificationTypeID = 1 only
+      → conditions (AND across fields, OR on the same field)
+      → spNotificationCalculation + NotificationTempCalc (runtime; not spec v1)
       → recipients
       → fnRequestFormat(subject, style=plain)
       → fnRequestFormat(body, style=HTML)  # wraps in <html>+CSS
@@ -38,15 +40,18 @@ event (SaveNew / WorkflowAction / …)
       → NotificationData + email job + in-app
 ```
 
+After a workflow event (not `PeriodicAction` / `Comment` / `ObjectAction`), the request is marked `RequestIsNotified = 1`, so step-junction templates do not fire again until that flag is cleared. `Comment` sets `RequestCommentIsNotified` instead.
+
 Event string → where the template ID comes from:
 
 | Event | Source |
 |-------|--------|
-| `WorkflowAction` | `WorkflowStepAction.NotificationID` **and** `WorkflowStepNotification` on the **target** step (if `RequestIsNotified = 0`) |
-| `SaveNew` | `Workflow.NotificationID` (on create) + step notifications |
-| `ExportFail` / `ExportFailNoUpdate` | `Workflow.ExportFailNotificationID` |
-| `WorkflowRecall` | `Workflow.RecallNotificationID` |
-| `WorkflowFail` | `Workflow.WorkflowFailNotificationID` |
+| `WorkflowAction` | `WorkflowStepAction.NotificationID` **and** `WorkflowStepNotification` on the **target** step (current role + status; `RequestIsNotified = 0`; optional `RequestTypeID` filter) |
+| `SaveNew` | `Workflow.NotificationID` (on create) + step notifications (same `RequestIsNotified` / `RequestTypeID` filter) |
+| `ExportFail` | `Workflow.ExportFailNotificationID` **and** step notifications (`RequestIsNotified` / `RequestTypeID`) |
+| `ExportFailNoUpdate` | `Workflow.ExportFailNotificationID` only (no step junctions) |
+| `WorkflowRecall` | `Workflow.RecallNotificationID` **and** step notifications |
+| `WorkflowFail` | `Workflow.WorkflowFailNotificationID` **and** step notifications |
 | `WorkflowUpdate` | step notifications only |
 | `ObjectAction` | param `NotificationID1` (type `spNotificationDataInsert` / `…Last`) |
 | `PeriodicAction` | param `NotificationID1` (single) or `NotificationID2` (summary) |
@@ -60,15 +65,17 @@ Bits on `Notification`. Spec `sendTo:` (omit / false = off):
 
 | Spec | Column | Meaning |
 |------|--------|---------|
-| `requestor` | `NotificationEmailRequestor` | Requestor |
-| `requestorManager` | `NotificationEmailRequestorManager` | Requestor’s manager |
-| `owner` | `NotificationEmailOwner` | Owners |
-| `watch` | `NotificationEmailWatch` | Watchers |
-| `role` | `NotificationEmailRole` | Users in the **new** role |
-| `roleManager` | `NotificationEmailRoleManager` | Managers of that role |
-| `currentUser` | `NotificationEmailUser` | User who triggered the event |
+| `requestor` | `NotificationEmailRequestor` | Requestor (**To**) |
+| `requestorManager` | `NotificationEmailRequestorManager` | Requestor’s manager (**Cc**, only with `requestor`) |
+| `owner` | `NotificationEmailOwner` | Owners (**To**) |
+| `watch` | `NotificationEmailWatch` | Watchers (**To**) |
+| `role` | `NotificationEmailRole` | Assigned users in the **new** role (**To**). In-progress: task list; completed/canceled: `RequestUserList` |
+| `roleManager` | `NotificationEmailRoleManager` | Managers of those assigned users (**Cc**, only with `role`) |
+| `currentUser` | `NotificationEmailUser` | User who triggered the event (`LastWorkflowUserID`) (**To**) |
 
-Extra addresses: `extra.to` / `cc` / `bcc`. Optional `fromEmail` (site SMTP From / Reply-To rules still apply). User preference rows (`UserNotification`) can suppress mail unless the site ignores them for summary.
+`extra.to` / `cc` / `bcc` and `fromEmail` may be a literal address, `{idNNNN}` (**raw** slot via the line id — combo **bind**, not the numberedník name), or `{Variable,code}`. Extra **To** splits on comma, semicolon, or space; each token must contain `@` and `.`. Empty `fromEmail` uses the site SMTP From. If application setting **EmailFromDomainDifference** is on and the From domain differs from the site From, the site address stays **From** and the template address becomes **Reply-To**.
+
+`UserNotification` (via the per-user view) can suppress mail (`IsEmailSend = 0`) unless the site ignores them for summary. Extra addresses use `UserID = 0` and always send. Suspended users are forced off. A populated manager **Cc** forces `IsEmailSend = 1` for that row.
 
 ## Data model
 
@@ -89,7 +96,9 @@ ObjectActionParam NotificationID1
 PeriodicActionParam NotificationID1 | NotificationID2
 ```
 
-Conditions: OR-per-line (`fnRequestLineDataCondition`). No conditions → always send once resolved.
+Conditions: `fnRequestLineDataCondition` per row. **OR** among conditions on the **same** `ObjectLineID`; **AND** across different fields. Any remaining failed row blocks the send. No conditions → always send once resolved.
+
+`WorkflowStepNotification.RequestTypeID` (nullable): runtime keeps the junction only when it matches the request’s Create/Update type (`isnull(RequestTypeID, requestType) = requestType`). **Null = both.** Spec/generate omit the column (new OT rows stay null).
 
 Attachments: ObjectLine (type attachment). `compressed` defaults **true**. Optional zip name: `compressedFileName` (plain placeholders).
 
@@ -106,7 +115,7 @@ Bind:
 
 ## Placeholders
 
-Subject and body go through `fnRequestFormat`. **Subject** = plain text. **Body** = HTML and is wrapped in a full HTML document with table CSS.
+Subject and body go through `fnRequestFormat`. **Subject** = plain text (`style` 2). **Body** = HTML (`style` 1) and is wrapped in a full HTML document with table CSS (HTML style only).
 
 Tokens are `{Name}` or `{Name,arg1,arg2,…}`. Admin’s `NotificationFormat` hint is **incomplete**. Generate/extract **do not rewrite** tokens. Spec must use **numeric `ObjectLineID`** in `{idXXXX}` — `{idAMOUNT}` is not resolved.
 
@@ -146,7 +155,9 @@ Width is percent. Optional extra args are ObjectLine IDs.
 
 Tables: `{RequestDetail,w,…}` / `{RequestDetails,w,…}` · `{RequestDetailFilter,w,…}` / `{RequestDetailsFilter,w,…}` (create = filled lines only; update = changed only) · `{RequestComment,w}` / `{RequestComments,w}` · `{RequestCommentsNew,w}` / `{RequestCommentNew,w}` · `{RequestCommentsPrev,w}` / `{RequestCommentPrev,w}` · `{RequestWorkflow,w}` · `{RequestSubGrid,w,lineId,subLineIds…}` · `{RequestSubGridNoHeader,…}` · `{RequestSubGridTotal,…}` · `{RelationGrid,w,objectId,lineIds…}`
 
-Other: `{BarCode,lineId,type}` · `{QRCode,lineId}` · `{ProgressBar,height,label,valueOrId,colorOrId}` · `{Condition,expr,true,false}` · `{Condition2,id,expr}` `{Condition2Else,id}` `{Condition2End,id}`
+Other: `{BarCode,lineId,style[,width[,height]]}` (defaults width 2, height 60) · `{QRCode,lineId}` · `{ProgressBar,height,isLabel,valueOrId,colorOrId}` (`isLabel` is 0/1) · `{Condition,expr,true,false}` · `{Condition2,id,expr}` `{Condition2Else,id}` `{Condition2End,id}`
+
+`BarCode` / `QRCode` / `Condition` / `Condition2` in HTML style emit a placeholder plus **jQuery in the mail body** (barcode/QR scripts from the site `ServerAddress`; `Condition` uses `eval`). They are not pure server-side HTML.
 
 ### After format, single email only (not `Comment`)
 
@@ -174,7 +185,7 @@ Emit rows from `spec/notifications.yaml`. Bind with keys:
 
 - `workflow.notification` / `exportFailNotification` / `recallNotification` / `failNotification`
 - `workflow.steps[].actions[].notification`
-- `workflow.steps[].notifications: [key]`
+- `workflow.steps[].notifications: [key]` (does not set `RequestTypeID`; null = Create and Update)
 - ObjectAction / PeriodicAction `params.NotificationID1: { notification: key }` (`NotificationID2` for summary)
 
 A template in `notifications:` must be bound to at least one of those (OT has no `Object → Notification` edge). Linking a key that is only in `ids.explicit.notifications` (no fragment row) assumes the site already has that Orig. ID.

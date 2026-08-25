@@ -728,8 +728,9 @@ notifications:
     sendTo:
       requestor: true
       role: true          # omit / false bits are not emitted
+      # requestorManager / roleManager are Cc, not To
     extra:
-      to: ops@example.com
+      to: ops@example.com   # also `{idNNNN}` (raw slot) or `{Variable,code}`
     conditions:
       - field: TYPE
         type: equals_text
@@ -762,6 +763,8 @@ params:
 ```
 
 Placeholders in `subject` / `format` are **not** rewritten (`{id1234}` stays). Use numeric `ObjectLineID` in `{idXXXX}` — `{idAMOUNT}` is not resolved. `{idXXXX}` is formatted (combo **name**, memo **HTML**); `{idXXXXv}` is the raw slot (combo **bind**). Memo body: `{idNNNN}` without `v`. Full catalog: [notifications.md](../entities/notifications.md#placeholders).
+
+`sendTo.requestorManager` / `roleManager` are **Cc**. Conditions: OR on the same field, AND across fields. `steps[].notifications` does not set `WorkflowStepNotification.RequestTypeID` (null = Create and Update). Runtime: [notifications.md](../entities/notifications.md#runtime).
 
 **Not in spec v1:** `NotificationPrintout`, `NotificationCalculation`, `NotificationTempCalc`. Subject/body are not `LanguageTable`-localized.
 

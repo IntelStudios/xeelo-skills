@@ -75,7 +75,7 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 
 ## WorkflowStepNotification
 
-Junction: extra templates on a **target** step (event `WorkflowAction` / `SaveNew` / `WorkflowUpdate`). Spec: `workflow.steps[].notifications: [key]`. Object Transfer edges: `WorkflowStep → WorkflowStepNotification → Notification`.
+Junction: extra templates on a **target** step (`WorkflowAction` / `SaveNew` / `WorkflowUpdate` / `ExportFail` / recall / fail — not `ExportFailNoUpdate`). Spec: `workflow.steps[].notifications: [key]`. Runtime: current role + status, `RequestIsNotified = 0`, optional `RequestTypeID` (null = Create and Update). Spec/generate do not emit `RequestTypeID`. Object Transfer edges: `WorkflowStep → WorkflowStepNotification → Notification`. After a workflow send, `RequestIsNotified` is set to 1. Details: [notifications.md](notifications.md#runtime).
 
 ## Role & RequestStatus
 
