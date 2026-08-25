@@ -114,7 +114,7 @@ python scripts/generate-object-transfer.py projects/account-object/xeelo-spec.ya
 Two layers:
 
 1. **ObjectLine** — display flags (`ObjectLineOnGridIsAllowed`, `ObjectLineOnGridName`, `ObjectLineOnGridIsTag`, …)
-2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). `Type` is `Grid` or `Table`; Table is one visual row (spec pseudo-rows do not wrap — horizontal scroll).
+2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). Either `ObjectLineID` (spec `field`) or `SystemLineID` (spec `systemLine`, e.g. Role=40, Status=50) — not both. `Type` is `Grid` or `Table`; Table is one visual row (spec pseudo-rows do not wrap — horizontal scroll).
 
 Spec: `onGrid.fields` + `onGrid.layouts` in [`spec-format.md`](spec-format.md)
 

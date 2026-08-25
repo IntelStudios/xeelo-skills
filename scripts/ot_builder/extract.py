@@ -13,6 +13,7 @@ from typing import Any
 from ot_builder.comments import extract_comments
 from ot_builder.language_table import extract_language_table
 from ot_builder.ongrid import layout_id_key
+from ot_builder.system_line import code_for_id, explicit_key_token
 from ot_builder.reopen import reopen_on_save_spec
 from ot_builder.parse import TransferIndex, collect_table_max_ids, find_object_row, load_transfer
 from ot_builder.object_actions import (
@@ -758,23 +759,34 @@ def _build_ongrid(
     explicit_ongrid: dict[str, int] = {}
 
     for og in index.rows_for("ObjectLineOnGrid", "ObjectID", object_id):
+        sys_id = _int(og.get("SystemLineID"))
         line_id = _int(og.get("ObjectLineID"))
-        if line_id is None:
-            continue
-        ol = index.row_by_id("ObjectLine", line_id)
-        if ol is not None and not _boolish(ol.get("ObjectLineOnGridIsAllowed")):
-            continue
-        code = field_codes.get(line_id)
-        if not code:
-            continue
+        col: dict[str, Any] | None = None
+        key_token: str | None = None
+        if sys_id is not None:
+            sys_code = code_for_id(sys_id)
+            if not sys_code:
+                continue
+            key_token = explicit_key_token(sys_code)
+            col = {"systemLine": sys_code}
+        else:
+            if line_id is None:
+                continue
+            ol = index.row_by_id("ObjectLine", line_id)
+            if ol is not None and not _boolish(ol.get("ObjectLineOnGridIsAllowed")):
+                continue
+            code = field_codes.get(line_id)
+            if not code:
+                continue
+            key_token = str(code)
+            col = {"field": code}
         og_id = int(og["ObjectLineOnGridID"])
         size = og.get("ObjectLineOnGridSize", "Large")
         grid_type = og.get("ObjectLineOnGridType", "Grid")
         module = og.get("ObjectLineOnGridModule", "Items")
-        explicit_ongrid[layout_id_key(size, grid_type, module, str(code))] = og_id
-        key = (size, grid_type, module)
+        explicit_ongrid[layout_id_key(size, grid_type, module, key_token)] = og_id
         layout = layouts_map.setdefault(
-            key,
+            (size, grid_type, module),
             {
                 "size": size,
                 "type": grid_type,
@@ -784,15 +796,15 @@ def _build_ongrid(
         )
         row_letter = og.get("ObjectLineOnGridRow", "T")
         placement = layout["placements"].setdefault(row_letter, {"row": row_letter, "columns": []})
-        placement["columns"].append(
+        col.update(
             {
-                "field": code,
                 "position": og.get("ObjectLineOnGridPosition", 1),
                 "length": og.get("ObjectLineOnGridLength", 100),
                 "valueWidth": og.get("ObjectLineOnGridValueWidth", 0),
                 "labelType": og.get("ObjectLineOnGridLabelType", 1),
             }
         )
+        placement["columns"].append(col)
 
     if not og_fields and not layouts_map:
         return None, explicit_ongrid

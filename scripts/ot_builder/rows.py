@@ -11,6 +11,7 @@ from ot_builder.ids import IdRegistry, build_registry
 from ot_builder.comments import emit_comments
 from ot_builder.language_table import emit_language_table
 from ot_builder.ongrid import require_ongrid_id
+from ot_builder.system_line import explicit_key_token, id_for_code
 from ot_builder.reopen import reopen_on_save_id
 from ot_builder.object_actions import (
     condition_registry_key,
@@ -1583,20 +1584,60 @@ def build_rows(spec: dict) -> BuildResult:
         for placement in layout.get("placements", []):
             row_letter = placement.get("row", "T")
             for col in placement.get("columns", []):
-                code = col["field"]
-                meta = result.field_meta.get(code)
-                if not meta:
-                    continue
-                og_id = require_ongrid_id(
-                    registry,
-                    size=size,
-                    grid_type=grid_type,
-                    module=module,
-                    field_code=code,
-                    used_legacy=used_legacy_ongrid,
-                )
-                ongrid_rows.append(
-                    {
+                field_code = col.get("field")
+                sys_code = col.get("systemLine")
+                if field_code and sys_code:
+                    raise ValueError(
+                        "onGrid column cannot set both field and systemLine "
+                        f"({field_code!r} / {sys_code!r})"
+                    )
+                if sys_code:
+                    sys_id = id_for_code(str(sys_code))
+                    if sys_id is None:
+                        raise ValueError(
+                            f"Unknown onGrid systemLine {sys_code!r} "
+                            "(see data/enums/SystemLine.json)"
+                        )
+                    og_id = require_ongrid_id(
+                        registry,
+                        size=size,
+                        grid_type=grid_type,
+                        module=module,
+                        field_code=explicit_key_token(str(sys_code)),
+                        used_legacy=used_legacy_ongrid,
+                    )
+                    ongrid_row: dict[str, Any] = {
+                        "ObjectLineOnGridID": og_id,
+                        "ObjectID": oid,
+                        "SystemLineID": sys_id,
+                        "ObjectLineOnGridSize": size,
+                        "ObjectLineOnGridType": grid_type,
+                        "ObjectLineOnGridModule": module,
+                        "ObjectLineOnGridRow": row_letter,
+                        "ObjectLineOnGridPosition": col.get("position", 1),
+                        "ObjectLineOnGridLength": col.get("length", 100),
+                        "ObjectLineOnGridValueWidth": col.get("valueWidth", 0),
+                        "ObjectLineOnGridLabelType": col.get("labelType", 1),
+                        "IsActive": 1,
+                    }
+                else:
+                    if not field_code:
+                        raise ValueError(
+                            "onGrid column needs field or systemLine "
+                            f"(row {row_letter})"
+                        )
+                    meta = result.field_meta.get(field_code)
+                    if not meta:
+                        continue
+                    og_id = require_ongrid_id(
+                        registry,
+                        size=size,
+                        grid_type=grid_type,
+                        module=module,
+                        field_code=field_code,
+                        used_legacy=used_legacy_ongrid,
+                    )
+                    ongrid_row = {
                         "ObjectLineOnGridID": og_id,
                         "ObjectID": oid,
                         "ObjectLineID": meta["lineId"],
@@ -1610,7 +1651,7 @@ def build_rows(spec: dict) -> BuildResult:
                         "ObjectLineOnGridLabelType": col.get("labelType", 1),
                         "IsActive": 1,
                     }
-                )
+                ongrid_rows.append(ongrid_row)
                 result.edges.append(
                     {
                         "TableName": "Object",

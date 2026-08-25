@@ -321,5 +321,138 @@ class OnGridTotalGenerateTests(unittest.TestCase):
         self.assertNotIn("ObjectLineOnGridIsTotal", by_code["invoice"])
 
 
+class OnGridSystemLineTests(unittest.TestCase):
+    def test_generate_emits_system_line_id(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"].append(
+            {
+                "systemLine": "role",
+                "position": 80,
+                "length": 10,
+                "valueWidth": 100,
+                "labelType": 1,
+            }
+        )
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"].append(
+            {
+                "systemLine": "status",
+                "position": 90,
+                "length": 10,
+                "valueWidth": 100,
+                "labelType": 1,
+            }
+        )
+        spec["ids"] = {
+            "base": 9100,
+            "explicit": {
+                "objectLineOnGrid": {
+                    "Large/Grid/Items/sys:role": 9215,
+                    "Large/Grid/Items/sys:status": 9216,
+                }
+            },
+        }
+        result = build_rows(spec)
+        sys_rows = [r for r in result.rows["ObjectLineOnGrid"] if r.get("SystemLineID")]
+        self.assertEqual(len(sys_rows), 2)
+        by_sys = {r["SystemLineID"]: r for r in sys_rows}
+        self.assertEqual(by_sys[40]["ObjectLineOnGridID"], 9215)
+        self.assertEqual(by_sys[40]["ObjectLineOnGridPosition"], 80)
+        self.assertNotIn("ObjectLineID", by_sys[40])
+        self.assertEqual(by_sys[50]["ObjectLineOnGridID"], 9216)
+        self.assertEqual(by_sys[50]["ObjectLineOnGridValueWidth"], 100)
+
+    def test_generate_rejects_unknown_system_line(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"] = [
+            {"systemLine": "notALine", "position": 0, "length": 100}
+        ]
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("Unknown onGrid systemLine", str(ctx.exception))
+
+    def test_generate_rejects_field_and_system_line(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"] = [
+            {
+                "field": "amount",
+                "systemLine": "role",
+                "position": 0,
+                "length": 100,
+            }
+        ]
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("cannot set both", str(ctx.exception))
+
+    def test_extract_system_line_rows(self) -> None:
+        index = TransferIndex(
+            edges=[],
+            rows={
+                "ObjectLine": [
+                    {
+                        "ObjectLineID": 1,
+                        "ObjectID": 9,
+                        "ObjectLineCode": "amount",
+                        "ObjectLineOnGridIsAllowed": 1,
+                    }
+                ],
+                "ObjectLineOnGrid": [
+                    {
+                        "ObjectLineOnGridID": 100,
+                        "ObjectID": 9,
+                        "ObjectLineID": 1,
+                        "ObjectLineOnGridSize": "Large",
+                        "ObjectLineOnGridType": "Grid",
+                        "ObjectLineOnGridModule": "Items",
+                        "ObjectLineOnGridRow": "T",
+                        "ObjectLineOnGridPosition": 0,
+                        "ObjectLineOnGridLength": 80,
+                    },
+                    {
+                        "ObjectLineOnGridID": 9215,
+                        "ObjectID": 9,
+                        "SystemLineID": 40,
+                        "ObjectLineOnGridSize": "Large",
+                        "ObjectLineOnGridType": "Grid",
+                        "ObjectLineOnGridModule": "Items",
+                        "ObjectLineOnGridRow": "T",
+                        "ObjectLineOnGridPosition": 80,
+                        "ObjectLineOnGridLength": 10,
+                        "ObjectLineOnGridValueWidth": 100,
+                        "ObjectLineOnGridLabelType": 1,
+                    },
+                    {
+                        "ObjectLineOnGridID": 9216,
+                        "ObjectID": 9,
+                        "SystemLineID": 50,
+                        "ObjectLineOnGridSize": "Large",
+                        "ObjectLineOnGridType": "Grid",
+                        "ObjectLineOnGridModule": "Items",
+                        "ObjectLineOnGridRow": "T",
+                        "ObjectLineOnGridPosition": 90,
+                        "ObjectLineOnGridLength": 10,
+                        "ObjectLineOnGridValueWidth": 100,
+                        "ObjectLineOnGridLabelType": 1,
+                    },
+                ],
+            },
+            transfer_info={},
+        )
+        ongrid, explicit = _build_ongrid(index, 9, {1: "amount"})
+        self.assertEqual(
+            explicit,
+            {
+                "Large/Grid/Items/amount": 100,
+                "Large/Grid/Items/sys:role": 9215,
+                "Large/Grid/Items/sys:status": 9216,
+            },
+        )
+        cols = ongrid["layouts"][0]["placements"][0]["columns"]
+        self.assertEqual(cols[0]["field"], "amount")
+        self.assertEqual(cols[1]["systemLine"], "role")
+        self.assertEqual(cols[2]["systemLine"], "status")
+        self.assertNotIn("field", cols[1])
+
+
 if __name__ == "__main__":
     unittest.main()

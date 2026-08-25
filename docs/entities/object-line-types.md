@@ -139,6 +139,10 @@ Hide the inbox column title with layout `labelType: 1` and `valueWidth: 100` ([s
 
 Combo-box cannot be `isTag`. Typical pattern: combo for editing + helper **text** lines (`alwaysDisabled`) filled by an ObjectAction from `linesFormatted.{combo}` (display name, not bind ID). Attachments, numbers, and checkboxes do not process badges.
 
+## On-grid system lines
+
+Inbox Role, Status, Requestor, workflow, timestamps, … are **SystemLine** columns on `ObjectLineOnGrid` (`SystemLineID`, `ObjectLineID` null) — not `ObjectLine` types. Spec: `onGrid.layouts[].placements[].columns[].systemLine` (xor `field`). Catalog: [`SystemLine.json`](../data/enums/SystemLine.json). Placement and IDs: [spec-format.md](../transfer/spec-format.md#ongridlayouts).
+
 ## ObjectDefaultLine capabilities
 
 Template behaviour depends on the **line type**:
