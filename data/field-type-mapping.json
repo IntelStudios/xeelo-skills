@@ -95,7 +95,7 @@
     "objectLineTypeId": 11,
     "objectLineTypeName": "Memo",
     "extraColumns": {
-      "ObjectLineHeight": "height"
+      "ObjectLineHeight": "height (px; omit or 0 = unlimited)"
     }
   },
   "empty_space": {
@@ -114,7 +114,7 @@
     "objectLineTypeId": 13,
     "objectLineTypeName": "Report",
     "extraColumns": {
-      "ObjectLineHeight": "height"
+      "ObjectLineHeight": "height (px; omit or 0 = unlimited)"
     }
   },
   "combobox_server": {

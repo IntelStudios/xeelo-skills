@@ -174,7 +174,7 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `webFrameTypeId` | `WebFrameTypeID` (1–4) |
 | `textInputType` | `ObjectLineTextInputType` (0 Default, 1 Bar Code, 2 Location) |
 | `columnNumbers` | `ObjectLineNumberColumns` (radio / multi) |
-| `height` | `ObjectLineHeight` (memo, report) |
+| `height` | `ObjectLineHeight` (memo, report) — **pixels**. Omit or `0` = unlimited. |
 | `uniqueId` | `ObjectLineUniqueID` (1 Object, 2 Object/Template, 3 Object/Requestor, 4 Object/Template/Requestor). Also sets `ObjectLineIsUnique = 1`. [object-model.md](../entities/object-model.md#unique) |
 | `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 | `descMemoBorder`, `descMemoPadding` | Description memo extras. **`descMemoBorder` defaults to false** (Admin/SQL `0`); omit it or set `false`. Use `true` only when the user wants a visible box. |

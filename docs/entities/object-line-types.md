@@ -74,7 +74,7 @@ Example (preview bound to the Invoice attachment on the same object):
 | `radio`, `checkbox_multiselect` | `columnNumbers` required (`ObjectLineNumberColumns`) |
 | `web_frame` | `webFrameTypeId` (1 Offline file … 4 Web iFrame) |
 | `description_memo` | `descMemoBorder` default **false** (omit or `false`; set `true` only when the user wants a box). `descMemoPadding` optional. Template **default is HTML** (`ObjectDefaultLineDescMemo`), not `ObjectDefaultLineValue` |
-| `memo`, `report` | `height` |
+| `memo`, `report` | `height` in **px** (`ObjectLineHeight`). Omit or `0` = unlimited. Typical values 50–150, not row count. |
 | `date` | stored **`dd-MM-yyyy`** (GraphQL `lines`); do not parse with `new Date()` — [graphql.md](graphql.md#date-picker-type-8) |
 | Unique-capable (1, 2, 3, 4, 7, 8, 12, 14, 15) | `uniqueId` 1–4 ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)) — [object-model.md](object-model.md#unique) |
 
