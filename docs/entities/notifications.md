@@ -96,7 +96,7 @@ ObjectActionParam NotificationID1
 PeriodicActionParam NotificationID1 | NotificationID2
 ```
 
-Conditions: `fnRequestLineDataCondition` per row. **OR** among conditions on the **same** `ObjectLineID`; **AND** across different fields. Any remaining failed row blocks the send. No conditions → always send once resolved.
+Conditions: `fnRequestLineDataCondition` per row. **OR** among conditions on the **same** `ObjectLineID`; **AND** across different fields. Any remaining failed row blocks the send. No conditions → always send once resolved. Same raw-slot catalog as ObjectAction — **do not** use `is_not_empty` (or other text conditions) on **Memo** to mean the HTML is filled; the slot is the memo record ID (`{idXXXXv}`), not the body. Gate on a text / number / button field. [object-actions.md](object-actions.md#objectactioncondition)
 
 `WorkflowStepNotification.RequestTypeID` (nullable): runtime keeps the junction only when it matches the request’s Create/Update type (`isnull(RequestTypeID, requestType) = requestType`). **Null = both.** Spec/generate omit the column (new OT rows stay null).
 
@@ -132,7 +132,7 @@ Same `ObjectLineID` as GraphQL `lines` / `linesFormatted`. `{idXXXX}` is the **f
 | Line type | `{idXXXX}` | `{idXXXXv}` |
 |-----------|------------|-------------|
 | Combobox / radio / multi | Reference **name** (label) | Stored **bind** |
-| Memo (type 11) | Memo **HTML** | Do not use — not the memo body |
+| Memo (type 11) | Memo **HTML** | Memo **record ID** — not the body. Line conditions see this ID too |
 | Text / number / date | Display-formatted | Stored slot |
 
 Put memo HTML in the email body with `{idNNNN}` (no `v`). In HTML style the substitution is **not** escaped, so a memo that already contains markup stays markup. Grammar suffixes `idNr` / `idNm` are **not** notification tokens (they expand to empty).

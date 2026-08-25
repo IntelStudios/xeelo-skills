@@ -85,13 +85,14 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] Request stays **editable** on that workflow step (not immediately Completed)
 - [ ] Button line is **WorkflowStepAccess editable** on that step (refresh default is not editable → button stays disabled)
 - [ ] If the action must not re-run on later Save, clear the button in the same self-update
+- [ ] Do not gate on memo `is_not_empty` / `contains` (slot is the memo ID, not HTML) — use text / number / button
 
 ## Troubleshooting
 
 | Symptom | Check |
 |---------|--------|
 | Action never runs | Missing `WorkflowStepObjectAction`; wrong step; `ApplicableEventType` filter |
-| Runs on every save | Missing condition on the button (or other gate) |
+| Runs on every save | Missing condition on the button (or other gate); **`is_not_empty` on Memo** is always true after the first write (slot = memo ID, not HTML) |
 | Result not on the form | `EndPointRunWait` is 0; wrong `ResponseTextObjectLineID`; line type not 1/2/3/4/11/12 |
 | Button does nothing | Request already Completed; button hidden by extended validation; button not editable on the workflow step (`WorkflowStepAccess`); extra step `IsActive = 0` because refresh did not see a `WorkflowStepAction` targeting that status |
 | Action loops / times out | GraphQL mutation on the **current** request used `withRefresh: true` or `createType` — omit both; see [nodejs-esm.md](../docs/entities/nodejs-esm.md#mutating-the-current-request--no-refresh) |

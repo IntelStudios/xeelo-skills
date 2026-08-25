@@ -18,7 +18,7 @@ Slot is required when the line is **active** and the type is **not** 5, 6, 13, 1
 | 8 | Date picker | `date` | yes |
 | 9 | Attachment | `attachment` | yes |
 | 10 | Web frame | `web_frame` | yes |
-| 11 | Memo | `memo` | yes |
+| 11 | Memo | `memo` | yes (stores **memo record ID**, not HTML) |
 | 12 | Number | `number` | yes |
 | 13 | Report | `report` | no |
 | 14 | Combo-box (server) | `combobox_server` | yes |
@@ -74,7 +74,7 @@ Example (preview bound to the Invoice attachment on the same object):
 | `radio`, `checkbox_multiselect` | `columnNumbers` required (`ObjectLineNumberColumns`) |
 | `web_frame` | `webFrameTypeId` (1 Offline file … 4 Web iFrame) |
 | `description_memo` | `descMemoBorder` default **false** (omit or `false`; set `true` only when the user wants a box). `descMemoPadding` optional. Template **default is HTML** (`ObjectDefaultLineDescMemo`), not `ObjectDefaultLineValue` |
-| `memo`, `report` | `height` in **px** (`ObjectLineHeight`). Omit or `0` = unlimited. Typical values 50–150, not row count. |
+| `memo`, `report` | `height` in **px** (`ObjectLineHeight`). Omit or `0` = unlimited. Typical values 50–150, not row count. Memo **slot** = memo record ID; HTML is separate (notification `{idXXXX}`). Line conditions (`is_not_empty`, `contains`, …) see the ID, not the body — gate on text / number / button. [object-actions.md](object-actions.md#objectactioncondition) |
 | `date` | stored **`dd-MM-yyyy`** (GraphQL `lines`); do not parse with `new Date()` — [graphql.md](graphql.md#date-picker-type-8) |
 | Unique-capable (1, 2, 3, 4, 7, 8, 12, 14, 15) | `uniqueId` 1–4 ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)) — [object-model.md](object-model.md#unique) |
 

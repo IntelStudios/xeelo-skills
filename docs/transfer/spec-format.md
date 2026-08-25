@@ -658,7 +658,7 @@ objectMessages:
   warning_msg: 1053
 ```
 
-Condition `type` slugs match platform seed (`contains`, `equals_text`, `is_empty`, …). Extract omits access rows at **refresh** defaults (editable=0, visible=1). List `editable: true` for fields the user must change on the update form; `visible: false` to hide. `editable: true` implies visible. Optional `access[].sublineId` for a subgrid column.
+Condition `type` slugs match platform seed (`contains`, `equals_text`, `is_empty`, …). Do not use `is_not_empty` on **memo** to test the HTML body — the slot is the memo record ID ([object-actions.md](../entities/object-actions.md#objectactioncondition)). Extract omits access rows at **refresh** defaults (editable=0, visible=1). List `editable: true` for fields the user must change on the update form; `visible: false` to hide. `editable: true` implies visible. Optional `access[].sublineId` for a subgrid column.
 
 **Not in spec v1:** `ObjectUpdateActionUserList` (User admin only).
 
@@ -762,7 +762,7 @@ params:
   # NotificationID2 on summary periodic (spNotificationDataInsertSummary)
 ```
 
-Placeholders in `subject` / `format` are **not** rewritten (`{id1234}` stays). Use numeric `ObjectLineID` in `{idXXXX}` — `{idAMOUNT}` is not resolved. `{idXXXX}` is formatted (combo **name**, memo **HTML**); `{idXXXXv}` is the raw slot (combo **bind**). Memo body: `{idNNNN}` without `v`. Full catalog: [notifications.md](../entities/notifications.md#placeholders).
+Placeholders in `subject` / `format` are **not** rewritten (`{id1234}` stays). Use numeric `ObjectLineID` in `{idXXXX}` — `{idAMOUNT}` is not resolved. `{idXXXX}` is formatted (combo **name**, memo **HTML**); `{idXXXXv}` is the raw slot (combo **bind**, memo **record ID**). Memo body: `{idNNNN}` without `v`. Do not use memo `is_not_empty` on `conditions:` — that tests the record ID. Full catalog: [notifications.md](../entities/notifications.md#placeholders).
 
 `sendTo.requestorManager` / `roleManager` are **Cc**. Conditions: OR on the same field, AND across fields. `steps[].notifications` does not set `WorkflowStepNotification.RequestTypeID` (null = Create and Update). Runtime: [notifications.md](../entities/notifications.md#runtime).
 
@@ -845,7 +845,7 @@ objectActions:
         param1: "1"
 ```
 
-`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. `NotificationID1` / `NotificationID2` may be `{ notification: assigned }` ([notifications](#notifications-specnotificationsyaml)). Condition `type` slugs match update actions.
+`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. `NotificationID1` / `NotificationID2` may be `{ notification: assigned }` ([notifications](#notifications-specnotificationsyaml)). Condition `type` slugs match update actions. Do not gate on **memo** `is_not_empty` — that tests the memo record ID, not HTML ([object-actions.md](../entities/object-actions.md#objectactioncondition)).
 
 **IDs:** `objectActions`, `objectActionParams` (`action/paramCode`), `objectActionConditions` (`action/field/type`), `workflowStepObjectActions` (`action/stepName`).
 

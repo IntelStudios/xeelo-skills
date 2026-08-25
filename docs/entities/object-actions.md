@@ -85,7 +85,9 @@ To re-run Last on **another completed** request, `withRefresh` on that id is not
 
 ## ObjectActionCondition
 
-Same type catalog as update-action conditions (Contains, Equals text/number, Is empty, …). Spec slugs: `equals_text`, `is_empty`, …
+Same type catalog as update-action conditions (Contains, Equals text/number, Is empty, …). Spec slugs: `equals_text`, `is_empty`, … Evaluated **per action** immediately before that action runs (`fnRequestLineDataCondition`). OR-per-line (one pass on a line drops that line’s failures); a failed line blocks the action.
+
+Conditions read the **raw slot**, not the formatted value. For **Memo (type 11)** the slot is the **memo record ID**, not the HTML body — the same number `{idXXXXv}` shows in notifications. `is_not_empty` / `is_empty` / `contains` / `equals_text` on a memo therefore do **not** test HTML: after the first write the ID is non-empty even when the body is blank. Gate “has content” with a **text**, **number**, or **button** field (`equals_text` / param `1`), not memo. [object-line-types.md](object-line-types.md) · [notifications.md](notifications.md#placeholders)
 
 Gate a button-triggered action with `equals_text` / param `1` on the button field.
 

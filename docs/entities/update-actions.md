@@ -80,7 +80,7 @@ This is not `templates.fields.hidden` / `alwaysDisabled` — see [object-model.m
 
 Controls **which update actions appear** on a completed request (`spRequestUpdateActionList`). Evaluates field values with OR semantics per line (one passing condition on a line clears failures for that line).
 
-Condition types (seed): None, Contains, Equals, Between, Is empty, … — see `ObjectUpdateActionConditionType`.
+Condition types (seed): None, Contains, Equals, Between, Is empty, … — see `ObjectUpdateActionConditionType`. Same raw-slot evaluator as ObjectAction: **Memo** conditions see the memo record ID, not HTML — do not use `is_not_empty` to mean the body is filled. [object-actions.md](object-actions.md#objectactioncondition)
 
 ## ObjectUpdateMessage
 

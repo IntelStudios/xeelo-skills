@@ -75,7 +75,7 @@ Unsubmitted request (`RequestIsSubmitted = 0`):
 
 Submitted request → workflow / workflow-step junctions.
 
-Conditions: same OR-per-line rule as update-action conditions (`fnRequestLineDataCondition`). No conditions → always listed once the junction is visible.
+Conditions: same OR-per-line rule as update-action conditions (`fnRequestLineDataCondition`). No conditions → always listed once the junction is visible. Memo conditions see the slot ID, not HTML — [object-actions.md](object-actions.md#objectactioncondition).
 
 ## Transfer / spec
 

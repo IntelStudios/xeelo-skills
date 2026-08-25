@@ -61,7 +61,7 @@ Scheduler.SchedulerCRON  (Quartz, 7 fields, Europe/Prague)
 | `10` | `in_progress` | Last version ≠ last completed |
 | `20` | `completed` | Last version = last completed |
 
-Condition type IDs match update-action / object-action conditions (`13` = `equals_text`). Same OR-per-line pattern as elsewhere.
+Condition type IDs match update-action / object-action conditions (`13` = `equals_text`). Same OR-per-line pattern as elsewhere. Memo conditions see the record ID, not HTML — [object-actions.md](object-actions.md#objectactioncondition).
 
 Each **PeriodicAction** re-filters with `PeriodicActionCondition`. Executable comes from `PeriodicActionType` (site seed, not transferred). If the template contains `{RequestID}`, SQL runs **once per remaining request**. `{RequestList}` = one batch call. Otherwise one-shot with no request context.
 

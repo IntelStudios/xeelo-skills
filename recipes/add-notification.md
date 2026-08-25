@@ -9,7 +9,8 @@ A template is a **site catalog** (no `ObjectID`). Object Transfer includes it on
 - Object has a workflow (new or reused) if you bind from `workflow.*` or a step action
 - Attachment fields already exist when listing `attachments[]`
 - `{idXXXX}` in `subject` / `format` uses numeric **ObjectLineID**, not the field code
-- Memo HTML in the body is `{idNNNN}` (formatted). `{idNNNNv}` is the raw slot (combo bind); do not use it for memo
+- Memo HTML in the body is `{idNNNN}` (formatted). `{idNNNNv}` is the raw slot (memo **record ID** / combo bind); do not use it for memo
+- Do not gate send on memo `is_not_empty` — that tests the memo ID, not HTML. Use a text / number / button field ([object-actions.md](../docs/entities/object-actions.md#objectactioncondition))
 
 ## Ask
 
@@ -126,4 +127,4 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] Memo HTML in `format` is `{idNNNN}` without `v` (combo bind is `{idNNNNv}`)
 - [ ] Single vs summary type matches the executable (`spNotificationDataInsert` vs `…Summary`); summary body uses `{RequestGrid,…}` not `{RequestList}`
 - [ ] Reused workflow: do not expect header/action FK upserts
-- [ ] Conditions use the same slugs as update actions (`equals_text`, …); OR on the same field, AND across fields
+- [ ] Conditions use the same slugs as update actions (`equals_text`, …); OR on the same field, AND across fields — not memo `is_not_empty` (slot is the memo ID, not HTML)
