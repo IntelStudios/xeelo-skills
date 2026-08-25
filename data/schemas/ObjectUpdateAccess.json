@@ -1,12 +1,115 @@
 {
   "table": "ObjectUpdateAccess",
   "columns": [
-    {"name": "ObjectUpdateActionID", "type": "INT", "nullable": false, "identity": false, "default": null},
-    {"name": "ObjectUpdateAccessID", "type": "INT", "nullable": false, "identity": true, "default": null},
-    {"name": "ObjectLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
-    {"name": "ObjectSubLineID", "type": "INT", "nullable": true, "identity": false, "default": null},
-    {"name": "ObjectLineIsEditableUpdate", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
-    {"name": "ObjectLineIsVisibleUpdate", "type": "BIT", "nullable": false, "identity": false, "default": "1"},
-    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+    {
+      "name": "ObjectUpdateActionID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectUpdateAccessID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectLineID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectLineIsEditableUpdate",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "ObjectLineIsVisibleUpdate",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectLineID",
+      "referencesTable": "ObjectLine",
+      "referencesColumn": "ObjectLineID"
+    },
+    {
+      "column": "ObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    }
   ]
 }

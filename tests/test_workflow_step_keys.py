@@ -258,3 +258,49 @@ class WorkflowIsActiveTests(unittest.TestCase):
         self.assertFalse(extracted["workflow"]["steps"][1]["isActive"])
         self.assertNotIn("isActive", extracted["workflow"]["steps"][0]["actions"][0])
         self.assertFalse(extracted["workflow"]["steps"][1]["actions"][0]["isActive"])
+
+
+class WorkflowStepAccessExplicitIdsTests(unittest.TestCase):
+    def test_extract_records_default_access_orig_ids(self) -> None:
+        from ot_builder.extract import _workflow_step_access_specs
+
+        index = TransferIndex.from_parsed(
+            {
+                "edges": [],
+                "rows": {
+                    "WorkflowStepAccess": [
+                        {
+                            "WorkflowStepID": 10,
+                            "WorkflowStepAccessID": 1148,
+                            "ObjectLineID": 9109,
+                            "WorkflowStepAccessIsEditable": False,
+                            "WorkflowStepAccessIsVisible": True,
+                            "IsActive": True,
+                        },
+                        {
+                            "WorkflowStepID": 10,
+                            "WorkflowStepAccessID": 146,
+                            "ObjectLineID": 9140,
+                            "WorkflowStepAccessIsEditable": True,
+                            "WorkflowStepAccessIsVisible": True,
+                            "IsActive": True,
+                        },
+                    ]
+                },
+                "transferInfo": {},
+            }
+        )
+        explicit: dict[str, int] = {}
+        specs = _workflow_step_access_specs(
+            index,
+            10,
+            "Updating",
+            {9109: "line_9109_account_number", 9140: "line_9140_name"},
+            explicit,
+        )
+        self.assertEqual(
+            specs,
+            [{"field": "line_9140_name", "editable": True, "visible": True}],
+        )
+        self.assertEqual(explicit["Updating/line_9109_account_number"], 1148)
+        self.assertEqual(explicit["Updating/line_9140_name"], 146)

@@ -94,7 +94,7 @@
     },
     {
       "name": "CopyID",
-      "type": "INT",
+      "type": "int",
       "nullable": true,
       "identity": false,
       "default": null

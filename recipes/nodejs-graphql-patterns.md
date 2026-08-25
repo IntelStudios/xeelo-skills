@@ -262,6 +262,8 @@ From an **ObjectAction** on the current request, do **not** use this on `Context
 
 Each item creates a **new request version** (same `RequestCode`). Same batch + pool as §6. `EndPointRunWait: "0"` if the user must not wait. User **0** needs WRITE on the target object; the `updateAction` id must exist on that object.
 
+This `UPDATE` + `updateAction` pattern can run from an **ObjectAction on another object** (find completed requests with `Select_` + `lineFilters`, then mutate). Gate with `Context.ObjectUpdateAction` when the step is shared with create, or with a type-18 button condition (`equals_text` param `1`) when a workflow button on that other object should start the versions.
+
 ```javascript
 const UPDATE_BATCH = 10;
 const UPDATE_CONCURRENCY = 5;
