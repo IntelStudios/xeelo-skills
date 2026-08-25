@@ -38,7 +38,7 @@ def main() -> None:
         "--project",
         type=Path,
         required=True,
-        help="Project directory (e.g. projects/ovnet)",
+        help="Project directory (e.g. projects/<name>)",
     )
     parser.add_argument(
         "--slug",

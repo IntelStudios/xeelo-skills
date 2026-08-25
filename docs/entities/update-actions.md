@@ -134,7 +134,6 @@ Document both models in recipes and specs until junction table ships.
 
 - Fragment: `spec/update-actions.yaml` — see [spec-format.md](../transfer/spec-format.md)
 - Extract/generate: `scripts/ot_builder/extract.py`, `rows.py`
-- Golden sample: [`projects/cars/`](../projects/cars/) (action id 5118 in OT)
 
 ## Recipe
 

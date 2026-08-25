@@ -1,4 +1,4 @@
-"""Regression tests for ot_builder ID allocation and OT FK consistency."""
+"""Regression tests for ot_builder ID allocation."""
 
 from __future__ import annotations
 
@@ -11,8 +11,6 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from ot_builder.ids import IdRegistry, build_registry  # noqa: E402
 from ot_builder.parse import TransferIndex, collect_table_max_ids  # noqa: E402
-from ot_builder.rows import build_rows  # noqa: E402
-from ot_builder.spec_loader import load_spec  # noqa: E402
 
 
 class IdRegistryTests(unittest.TestCase):
@@ -86,31 +84,6 @@ class CollectTableMaxIdsTests(unittest.TestCase):
             collect_table_max_ids(index),
             {"ObjectAction": 9132, "ObjectLine": 9112},
         )
-
-
-class ObjectTransferFkTests(unittest.TestCase):
-    def test_kb_transakce_fk_consistency(self) -> None:
-        spec_path = (
-            ROOT
-            / "projects/lz/changes/20260813-loop-01-kb-transakce/objects/kb-transakce/xeelo-spec.yaml"
-        )
-        if not spec_path.is_file():
-            self.skipTest("kb-transakce change-loop spec not present")
-
-        result = build_rows(load_spec(spec_path))
-        roles = {row["RoleID"] for row in result.rows.get("Role", [])}
-        workflows = result.rows.get("Workflow", [])
-        steps = result.rows.get("WorkflowStep", [])
-        lines = {row["ObjectLineID"] for row in result.rows.get("ObjectLine", [])}
-        access = result.rows.get("ObjectUpdateAccess", [])
-
-        self.assertEqual(len(roles), 1)
-        role_id = next(iter(roles))
-        self.assertEqual(workflows[0]["RoleID"], role_id)
-        self.assertEqual(steps[0]["RoleID"], role_id)
-
-        if access:
-            self.assertIn(access[0]["ObjectLineID"], lines)
 
 
 if __name__ == "__main__":

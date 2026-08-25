@@ -6,14 +6,14 @@ This repository is the **private** git root for all Xeelo sites used with a xeel
 <xeelo-skills>/projects/
 ```
 
-Each site is a folder: `lz/`, `ovnet/`, … — not a separate git repo.
+Each site is a folder: `site-a/`, `site-b/`, … — not a separate git repo.
 
 Full workflow lives in the parent xeelo-skills clone: `docs/projects.md`. Typical tree per site:
 
 ```text
 <name>/
   conventions.md           # site rules (language, naming); agent reads before object work
-  .xeelo-connection.json   # gitignored — xeeloUrl + GraphQL admin token
+  .xeelo-connection.json   # gitignored — xeeloUrl + GraphQL token
   snapshots/               # DB transfer JSON — gitignored; refresh with /download-db
   env/                     # extracted specs (versioned)
   changes/<loop-slug>/     # change loops + generated Object Transfer (versioned)

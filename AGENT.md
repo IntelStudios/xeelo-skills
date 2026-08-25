@@ -49,7 +49,7 @@ flowchart LR
   Pub --> DL
 ```
 
-1. **Connect** — user provides Xeelo URL + GraphQL admin token → `projects/<project>/.xeelo-connection.json` (gitignored)
+1. **Connect** — user provides Xeelo URL + GraphQL token (`isAdmin`) → `projects/<project>/.xeelo-connection.json` (gitignored)
 2. **Download** DB transfer JSON → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
@@ -87,10 +87,10 @@ Failed dry-run or missing connection: do not offer `/publish`, do not write conv
 
 | Term | Meaning | Where |
 |------|---------|--------|
-| **site** | Xeelo instance (`xeeloUrl` + GraphQL admin token) | `.xeelo-connection.json` |
+| **site** | Xeelo instance (`xeeloUrl` + GraphQL token) | `.xeelo-connection.json` |
 | **company** / `companyId` | Logical object division (`Company` table in DB transfer) | spec `company.name`, `ids.explicit.companyId`, `catalog.yaml` |
 
-Example: lz company KB has `Company.CompanyID: 9001` in the DB transfer. Extract includes **all** objects from the site; `companyId` is metadata on each object, not a filter parameter.
+Extract includes **all** objects from the site; `companyId` is metadata on each object, not a filter parameter.
 
 | Action | Resource |
 |--------|----------|
@@ -141,7 +141,7 @@ Template (empty values for user to complete):
 | Field | Where to get it |
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
-| `token` | GraphQL **admin** access token (`isAdmin`). Fixed; no refresh |
+| `token` | GraphQL access token with **`isAdmin`**. Fixed; no refresh |
 
 File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in xeelo-skills. Do not download DB transfer until the user has filled connection details.
 
@@ -211,9 +211,9 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 `projects/<project>/` = one Xeelo site.
 
 ```text
-projects/ovnet/
+projects/<name>/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
-  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL admin token
+  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL token
   graphql/{schema,access_rights}.json  # live introspection — gitignored; refresh with /graphql
   snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
@@ -233,40 +233,40 @@ projects/ovnet/
 ```bash
 # 0) Download latest DB transfer (needs connection file)
 python scripts/download-db-transfer.py \
-  --connection projects/ovnet/.xeelo-connection.json
+  --connection projects/<name>/.xeelo-connection.json
 
 # 1) Extract env (all objects from the site)
 python scripts/extract-db-transfer-to-env.py \
-  projects/ovnet/snapshots/<stamp>/<name>.json \
-  -o projects/ovnet/env
+  projects/<name>/snapshots/<stamp>/<file>.json \
+  -o projects/<name>/env
 
 # 2) Start a change loop
 python scripts/init-change-loop.py \
-  --project projects/ovnet \
+  --project projects/<name> \
   --slug 20260811-loop-01-short-name \
-  --objects ov-net-customer
+  --objects <object-slug>
 
 # 3) Edit changes/<slug>/objects/... then generate OT packages
 python scripts/generate-change-loop.py \
-  projects/ovnet/changes/20260811-loop-01-short-name
+  projects/<name>/changes/20260811-loop-01-short-name
 
 # 4) Dry-run OT (isTest) — run automatically after generate
 python scripts/push-object-transfer.py \
-  --connection projects/ovnet/.xeelo-connection.json \
-  --loop projects/ovnet/changes/20260811-loop-01-short-name \
+  --connection projects/<name>/.xeelo-connection.json \
+  --loop projects/<name>/changes/20260811-loop-01-short-name \
   --only-test
 
 # 5) Publish: apply JSON (isTest false) + precompile (only if the user says yes)
 python scripts/publish-object-transfer.py \
-  --connection projects/ovnet/.xeelo-connection.json \
-  --loop projects/ovnet/changes/20260811-loop-01-short-name
+  --connection projects/<name>/.xeelo-connection.json \
+  --loop projects/<name>/changes/20260811-loop-01-short-name
 
 # 6) Precompile only (no Object Transfer)
 python scripts/precompile-settings.py \
-  --connection projects/ovnet/.xeelo-connection.json
+  --connection projects/<name>/.xeelo-connection.json
 ```
 
-Connection example: [`projects/ovnet/.xeelo-connection.json`](projects/ovnet/.xeelo-connection.json) (gitignored; see **Creating a new project** above)
+Connection example: `projects/<name>/.xeelo-connection.json` (gitignored; see **Creating a new project** above)
 
 ## Empty site (fresh env)
 
@@ -284,17 +284,6 @@ Typical `env/` layout:
 - `shared/*.yaml` — mostly empty maps (`companies: {}`, …)
 - `extract-summary.yaml` — `catalogObjects: 0`, `extractedObjects: []`
 - **no** `objects/<slug>/` tree until custom objects exist in Admin
-
-Reference sample: [`projects/lz/`](projects/lz/) (test site).
-
-**Before/after greenfield deploy** (same site):
-
-| Stage | Snapshot | Catalog |
-|-------|----------|---------|
-| Empty site | [`snapshots/20260813_111646/`](projects/lz/snapshots/20260813_111646/) | 0 objects |
-| After Transakce OT | [`snapshots/20260813_132321/`](projects/lz/snapshots/20260813_132321/) | 1 object, company KB `9001` |
-
-Env after deploy: [`projects/lz/env/objects/transakce/`](projects/lz/env/objects/transakce/).
 
 **Known generator fix:** `IdRegistry` must cache allocated IDs so workflow roles and update-action line refs stay consistent across OT rows (fixed in `scripts/ot_builder/ids.py`).
 
@@ -382,8 +371,6 @@ python scripts/extract-object-transfer-to-spec.py path/to/object-transfer.xml \
   -o projects/my-object
 ```
 
-Cars reference: [`projects/cars/xeelo-spec.yaml`](projects/cars/xeelo-spec.yaml)
-
 ## Partial deployment
 
 Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; generator defaults Orig. ID). Manual Admin UI still works for XML ZIP batches:
@@ -393,15 +380,6 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 3. Set Import as New vs Orig. ID per row if needed
 4. Process selected rows only
 5. `/precompile` (or `/publish` if applying a generated OT) then `/download-db`
-
-## Account / OV-NET samples
-
-| Project | Role |
-|---------|------|
-| [`projects/account-object/`](projects/account-object/) | Greenfield OT demo |
-| [`projects/cars/`](projects/cars/) | Complex OT extract |
-| [`projects/ovnet/`](projects/ovnet/) | DB-transfer → env → change-loop sample |
-| [`projects/lz/`](projects/lz/) | Empty / fresh site after DB extract |
 
 ## Checklist before delivery
 

@@ -9,9 +9,9 @@ GraphQL download returns the setup as a **JSON string**. xeelo-skills saves it a
 ```json
 {
   "Company": [
-    { "CompanyID": 9001, "CompanyName": "KB", "IsActive": true }
+    { "CompanyID": 9001, "CompanyName": "Demo", "IsActive": true }
   ],
-  "Object": [ { "ObjectID": 9003, "ObjectName": "Transakce", "IsActive": true } ],
+  "Object": [ { "ObjectID": 9003, "ObjectName": "Invoice", "IsActive": true } ],
   "ObjectLine": []
 }
 ```
@@ -34,8 +34,8 @@ Parse with:
 
 ```bash
 python scripts/extract-db-transfer-to-env.py \
-  projects/ovnet/snapshots/<stamp>/<name>.json \
-  -o projects/ovnet/env
+  projects/<name>/snapshots/<stamp>/<file>.json \
+  -o projects/<name>/env
 ```
 
 Extract writes catalog, shared (`companies`, `object-types`, `roles`, `statuses`, `sources`, and `custom-colors` when the site has `CustomColor` rows), and **full specs for every object** in the transfer (all companies). `catalog.yaml` `source.transferType` is `DB`; there is no package version field.
@@ -50,12 +50,12 @@ Older GraphQL downloads were UTF-16 LE concatenated `<XMLData>` blocks (with `Tr
 
 ```bash
 python scripts/download-db-transfer.py \
-  --connection projects/ovnet/.xeelo-connection.json
+  --connection projects/<name>/.xeelo-connection.json
 ```
 
 Flow:
 
-1. Load `.xeelo-connection.json` (`xeeloUrl`, GraphQL admin `token`)
+1. Load `.xeelo-connection.json` (`xeeloUrl`, GraphQL `token`)
 2. `POST {xeeloUrl}/graphql` — `Select_admin_transfer_download { json }` (`Authorization: Bearer <token>`)
 3. Validate the string is a JSON object, write UTF-8 to `projects/<project>/snapshots/<stamp>/`
 

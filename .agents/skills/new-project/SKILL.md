@@ -16,7 +16,7 @@ Scaffold `projects/<name>/` for one Xeelo site. Read [AGENT.md](../../../AGENT.m
 
 Determine from the user message or ask once:
 
-- **`<name>`** — project slug (e.g. `lz`, `ovnet`). Must be a valid directory name.
+- **`<name>`** — project slug under `projects/`. Must be a valid directory name.
 - **`xeeloUrl`** — optional. Infer `https://<name>.xeelo.online/` only when the slug clearly matches the site hostname; otherwise leave empty for the user to fill.
 
 ## Steps
@@ -71,6 +71,6 @@ Determine from the user message or ask once:
 | Field | Where to get it |
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
-| `token` | GraphQL **admin** access token (`isAdmin` from site GraphQL access tokens). Fixed; no refresh. |
+| `token` | GraphQL access token with **`isAdmin`** (from site GraphQL access tokens). Fixed; no refresh. |
 
 Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling connection: `/download-db`.

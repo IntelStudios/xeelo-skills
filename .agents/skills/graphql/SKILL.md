@@ -19,14 +19,14 @@ GET `{xeeloUrl}/graphql` is Apollo Sandbox (HTML). Schema comes from **POST** in
 
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl` — Xeelo site URL (User UI)
-  - `token` — GraphQL Bearer token (`isAdmin` for admin ops; any GraphQL token for `access_rights` / `Select_`)
-- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist). If the loader rejects the file, tell the user to **replace** it with `{ "xeeloUrl": "...", "token": "..." }`.
+  - `token` — GraphQL Bearer token (`isAdmin` for transfer/precompile; any GraphQL token for `access_rights` / `Select_`)
+- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Inputs
 
 Determine from the user message or ask once:
 
-- **`<project>`** — project slug under `projects/` (e.g. `lz`, `ovnet`). Default to the project mentioned in chat or the one whose connection file is open.
+- **`<project>`** — project slug under `projects/`. Default to the project mentioned in chat or the one whose connection file is open.
 
 ## Python environment
 

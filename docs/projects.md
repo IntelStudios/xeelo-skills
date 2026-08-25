@@ -28,7 +28,7 @@ cp templates/projects-repo/.gitignore templates/projects-repo/README.md projects
 
 ## Setup B — `projects/` already has sites
 
-This machine already has `lz/`, `ovnet/`, … under `projects/` with no nested git:
+This machine already has `site-a/`, `site-b/`, … under `projects/` with no nested git:
 
 ```bash
 cd projects

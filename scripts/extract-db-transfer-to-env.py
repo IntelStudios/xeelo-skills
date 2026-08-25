@@ -21,7 +21,7 @@ def main() -> None:
         "--output",
         type=Path,
         required=True,
-        help="Output env directory (e.g. projects/ovnet/env)",
+        help="Output env directory (e.g. projects/<name>/env)",
     )
     args = parser.parse_args()
 

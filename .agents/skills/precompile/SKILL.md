@@ -19,14 +19,14 @@ Do **not** auto-run `/precompile` from the change loop. After generate, the loop
 
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl`
-  - `token` (GraphQL admin token, `isAdmin`)
-- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist). If the loader rejects the file, tell the user to **replace** it with `{ "xeeloUrl": "...", "token": "..." }`.
+  - `token` (GraphQL token with `isAdmin`)
+- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Inputs
 
 Determine from the user message or ask once:
 
-- **`<project>`** — project slug under `projects/` (e.g. `lz`, `ovnet`). Default to the project mentioned in chat or the one whose connection file is open.
+- **`<project>`** — project slug under `projects/`. Default to the project mentioned in chat or the one whose connection file is open.
 
 ## Python environment
 
@@ -58,6 +58,6 @@ If metadata just changed on the site, **ask** whether to `/download-db` to refre
 
 ## Errors
 
-- **Auth / ACCESS_DENIED** — admin GraphQL token required; there is no refresh.
+- **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
 - **success=false** — report mutation messages; do not claim the site is compiled.
 - **Timeout** — precompile can take long on a large site; retry with higher `--timeout`.

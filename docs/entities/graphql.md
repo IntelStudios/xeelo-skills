@@ -164,7 +164,7 @@ Delete_request(objectId: Int!, requestIds: [Int!]!, userLogin: String, userId: I
 
 | Argument | Role |
 |----------|------|
-| `objectId` | Numeric object id (`env/catalog.yaml` `objects[].id`, e.g. Transakce `9003`) — not the GraphQL code |
+| `objectId` | Numeric object id (`env/catalog.yaml` `objects[].id`) — not the GraphQL code |
 | `requestIds` | Requests to delete; at least one. Each id is `spRequestDelete` in its **own** DB transaction |
 | `userLogin` / `userId` | Resolve `@UserID`. If both omitted, **`0`** |
 

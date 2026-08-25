@@ -7,19 +7,12 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
 1. Read **[AGENT.md](AGENT.md)** — playbook
 2. If `projects/` is empty or missing, set up the nested private repo — **[docs/projects.md](docs/projects.md)**
 3. Per project (`projects/<name>/` = one Xeelo):
-   - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL admin `token`
+   - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL `token`
    - `python scripts/download-db-transfer.py --connection projects/<name>/.xeelo-connection.json`
    - `python scripts/extract-db-transfer-to-env.py <snapshot.json> -o projects/<name>/env`
    - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
    - Edit `changes/<slug>/objects/...` then `python scripts/generate-change-loop.py projects/<name>/changes/<slug>`
 4. After generate the loop dry-runs the OT (`--only-test`). **`/publish`** applies it and precompiles (`ask` unless the site’s `conventions.md` says `auto`). Same for **`/download-db`** after a successful publish.
-
-Greenfield OT sample (no DB download):
-
-```bash
-make generate-account
-make validate-account
-```
 
 ## Read vs generate
 
@@ -33,7 +26,6 @@ make validate-account
 
 ```bash
 make extract
-make generate-account
 ```
 
 Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `/data/src/`)

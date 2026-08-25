@@ -109,7 +109,3 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 ## Planned: WorkflowStepAction M:N
 
 Target model: junction table linking **WorkflowStepAction** ↔ **ObjectUpdateAction** (not in current platform schema). Until then, update actions are offered on all completed requests for the object (filtered by conditions + users).
-
-## Sample
-
-[`projects/cars/`](../projects/cars/) — `ObjectUpdateAction` id 5118 in Object Transfer extract.

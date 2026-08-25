@@ -7,7 +7,7 @@ JSON Schema (merged spec): [`schema/xeelo-spec.schema.json`](../../schema/xeelo-
 ## Multi-file layout (Account)
 
 ```
-projects/account-object/
+projects/<name>/
   xeelo-spec.yaml       # metadata + includes
   spec/
     object.yaml         # object, objectType, company, layout, onGrid
@@ -19,7 +19,7 @@ projects/account-object/
     ids.yaml            # ids (+ source after extract)
 ```
 
-**Entry** [`projects/account-object/xeelo-spec.yaml`](../../projects/account-object/xeelo-spec.yaml):
+**Entry** `xeelo-spec.yaml`:
 
 ```yaml
 version: 2
@@ -560,7 +560,7 @@ workflow:
 
 Implicit Draft → Active with Submit / Complete. Requires `roles` / `statuses` with keys `requestor`, `owner`, `draft`, `active`, `completed` (or omit — generator uses defaults).
 
-### `full` (Cars, Account)
+### `full`
 
 ```yaml
 workflow:
@@ -820,7 +820,7 @@ Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing ESM/wait/
 
 ```yaml
 source:
-  transfer: projects/account-object/output/object-transfer.json
+  transfer: projects/<name>/output/object-transfer.json
   objectId: 9002
   objectCode: ACCOUNT
   extractedAt: "2026-08-11"
@@ -830,13 +830,13 @@ source:
 
 ```bash
 python scripts/extract-object-transfer-to-spec.py \
-  projects/account-object/output/object-transfer.xml \
-  -o projects/account-object
+  projects/<name>/output/object-transfer.xml \
+  -o projects/<name>
 
 python scripts/extract-object-transfer-to-spec.py \
-  projects/cars/ObjectSetup_20260811_084036.xml \
-  --object-id 6097 \
-  -o projects/cars
+  path/to/object-transfer.xml \
+  --object-id <objectId> \
+  -o projects/<name>
 ```
 
 After import on site: re-export object from Admin, extract again, commit updated `ids.explicit` (including `roles` / `statuses` maps).

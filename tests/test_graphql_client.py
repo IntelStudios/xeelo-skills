@@ -68,43 +68,21 @@ class ConnectionConfigTests(unittest.TestCase):
 
     def test_loads_xeelo_url_and_token(self) -> None:
         path = self._write(
-            {"xeeloUrl": "https://lz.xeelo.online/", "token": "secret-admin"}
+            {"xeeloUrl": "https://example.xeelo.online/", "token": "secret-admin"}
         )
         config = ConnectionConfig.load(path)
-        self.assertEqual(config.xeelo_url, "https://lz.xeelo.online")
+        self.assertEqual(config.xeelo_url, "https://example.xeelo.online")
         self.assertEqual(config.token, "secret-admin")
-        self.assertEqual(config.graphql_url, "https://lz.xeelo.online/graphql")
-        self.assertEqual(config.health_url, "https://lz.xeelo.online/graphql-api/health")
+        self.assertEqual(config.graphql_url, "https://example.xeelo.online/graphql")
+        self.assertEqual(config.health_url, "https://example.xeelo.online/graphql-api/health")
 
     def test_rejects_url_alias(self) -> None:
         path = self._write({"url": "https://demo.xeelo.online", "token": "t"})
         with self.assertRaisesRegex(ValueError, "missing xeeloUrl"):
             ConnectionConfig.load(path)
 
-    def test_rejects_legacy_admin_format(self) -> None:
-        path = self._write(
-            {
-                "adminBaseUrl": "https://lz.xeeloadmin.online/",
-                "siteId": 8,
-                "credentials": {"access_token": "old"},
-            }
-        )
-        with self.assertRaisesRegex(ValueError, "xeeloUrl and token"):
-            ConnectionConfig.load(path)
-
-    def test_rejects_mixed_admin_keys(self) -> None:
-        path = self._write(
-            {
-                "xeeloUrl": "https://lz.xeelo.online/",
-                "token": "t",
-                "siteId": 8,
-            }
-        )
-        with self.assertRaisesRegex(ValueError, "xeeloUrl and token"):
-            ConnectionConfig.load(path)
-
     def test_rejects_empty_token(self) -> None:
-        path = self._write({"xeeloUrl": "https://lz.xeelo.online/", "token": ""})
+        path = self._write({"xeeloUrl": "https://example.xeelo.online/", "token": ""})
         with self.assertRaisesRegex(ValueError, "missing token"):
             ConnectionConfig.load(path)
 
@@ -119,13 +97,13 @@ class XmlHelperTests(unittest.TestCase):
     def test_transfer_path_from_xml_and_zip(self) -> None:
         xml = "<XMLData>ok</XMLData>"
         tmp = Path(tempfile.mkdtemp())
-        xml_path = tmp / "account-object-transfer.xml"
+        xml_path = tmp / "example-object-transfer.xml"
         xml_path.write_bytes(xml_to_utf16_le_bytes(xml))
         name, text = transfer_path_to_xml(xml_path)
-        self.assertEqual(name, "account-object-transfer.xml")
+        self.assertEqual(name, "example-object-transfer.xml")
         self.assertEqual(text, xml)
 
-        zip_path = tmp / "account-object-transfer.zip"
+        zip_path = tmp / "example-object-transfer.zip"
         with ZipFile(zip_path, "w", ZIP_DEFLATED) as zf:
             zf.writestr("object-transfer.xml", xml_to_utf16_le_bytes(xml))
         name, text = transfer_path_to_xml(zip_path)
@@ -136,8 +114,8 @@ class XmlHelperTests(unittest.TestCase):
         loop = Path(tempfile.mkdtemp())
         output = loop / "output"
         output.mkdir()
-        json_path = output / "account-object-transfer.json"
-        xml_path = output / "account-object-transfer.xml"
+        json_path = output / "example-object-transfer.json"
+        xml_path = output / "example-object-transfer.xml"
         json_path.write_text('{"Object":[{"ObjectID":1}]}', encoding="utf-8")
         xml_path.write_text("<XMLData/>", encoding="utf-8")
         self.assertEqual(packages_from_loop(loop), [json_path])
@@ -148,17 +126,17 @@ class XmlHelperTests(unittest.TestCase):
 
     def test_transfer_path_to_json(self) -> None:
         tmp = Path(tempfile.mkdtemp())
-        path = tmp / "account-object-transfer.json"
+        path = tmp / "example-object-transfer.json"
         path.write_text('{"Object":[{"ObjectID":1,"ObjectName":"A"}]}', encoding="utf-8")
         name, text = transfer_path_to_json(path)
-        self.assertEqual(name, "account-object-transfer.json")
+        self.assertEqual(name, "example-object-transfer.json")
         self.assertIn("Object", text)
 
 
 class GraphqlClientTests(unittest.TestCase):
     def setUp(self) -> None:
         self.config = ConnectionConfig(
-            xeelo_url="https://lz.xeelo.online",
+            xeelo_url="https://example.xeelo.online",
             token="admin-token",
         )
 
@@ -203,7 +181,7 @@ class GraphqlClientTests(unittest.TestCase):
 class DownloadDbTransferJsonTests(unittest.TestCase):
     def test_reads_json_field(self) -> None:
         payload = '{"Company":[],"Object":[]}'
-        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        config = ConnectionConfig(xeelo_url="https://example.xeelo.online", token="t")
 
         class FakeClient:
             def __init__(self, *_args, **_kwargs):
@@ -227,7 +205,7 @@ class DownloadDbTransferJsonTests(unittest.TestCase):
         self.assertIn("json", QUERY_DOWNLOAD)
 
     def test_rejects_empty_json(self) -> None:
-        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        config = ConnectionConfig(xeelo_url="https://example.xeelo.online", token="t")
 
         class FakeClient:
             def __init__(self, *_args, **_kwargs):
@@ -247,7 +225,7 @@ class DownloadDbTransferJsonTests(unittest.TestCase):
                 download_db_transfer_json(config)
 
     def test_rejects_xml_field_only(self) -> None:
-        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        config = ConnectionConfig(xeelo_url="https://example.xeelo.online", token="t")
 
         class FakeClient:
             def __init__(self, *_args, **_kwargs):
@@ -270,7 +248,7 @@ class DownloadDbTransferJsonTests(unittest.TestCase):
 class PushObjectTransferTests(unittest.TestCase):
     def _json_path(self) -> Path:
         tmp = Path(tempfile.mkdtemp())
-        path = tmp / "account-object-transfer.json"
+        path = tmp / "example-object-transfer.json"
         path.write_text(
             '{"Object":[{"ObjectID":1,"ObjectName":"Account"}]}',
             encoding="utf-8",
@@ -279,7 +257,7 @@ class PushObjectTransferTests(unittest.TestCase):
 
     def test_single_upload_with_is_test(self) -> None:
         json_path = self._json_path()
-        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        config = ConnectionConfig(xeelo_url="https://example.xeelo.online", token="t")
         calls: list[tuple[str, dict | None]] = []
 
         class FakeClient:
@@ -308,7 +286,7 @@ class PushObjectTransferTests(unittest.TestCase):
 
         self.assertTrue(result.success)
         self.assertTrue(result.only_test)
-        self.assertEqual(result.filename, "account-object-transfer.json")
+        self.assertEqual(result.filename, "example-object-transfer.json")
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0][0], MUTATION_UPLOAD)
         self.assertEqual(calls[0][1]["isTest"], True)
@@ -321,7 +299,7 @@ class PushObjectTransferTests(unittest.TestCase):
 
     def test_upload_failure_raises(self) -> None:
         json_path = self._json_path()
-        config = ConnectionConfig(xeelo_url="https://lz.xeelo.online", token="t")
+        config = ConnectionConfig(xeelo_url="https://example.xeelo.online", token="t")
 
         class FakeClient:
             def __init__(self, *_args, **_kwargs):

@@ -105,8 +105,8 @@ Generator emits Orig. ID rows (replace existing). Cloning as new IDs is an Admin
 ## Generate
 
 ```bash
-python scripts/generate-object-transfer.py projects/account-object/xeelo-spec.yaml \
-  -o projects/account-object/output/object-transfer.json
+python scripts/generate-object-transfer.py projects/<name>/xeelo-spec.yaml \
+  -o projects/<name>/output/object-transfer.json
 ```
 
 ## onGrid in transfer
@@ -120,4 +120,4 @@ Spec: `onGrid.fields` + `onGrid.layouts` in [`spec-format.md`](spec-format.md)
 
 ## Legacy XML
 
-Older Object Transfers were UTF-16 LE concatenated `<XMLData>` blocks (`ObjectSetup`, `ObjectMap`, `TransferInfo`, `TransferType=OBJECT`, `Version=1.3.0`) inside a ZIP. Admin UI upload/process of that XML still exists separately. xeelo-skills GraphQL **does not** send XML. `extract-object-transfer-to-spec.py` and `validate-object-transfer.py` still read legacy XML (e.g. [`projects/cars/ObjectSetup_20260811_084036.xml`](../../projects/cars/ObjectSetup_20260811_084036.xml)).
+Older Object Transfers were UTF-16 LE concatenated `<XMLData>` blocks (`ObjectSetup`, `ObjectMap`, `TransferInfo`, `TransferType=OBJECT`, `Version=1.3.0`) inside a ZIP. Admin UI upload/process of that XML still exists separately. xeelo-skills GraphQL **does not** send XML. `extract-object-transfer-to-spec.py` and `validate-object-transfer.py` still read legacy XML.

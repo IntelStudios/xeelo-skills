@@ -47,14 +47,14 @@ mutation AdminPrecompile {
 
 QUERY_HEALTH = "query Health { health }"
 
-NEW_FORMAT_HELP = (
+CONNECTION_HELP = (
     ".xeelo-connection.json needs xeeloUrl and token "
-    "(Xeelo GraphQL access token with isAdmin). "
+    "(GraphQL access token with isAdmin). "
     'Example: { "xeeloUrl": "https://<site>.xeelo.online/", "token": "..." }'
 )
 
 AUTH_HINT = (
-    "Use an admin GraphQL access token (isAdmin) in .xeelo-connection.json "
+    "Use a GraphQL access token with isAdmin in .xeelo-connection.json "
     'as { "xeeloUrl": "https://<site>.xeelo.online/", "token": "..." }. '
     "There is no token refresh."
 )
@@ -65,7 +65,7 @@ class GraphqlError(RuntimeError):
 
 
 class GraphqlAuthError(GraphqlError):
-    """Missing, invalid, or non-admin GraphQL token."""
+    """Missing, invalid, or GraphQL token without isAdmin."""
 
 
 def _require_httpx():
@@ -186,14 +186,6 @@ def _is_auth_failure(message: str, status_code: int | None = None) -> bool:
     )
 
 
-def _looks_like_legacy_admin(data: dict[str, Any]) -> bool:
-    if data.get("adminBaseUrl") or data.get("admin_base_url") or data.get("adminUrl"):
-        return True
-    if "siteId" in data or "credentials" in data:
-        return True
-    return False
-
-
 @dataclass
 class ConnectionConfig:
     xeelo_url: str
@@ -206,14 +198,12 @@ class ConnectionConfig:
         data = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(data, dict):
             raise ValueError(f"{path}: connection file must be a JSON object")
-        if _looks_like_legacy_admin(data):
-            raise ValueError(f"{path}: {NEW_FORMAT_HELP}")
         xeelo = data.get("xeeloUrl")
         token = data.get("token")
         if not xeelo or not str(xeelo).strip():
-            raise ValueError(f"{path}: missing xeeloUrl. {NEW_FORMAT_HELP}")
+            raise ValueError(f"{path}: missing xeeloUrl. {CONNECTION_HELP}")
         if not token or not str(token).strip():
-            raise ValueError(f"{path}: missing token. {NEW_FORMAT_HELP}")
+            raise ValueError(f"{path}: missing token. {CONNECTION_HELP}")
         return cls(
             xeelo_url=str(xeelo).rstrip("/"),
             token=str(token).strip(),

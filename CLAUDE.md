@@ -9,11 +9,10 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 1. Read [AGENT.md](AGENT.md) first
 2. Prefer project loop: download DB transfer → extract `env/` → edit `changes/<slug>/` → generate Object Transfer. After generate, **dry-run** `--only-test`, then `/publish` per `projects/<name>/conventions.md` (**Publish after dry-run:** `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish. After spec edits, **Generate table comments** the same way (`spec/comments.yaml`).
 3. In each `changes/<slug>/`, keep `tasks.md` as a checklist and write/update **`notes.md`** for the next human/agent: **Requested** (user ask; prompt/plan excerpts OK, not the whole chat) vs **Done** (what actually changed). Update on later rounds in the same loop; do not silently rewrite history.
-4. Connection: `projects/<project>/.xeelo-connection.json` (gitignored) with `xeeloUrl` and GraphQL admin `token`
+4. Connection: `projects/<project>/.xeelo-connection.json` (gitignored) with `xeeloUrl` and GraphQL `token`
 5. Specs: `xeelo-spec.yaml` v2 — tabs → sections → fields + optional onGrid / subgrids
 6. Use [data/schemas/](data/schemas/) and [data/object-transfer-map.json](data/object-transfer-map.json)
 7. Generate change packages with `python scripts/generate-change-loop.py projects/<project>/changes/<slug>`
-8. Samples: [projects/ovnet/](projects/ovnet/), [projects/account-object/](projects/account-object/)
 
 **Skills** live in [`.agents/skills/`](.agents/skills/). When the user invokes `/new-project`, asks for a new Xeelo project/site, invokes `/download-db`, or asks to download/refresh/pull a DB transfer or sync env from the site, invokes `/publish` or asks to publish/deploy an Object Transfer, invokes `/precompile` or asks to precompile settings only, invokes `/graphql` or asks to query/mutate GraphQL (`Select_` / `Mutate_`, ticket counts, `access_rights`, header filters such as `createdDate`), **read** the matching `SKILL.md` and follow it **before** product source:
 

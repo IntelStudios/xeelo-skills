@@ -15,8 +15,8 @@ Download the latest DB transfer from Xeelo GraphQL (`Select_admin_transfer_downl
 
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl` — Xeelo site URL (User UI)
-  - `token` — fixed GraphQL **admin** Bearer token (`isAdmin`; no refresh)
-- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist). If the loader rejects the file, tell the user to **replace** it with `{ "xeeloUrl": "...", "token": "..." }`.
+  - `token` — GraphQL Bearer token with **`isAdmin`**; no refresh
+- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Site vs company
 
@@ -25,13 +25,11 @@ Download the latest DB transfer from Xeelo GraphQL (`Select_admin_transfer_downl
 | **site** | Xeelo instance identified by `xeeloUrl` + token | `.xeelo-connection.json` |
 | **company** / `companyId` | Logical object division (`Company` table in DB transfer) | `catalog.yaml`, spec `ids.explicit.companyId` |
 
-Example (lz): company **KB** has `Company.CompanyID: 9001` in DB transfer.
-
 ## Inputs
 
 Determine from the user message or ask once:
 
-- **`<project>`** — project slug under `projects/` (e.g. `lz`, `ovnet`). Default to the project mentioned in chat or the one whose connection file is open.
+- **`<project>`** — project slug under `projects/`. Default to the project mentioned in chat or the one whose connection file is open.
 
 ## Python environment
 
@@ -91,6 +89,6 @@ Offer to start a change loop (`/change-loop` when available) or edit specs under
 
 ## Errors
 
-- **Auth / ACCESS_DENIED** — token is missing `isAdmin`. Ask the user to put an admin GraphQL token in `.xeelo-connection.json`. There is no refresh.
+- **Auth / ACCESS_DENIED** — token is missing `isAdmin`. Ask the user to put a GraphQL token with `isAdmin` in `.xeelo-connection.json`. There is no refresh.
 - **Timeout** — large-site download can take up to 10 minutes on GraphQL; retry with higher `--timeout` if needed.
 - **Extract fails** — verify the JSON path (`.json`, UTF-8 object keyed by table name).

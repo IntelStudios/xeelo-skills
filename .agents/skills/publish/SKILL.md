@@ -21,14 +21,14 @@ This skill does **not** exist as `/push`. Real apply is always `/publish` (trans
 
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl`
-  - `token` (GraphQL admin token, `isAdmin`)
-- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist). If the loader rejects the file, tell the user to **replace** it with `{ "xeeloUrl": "...", "token": "..." }`.
+  - `token` (GraphQL token with `isAdmin`)
+- If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Inputs
 
 Determine from the user message or ask once:
 
-- **`<project>`** — project slug under `projects/` (e.g. `lz`, `ovnet`). Default to the project mentioned in chat or the one whose connection file is open.
+- **`<project>`** — project slug under `projects/`. Default to the project mentioned in chat or the one whose connection file is open.
 - **JSON or change loop** — explicit `*-object-transfer.json`, or `projects/<project>/changes/<slug>/`.
 
 ## Python environment
@@ -90,7 +90,7 @@ Read **Download-db after publish** in `projects/<project>/conventions.md` (`ask`
 
 ## Errors
 
-- **Auth / ACCESS_DENIED** — admin GraphQL token required; there is no refresh.
+- **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
 - **Upload success=false** — report mutation messages; site was not fully applied.
 - **Timeout** — GraphQL SQL limit is 10 minutes; retry with higher `--timeout`.
 - After precompile GraphQL may restart; the script polls health before exiting.
