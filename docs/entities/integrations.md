@@ -81,7 +81,9 @@ Starting an update action from periodic JS: `createType: "UPDATE"` + `updateActi
 
 ### Transfer
 
-Object Transfer edges: [`data/object-transfer-map.json`](../data/object-transfer-map.json) — `Object → Periodic → {Action, Condition, Calculation}`; `PeriodicAction → {Param, Condition}`. **Not transferred:** `PeriodicActionType`, `PeriodicConditionType`, `PeriodicRequestType` (site seed). Enum: [`data/enums/PeriodicRequestType.json`](../data/enums/PeriodicRequestType.json).
+Email on a batch: PeriodicAction types `spNotificationDataInsert` (single) and `spNotificationDataInsertSummary` (summary). Spec: `params.NotificationID1` / `NotificationID2: { notification: key }`. [notifications.md](notifications.md).
+
+Object Transfer edges: [`data/object-transfer-map.json`](../data/object-transfer-map.json) — `Object → Periodic → {Action, Condition, Calculation}`; `PeriodicAction → {Param, Condition, Notification}`. **Not transferred:** `PeriodicActionType`, `PeriodicConditionType`, `PeriodicRequestType` (site seed). Enum: [`data/enums/PeriodicRequestType.json`](../data/enums/PeriodicRequestType.json).
 
 Schemas: [`data/schemas/Periodic.json`](../data/schemas/Periodic.json) and siblings.
 

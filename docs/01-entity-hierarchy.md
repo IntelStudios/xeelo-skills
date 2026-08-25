@@ -28,6 +28,8 @@ flowchart TB
     ObjectAction --> ObjectActionCondition
     Object --> Periodic
     Periodic --> PeriodicAction
+    PeriodicAction --> Notification
+    ObjectAction --> Notification
     Periodic --> PeriodicCondition
     ObjectLineLookup --> ObjectLineLookupValue
     ObjectDefaultLine --> ObjectLineLookup
@@ -37,9 +39,13 @@ flowchart TB
     RequestStatus
     Workflow
     Workflow --> WorkflowStep
+    Workflow --> Notification
     WorkflowStep --> WorkflowStepAction
     WorkflowStep --> WorkflowStepAccess
+    WorkflowStep --> WorkflowStepNotification
     WorkflowStep --> WorkflowStepObjectAction
+    WorkflowStepAction --> Notification
+    WorkflowStepNotification --> Notification
     WorkflowStepObjectAction --> ObjectAction
     ObjectDefault --> Workflow
   end
@@ -74,11 +80,13 @@ flowchart TB
 - **WorkflowStepAction** — transition buttons
 - **WorkflowStepAccess** — which object lines are visible/editable on a step
 - **WorkflowStepObjectAction** — which ObjectActions run at this step
+- **WorkflowStepNotification** — extra email templates on a step
 - **Role**, **RequestStatus** — reference data (usually pre-existing)
 
 ### Integrations & outputs
 - **Export / Import** — data pipelines
-- **Notification / Printout / Report** — outputs
+- **Notification** — email templates (site catalog; OT child of workflow / ObjectAction / Periodic). [notifications.md](entities/notifications.md)
+- **Printout / Report** — documents. [outputs.md](entities/outputs.md)
 - **Scheduler, Object Service, Webhook** — automation
 
 ### Users (config UI, limited transfer)
@@ -94,7 +102,7 @@ flowchart TB
 
 Priority tables for **create object** recipe:
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Notification`, `NotificationCondition`, `NotificationAttachment`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
 
 ## Entity docs
 
@@ -107,12 +115,13 @@ Detailed semantics from admin hints:
 | [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |
 | [entities/object-messages.md](entities/object-messages.md) | ObjectMessage HTML modal, styles, update/create/workflow junctions |
+| [entities/notifications.md](entities/notifications.md) | Email templates, recipients, placeholders, workflow / ObjectAction / Periodic bindings |
 | [entities/object-actions.md](entities/object-actions.md) | ObjectAction, params, conditions, Run Node.js |
 | [entities/nodejs-esm.md](entities/nodejs-esm.md) | ESM `CustomJS`, `Context`, no refresh on current request |
 | [entities/graphql.md](entities/graphql.md) | `Select_` / `Mutate_` names, query args, `createType`, `lines` vs `linesFormatted` |
 | [entities/workflow.md](entities/workflow.md) | Workflow, steps, actions |
 | [entities/integrations.md](entities/integrations.md) | Export, import, periodic, scheduler |
-| [entities/outputs.md](entities/outputs.md) | Notification, printout, report |
+| [entities/outputs.md](entities/outputs.md) | Printout, report |
 | [entities/users-and-access.md](entities/users-and-access.md) | Users vs transfer scope |
 | [entities/localization.md](entities/localization.md) | `LanguageTable` translations |
 | [entities/comments.md](entities/comments.md) | `TableComments` HTML notes on config entities |

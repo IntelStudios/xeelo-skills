@@ -72,6 +72,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] Button (if used) is type `button`; condition equals `1`
 - [ ] Change role and status: `spRequestWorkflowUpdate` (this request) unless you need all versions or keep exclusion; params `{ role }` / `{ status }`; not a `WorkflowStepAction`
 - [ ] `ResponseTextObjectLineID` points at a memo/text/number line
+- [ ] Email: type `spNotificationDataInsert` / `…Last` + `params.NotificationID1: { notification: key }` ([add-notification.md](add-notification.md))
 - [ ] `EndPointRunWait: "1"` if the result must land on the request
 - [ ] Bulk CREATE: batch `input` + limited parallel `client.request`; raise `EndPointRunTimeout` ([nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#6-batch--parallel-create))
 - [ ] GraphQL identifiers in `CustomJS` match **env** `object.code` / `fields[].code` after `/download-db` ([graphql.md](../docs/entities/graphql.md))

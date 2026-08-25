@@ -29,6 +29,12 @@ from ot_builder.object_messages import (
     style_slug,
 )
 from ot_builder.periodics import extract_periodics
+from ot_builder.notifications import (
+    WORKFLOW_NOTIFICATION_FIELDS,
+    extract_notifications,
+    step_notification_registry_key,
+    _nid,
+)
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
@@ -828,6 +834,7 @@ def _build_workflow(
     *,
     merge: dict | None = None,
     field_id_to_code: dict[int, str] | None = None,
+    notification_id_to_key: dict[int, str] | None = None,
 ) -> tuple[dict | None, dict[str, Any], dict[str, dict], dict[str, dict]]:
     if not template:
         return None, {}, {}, {}
@@ -859,6 +866,7 @@ def _build_workflow(
     explicit_steps: dict[str, int] = {}
     explicit_actions: dict[str, int] = {}
     explicit_step_access: dict[str, int] = {}
+    explicit_step_notifs: dict[str, int] = {}
     step_specs = []
 
     step_name_counts = Counter(
@@ -916,6 +924,9 @@ def _build_workflow(
                 action_spec["reopenOnSave"] = reopen
             if not _boolish(action.get("IsActive", 1)):
                 action_spec["isActive"] = False
+            nid = _nid(action.get("NotificationID"))
+            if nid and notification_id_to_key and nid in notification_id_to_key:
+                action_spec["notification"] = notification_id_to_key[nid]
             action_specs.append(action_spec)
 
         step_role = role_id_to_key.get(int(step["RoleID"]))
@@ -939,6 +950,21 @@ def _build_workflow(
         )
         if access_specs:
             step_spec["access"] = access_specs
+        step_notifs: list[str] = []
+        notif_map = notification_id_to_key or {}
+        for row in index.rows_for("WorkflowStepNotification", "WorkflowStepID", step_id):
+            if not _boolish(row.get("IsActive", 1)):
+                continue
+            nid = _nid(row.get("NotificationID"))
+            if not nid or nid not in notif_map:
+                continue
+            notif_key = notif_map[nid]
+            explicit_step_notifs[step_notification_registry_key(step_key, notif_key)] = int(
+                row["WorkflowStepNotificationID"]
+            )
+            step_notifs.append(notif_key)
+        if step_notifs:
+            step_spec["notifications"] = step_notifs
         step_specs.append(step_spec)
 
     step_names = tuple(s["name"] for s in step_specs)
@@ -948,6 +974,9 @@ def _build_workflow(
         and step_names == MINIMAL_STEP_NAMES
         and action_names == MINIMAL_ACTION_NAMES
         and not explicit_step_access
+        and not explicit_step_notifs
+        and not any(a.get("notification") for s in step_specs for a in s.get("actions") or [])
+        and not any(_nid(wf_row.get(col)) for _spec_field, col in WORKFLOW_NOTIFICATION_FIELDS)
     )
 
     if is_minimal:
@@ -962,6 +991,12 @@ def _build_workflow(
             "steps": step_specs,
         }
 
+    notif_map = notification_id_to_key or {}
+    for spec_field, column in WORKFLOW_NOTIFICATION_FIELDS:
+        nid = _nid(wf_row.get(column))
+        if nid and nid in notif_map:
+            workflow[spec_field] = notif_map[nid]
+
     explicit = {
         "workflowId": wf_id,
         "workflowSteps": explicit_steps,
@@ -975,6 +1010,8 @@ def _build_workflow(
     }
     if explicit_step_access:
         explicit["workflowStepAccess"] = explicit_step_access
+    if explicit_step_notifs:
+        explicit["workflowStepNotifications"] = explicit_step_notifs
     return workflow, explicit, roles, statuses
 
 
@@ -989,8 +1026,6 @@ def _workflow_step_access_specs(
     for access in index.rows_for("WorkflowStepAccess", "WorkflowStepID", step_id):
         if not _boolish(access.get("IsActive", 1)):
             continue
-        if not step_access_differs_from_default(access):
-            continue
         line_id = int(access["ObjectLineID"])
         field_code = _line_field_code(index, line_id, field_id_to_code)
         if not field_code:
@@ -998,6 +1033,8 @@ def _workflow_step_access_specs(
         subline_id = _int(access.get("ObjectSubLineID"))
         access_id = int(access["WorkflowStepAccessID"])
         explicit_step_access[step_access_registry_key(step_name, field_code, subline_id)] = access_id
+        if not step_access_differs_from_default(access):
+            continue
         entry: dict[str, Any] = {
             "field": field_code,
             "editable": _boolish(access.get("WorkflowStepAccessIsEditable", 0)),
@@ -1412,6 +1449,7 @@ def _build_object_actions(
     step_id_to_key: dict[int, str] | None = None,
     role_id_to_key: dict[int, str] | None = None,
     status_id_to_key: dict[int, str] | None = None,
+    notification_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     actions_rows = [
         row
@@ -1466,6 +1504,7 @@ def _build_object_actions(
                 field_id_to_code,
                 role_id_to_key=role_id_to_key,
                 status_id_to_key=status_id_to_key,
+                notification_id_to_key=notification_id_to_key,
             )
         if params:
             spec_action["params"] = params
@@ -1539,8 +1578,19 @@ def extract_spec_from_index(
     )
     autonumber_id_to_key = {row_id: key for key, row_id in explicit_autonumbers.items()}
     ongrid, ongrid_explicit = _build_ongrid(index, oid, field_id_to_code)
+    notifications, n_explicit, notification_id_to_key = extract_notifications(
+        index,
+        oid,
+        _int(template.get("WorkflowID")) if template else None,
+        field_id_to_code,
+        _line_field_code,
+    )
     workflow, wf_explicit, roles, statuses = _build_workflow(
-        index, template, merge=merge, field_id_to_code=field_id_to_code
+        index,
+        template,
+        merge=merge,
+        field_id_to_code=field_id_to_code,
+        notification_id_to_key=notification_id_to_key,
     )
     update_actions, ua_explicit = _build_update_actions(index, oid, field_id_to_code)
     object_messages, om_explicit = _build_object_messages(index, oid, field_id_to_code)
@@ -1554,6 +1604,7 @@ def extract_spec_from_index(
         step_id_to_key={int(v): k for k, v in (wf_explicit.get("workflowSteps") or {}).items()},
         role_id_to_key={int(v): k for k, v in (wf_explicit.get("roles") or {}).items()},
         status_id_to_key={int(v): k for k, v in (wf_explicit.get("statuses") or {}).items()},
+        notification_id_to_key=notification_id_to_key,
     )
     periodics, pe_explicit = extract_periodics(
         index,
@@ -1562,6 +1613,7 @@ def extract_spec_from_index(
         _line_field_code,
         role_id_to_key={int(v): k for k, v in (wf_explicit.get("roles") or {}).items()},
         status_id_to_key={int(v): k for k, v in (wf_explicit.get("statuses") or {}).items()},
+        notification_id_to_key=notification_id_to_key,
     )
 
     ot_id = int(obj["ObjectTypeID"])
@@ -1586,6 +1638,7 @@ def extract_spec_from_index(
         **om_explicit,
         **oa_explicit,
         **pe_explicit,
+        **n_explicit,
         "objectLineOnGrid": ongrid_explicit,
     }
     if explicit_autonumbers:
@@ -1689,6 +1742,8 @@ def extract_spec_from_index(
         spec["objectActions"] = object_actions
     if periodics:
         spec["periodics"] = periodics
+    if notifications:
+        spec["notifications"] = notifications
 
     language_table, lt_explicit = extract_language_table(index, explicit)
     if language_table:
@@ -1732,6 +1787,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "objectMessages",
         "objectActions",
         "periodics",
+        "notifications",
         "templates",
         "objectDefault",
         "roles",

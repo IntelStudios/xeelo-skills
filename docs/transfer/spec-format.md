@@ -16,6 +16,7 @@ projects/<name>/
     language-table.yaml # LanguageTable translations (optional)
     comments.yaml       # TableComments HTML notes (optional)
     workflow.yaml       # workflow
+    notifications.yaml  # email templates (optional)
     ids.yaml            # ids (+ source after extract)
 ```
 
@@ -84,6 +85,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
 | `objectMessages` | no | HTML modals — [`spec/object-messages.yaml`](#object-messages-specobject-messagesyaml) |
+| `notifications` | no | Email templates — [`spec/notifications.yaml`](#notifications-specnotificationsyaml) |
 | `workflow` | no | Defaults to minimal 2-step flow |
 | `ids.base` | no | Per-table max PK for **new** rows (`ObjectLine: 9112` → next is 9113). Omit for greenfield (default 9000 per table). Legacy: a single integer is the default for tables not in the map. |
 | `ids.explicit` | no | Stable IDs from site / transfer (see below) |
@@ -580,17 +582,25 @@ workflow:
           editable: true
 ```
 
-`steps[].access` maps to **WorkflowStepAccess** (editable/visible per line on that step). Site refresh inserts missing rows as visible + **not** editable. Extract omits those defaults; only emit lines that must be editable (or hidden). Admin UI groups this by request status name (e.g. Open).
+`steps[].access` maps to **WorkflowStepAccess** (editable/visible per line on that step). Site refresh inserts missing rows as visible + **not** editable. Extract omits those defaults from the spec access list; it still writes their Orig. IDs into `ids.explicit.workflowStepAccess` so a later generate can flip editable without minting a duplicate `(WorkflowStepID, ObjectLineID)`. Admin UI groups this by request status name (e.g. Open).
 
-`steps[].suppressSave: true` → `WorkflowStepIsSuppressSave`. Hides footer **Save**; form Button lines still save. Extract writes the flag only when true.
+`steps[].suppressSave: true` → `WorkflowStepIsSuppressSave`. Hides the request **Save** control (`showSaveBtn`). ObjectLine **Button** lines still save. Extract writes the flag only when true.
 
 `steps[].actions[].reopenOnSave` → `WorkflowStepActionReopenTypeID`. Same slugs as template `reopenOnSave`. Applies after that **workflow button**; omit/`none` = close.
+
+Bind email templates by **key** (not Orig. ID). See [notifications](#notifications-specnotificationsyaml).
+
+- `workflow.notification` / `exportFailNotification` / `recallNotification` / `failNotification`
+- `steps[].actions[].notification`
+- `steps[].notifications: [key]` → `WorkflowStepNotification`
+
+`workflow.reuse: true` does not upsert Workflow / step / action rows, so header and action FKs on a shared process are not changed. Step junction rows can still be emitted.
 
 `steps[].isActive: false` / `steps[].actions[].isActive: false` → `IsActive = 0`. Object Transfer does not delete leftover steps or footer buttons; omit them from spec and the site row stays **active**.
 
 An extra step stays **active** only if `spRefreshWorkflowStep` sees its `(role, status)` as the workflow header, a fail/recall target, or a **`WorkflowStepAction` target**. Change-role ObjectActions alone do not count — omit the targeting step action and the site stores the step with `IsActive = 0`.
 
-**IDs:** `ids.explicit.workflowStepAccess` keys `{stepName}/{field}`. After the first site refresh, reuse the existing `WorkflowStepAccessID` (Orig. ID) — do not allocate a new one or the unique `(WorkflowStepID, ObjectLineID)` index will fail.
+**IDs:** `ids.explicit.workflowStepAccess` keys `{stepName}/{field}`. After the first site refresh, reuse the existing `WorkflowStepAccessID` (Orig. ID) — do not allocate a new one or the unique `(WorkflowStepID, ObjectLineID)` index will fail. Extract records those IDs even for default (visible, not editable) rows.
 
 Extract sets `mode: full` when steps differ from minimal template **or** any step has non-default access.
 
@@ -692,6 +702,71 @@ languageTable:
 
 Canonical HTML is English on `html:` (OT column `ObjectMessageFromat`). Translations use LanguageTable ColumnName `ObjectMessageFormat`. Style **Error** disables Continue on the new/update form; **Warning** lets the user Cancel or Continue.
 
+## Notifications (`spec/notifications.yaml`)
+
+Optional fragment for **Notification** (email template). See [entities/notifications.md](../entities/notifications.md). A template has **no `ObjectID`**; Object Transfer pulls it in as a child of Workflow / WorkflowStepAction / WorkflowStepNotification / ObjectAction / PeriodicAction. Every `notifications[].key` must be bound from at least one of those (unbound = generate error).
+
+```yaml
+# xeelo-spec.yaml
+includes:
+  - spec/object.yaml
+  - spec/workflow.yaml
+  - spec/notifications.yaml
+  - spec/object-actions.yaml
+  - spec/ids.yaml
+```
+
+```yaml
+notifications:
+  - key: assigned
+    name: Assigned to role
+    type: single          # single=1 | summary=2
+    subject: "{ObjectName} {RequestID}"
+    format: |
+      <p>Request {RequestID}</p>
+      <p>{RequestDetails,100}</p>
+    sendTo:
+      requestor: true
+      role: true          # omit / false bits are not emitted
+    extra:
+      to: ops@example.com
+    conditions:
+      - field: TYPE
+        type: equals_text
+        param1: "1"
+    attachments:
+      - field: INVOICE    # compressed defaults true
+```
+
+Bindings (keys, not IDs):
+
+```yaml
+workflow:
+  mode: full
+  notification: assigned
+  # exportFailNotification / recallNotification / failNotification
+  steps:
+    - name: Draft
+      notifications: [assigned]
+      actions:
+        - name: Submit
+          notification: assigned
+```
+
+ObjectAction / PeriodicAction:
+
+```yaml
+params:
+  NotificationID1: { notification: assigned }
+  # NotificationID2 on summary periodic (spNotificationDataInsertSummary)
+```
+
+Placeholders in `subject` / `format` are **not** rewritten (`{id1234}` stays). Use numeric `ObjectLineID` in `{idXXXX}` — `{idAMOUNT}` is not resolved. `{idXXXX}` is formatted (combo **name**, memo **HTML**); `{idXXXXv}` is the raw slot (combo **bind**). Memo body: `{idNNNN}` without `v`. Full catalog: [notifications.md](../entities/notifications.md#placeholders).
+
+**Not in spec v1:** `NotificationPrintout`, `NotificationCalculation`, `NotificationTempCalc`. Subject/body are not `LanguageTable`-localized.
+
+**IDs:** `ids.explicit.notifications`, `notificationConditions` (`{key}/{field}/{type}`), `notificationAttachments` (`{key}/{field}`), `workflowStepNotifications` (`{stepKey}/{notifKey}`). Extract keys come from `NotificationName` (slug).
+
 ## Templates (`spec/templates.yaml`)
 
 Optional fragment for multiple **ObjectDefault** rows. Omit it to keep a single default template (current behaviour; field `mandatory` applies there). Extract still writes this fragment for one template when it has field extras, create-access exceptions, or `reopenOnSave`.
@@ -767,7 +842,7 @@ objectActions:
         param1: "1"
 ```
 
-`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. Condition `type` slugs match update actions.
+`params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. `NotificationID1` / `NotificationID2` may be `{ notification: assigned }` ([notifications](#notifications-specnotificationsyaml)). Condition `type` slugs match update actions.
 
 **IDs:** `objectActions`, `objectActionParams` (`action/paramCode`), `objectActionConditions` (`action/field/type`), `workflowStepObjectActions` (`action/stepName`).
 
@@ -812,7 +887,7 @@ includes:
   - spec/periodics.yaml
 ```
 
-Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing ESM/wait/timeout params default to `"1"` / `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs-esm.md](../entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
+Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing ESM/wait/timeout params default to `"1"` / `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. `NotificationID1` / `NotificationID2` may be `{ notification: key }` (single vs summary). GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs-esm.md](../entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
 
 **IDs:** `periodics`, `periodicConditions` (`periodic/field/type`), `periodicActions` (`periodic/action`), `periodicActionParams` (`periodic/action/paramCode`), `periodicActionConditions` (`periodic/action/field/type`), `schedulers` (periodic key), `schedulerLines` (`periodic/execute`), `schedulerLineParams` (`periodic/execute/PeriodicID`).
 

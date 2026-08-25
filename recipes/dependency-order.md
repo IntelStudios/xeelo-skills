@@ -16,10 +16,14 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 8 | `ObjectLineLookupValue` | ObjectLineLookup |
 | 9 | `ObjectLineAutoNumber` | — |
 | 10 | `ObjectLine` | Object, ObjectLineSection |
-| 11 | `Workflow` | Role, RequestStatus |
+| 10a | `Notification` | — (site catalog; emit before Workflow FKs) |
+| 10b | `NotificationCondition` | Notification, ObjectLine |
+| 10c | `NotificationAttachment` | Notification, ObjectLine |
+| 11 | `Workflow` | Role, RequestStatus, Notification |
 | 12 | `WorkflowStep` | Workflow, Role, RequestStatus |
 | 13 | `WorkflowStepAccess` | WorkflowStep, ObjectLine |
-| 14 | `WorkflowStepAction` | WorkflowStep, Role, RequestStatus, WorkflowStepActionStyle |
+| 14 | `WorkflowStepAction` | WorkflowStep, Role, RequestStatus, WorkflowStepActionStyle, Notification |
+| 14a | `WorkflowStepNotification` | WorkflowStep, Notification |
 | 15 | `ObjectDefault` | Object, Workflow |
 | 16 | `ObjectDefaultAccess` | ObjectDefault, ObjectLine |
 | 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber? |

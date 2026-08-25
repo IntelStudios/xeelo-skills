@@ -1,0 +1,101 @@
+{
+  "table": "NotificationPrintout",
+  "columns": [
+    {
+      "name": "NotificationPrintoutID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "NotificationID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "PrintoutID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationPrintoutIsCompressed",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "NotificationID",
+      "referencesTable": "Notification",
+      "referencesColumn": "NotificationID"
+    },
+    {
+      "column": "PrintoutID",
+      "referencesTable": "Printout",
+      "referencesColumn": "PrintoutID"
+    }
+  ]
+}

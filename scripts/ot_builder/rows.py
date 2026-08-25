@@ -26,6 +26,13 @@ from ot_builder.object_messages import (
     style_id as object_message_style_id,
 )
 from ot_builder.periodics import build_periodics
+from ot_builder.notifications import (
+    NOTIFICATION_ID_PARAM_CODES,
+    WORKFLOW_NOTIFICATION_FIELDS,
+    build_notifications,
+    require_notification_id,
+    step_notification_registry_key,
+)
 from ot_builder.spec_loader import normalize_spec, spec_references
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
@@ -552,6 +559,68 @@ def _workflow_reused(spec: dict) -> bool:
     return bool((spec.get("workflow") or {}).get("reuse"))
 
 
+def _apply_workflow_header_notifications(
+    spec: dict, registry: IdRegistry, wf_id: int, wf_row: dict, result: BuildResult
+) -> None:
+    wf = spec.get("workflow") or {}
+    for spec_field, column in WORKFLOW_NOTIFICATION_FIELDS:
+        key = wf.get(spec_field)
+        if not key:
+            continue
+        nid = require_notification_id(registry, spec, str(key))
+        wf_row[column] = nid
+        result.edges.append(
+            {
+                "TableName": "Workflow",
+                "TableRowID": wf_id,
+                "ChildTableName": "Notification",
+                "ChildTableRowID": nid,
+            }
+        )
+
+
+def _emit_workflow_step_notifications(
+    spec: dict, registry: IdRegistry, result: BuildResult, steps: list
+) -> None:
+    rows: list[dict[str, Any]] = []
+    for step in steps:
+        step_key = workflow_step_key(step)
+        step_id = registry.require("workflowSteps", step_key)
+        for item in step.get("notifications") or []:
+            notif_key = str(item["key"] if isinstance(item, dict) else item)
+            nid = require_notification_id(registry, spec, notif_key)
+            link_id = registry.require(
+                "workflowStepNotifications",
+                step_notification_registry_key(step_key, notif_key),
+            )
+            rows.append(
+                {
+                    "WorkflowStepNotificationID": link_id,
+                    "WorkflowStepID": step_id,
+                    "NotificationID": nid,
+                    "IsActive": 1,
+                }
+            )
+            result.edges.extend(
+                [
+                    {
+                        "TableName": "WorkflowStep",
+                        "TableRowID": step_id,
+                        "ChildTableName": "WorkflowStepNotification",
+                        "ChildTableRowID": link_id,
+                    },
+                    {
+                        "TableName": "WorkflowStepNotification",
+                        "TableRowID": link_id,
+                        "ChildTableName": "Notification",
+                        "ChildTableRowID": nid,
+                    },
+                ]
+            )
+    if rows:
+        result.rows.setdefault("WorkflowStepNotification", []).extend(rows)
+
+
 def _emit_workflow_step_access(
     spec: dict, registry: IdRegistry, result: BuildResult, steps: list
 ) -> None:
@@ -591,6 +660,7 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
     wf_id = registry.require_scalar("workflowId")
     if _workflow_reused(spec):
         _emit_workflow_step_access(spec, registry, result, wf.get("steps") or [])
+        _emit_workflow_step_notifications(spec, registry, result, wf.get("steps") or [])
         return wf_id
 
     wf_name = wf.get("name") or f"{spec['object']['name']} Workflow"
@@ -598,15 +668,15 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
     first_role_id, first_status_id = _track_role_status(
         spec, registry, result, first_step["role"], first_step["status"]
     )
-    result.rows["Workflow"] = [
-        {
-            "WorkflowID": wf_id,
-            "WorkflowName": wf_name,
-            "RoleID": first_role_id,
-            "RequestStatusID": first_status_id,
-            "IsActive": 1,
-        }
-    ]
+    wf_row: dict[str, Any] = {
+        "WorkflowID": wf_id,
+        "WorkflowName": wf_name,
+        "RoleID": first_role_id,
+        "RequestStatusID": first_status_id,
+        "IsActive": 1,
+    }
+    _apply_workflow_header_notifications(spec, registry, wf_id, wf_row, result)
+    result.rows["Workflow"] = [wf_row]
     result.edges.append(
         {"TableName": "Object", "TableRowID": oid, "ChildTableName": "Workflow", "ChildTableRowID": wf_id}
     )
@@ -658,6 +728,17 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
             reopen_id = reopen_on_save_id(action.get("reopenOnSave"))
             if reopen_id is not None:
                 action_row["WorkflowStepActionReopenTypeID"] = reopen_id
+            if action.get("notification"):
+                nid = require_notification_id(registry, spec, str(action["notification"]))
+                action_row["NotificationID"] = nid
+                result.edges.append(
+                    {
+                        "TableName": "WorkflowStepAction",
+                        "TableRowID": action_id,
+                        "ChildTableName": "Notification",
+                        "ChildTableRowID": nid,
+                    }
+                )
             result.rows.setdefault("WorkflowStepAction", []).append(action_row)
             result.edges.extend(
                 [
@@ -677,6 +758,7 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
             )
 
     _emit_workflow_step_access(spec, registry, result, wf.get("steps") or [])
+    _emit_workflow_step_notifications(spec, registry, result, wf.get("steps") or [])
     return wf_id
 
 
@@ -698,6 +780,7 @@ def _build_workflow_minimal(spec: dict, registry: IdRegistry, oid: int, result: 
             "IsActive": 1,
         }
     ]
+    _apply_workflow_header_notifications(spec, registry, wf_id, result.rows["Workflow"][0], result)
     result.edges.append(
         {"TableName": "Object", "TableRowID": oid, "ChildTableName": "Workflow", "ChildTableRowID": wf_id}
     )
@@ -1253,14 +1336,15 @@ def _build_object_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
 
         for param_code, raw_value in iter_params(action):
             param_id = registry.require("objectActionParams", param_registry_key(action_key, param_code))
+            resolved = resolve_param_value(
+                raw_value, param_code=param_code, registry=registry
+            )
             param_rows.append(
                 {
                     "ObjectActionID": action_id,
                     "ObjectActionParamID": param_id,
                     "ObjectActionTypeParamCode": param_code,
-                    "ObjectActionParamValue": resolve_param_value(
-                        raw_value, param_code=param_code, registry=registry
-                    ),
+                    "ObjectActionParamValue": resolved,
                     "IsActive": 1,
                 }
             )
@@ -1272,6 +1356,19 @@ def _build_object_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
                     "ChildTableRowID": param_id,
                 }
             )
+            if (
+                param_code in NOTIFICATION_ID_PARAM_CODES
+                and resolved is not None
+                and str(resolved).isdigit()
+            ):
+                result.edges.append(
+                    {
+                        "TableName": "ObjectAction",
+                        "TableRowID": action_id,
+                        "ChildTableName": "Notification",
+                        "ChildTableRowID": int(resolved),
+                    }
+                )
 
         for cond in action.get("conditions") or []:
             field_code = str(cond["field"])
@@ -1567,6 +1664,7 @@ def build_rows(spec: dict) -> BuildResult:
     elif _workflow_reused(spec):
         wf_id = registry.require_scalar("workflowId")
         _emit_workflow_step_access(spec, registry, result, wf_cfg.get("steps") or [])
+        _emit_workflow_step_notifications(spec, registry, result, wf_cfg.get("steps") or [])
     else:
         wf_id = _build_workflow_minimal(spec, registry, oid, result)
 
@@ -1665,6 +1763,7 @@ def build_rows(spec: dict) -> BuildResult:
 
     _build_object_messages(spec, registry, oid, result)
     _build_update_actions(spec, registry, oid, result)
+    build_notifications(spec, registry, result)
     _build_object_actions(spec, registry, oid, result)
     build_periodics(spec, registry, oid, result)
     emit_language_table(spec, registry, result)

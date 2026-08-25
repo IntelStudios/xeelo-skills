@@ -14,6 +14,7 @@ Spec fragment: [`spec/object-actions.yaml`](../transfer/spec-format.md#object-ac
 | **ObjectUpdateAction** | User clicks update on a **Completed** request → new request version |
 | **WorkflowStepAction** | Workflow transition button |
 | **ObjectLine type 18 (Button)** | Form control; click sets value `1` and **saves**, which then runs ObjectActions |
+| **Notification** | Email template. ObjectAction types `spNotificationDataInsert` / `…Last` take `params.NotificationID1: { notification: key }`. [notifications.md](notifications.md) |
 
 A form button does **not** reference `ObjectActionID`. Typical pattern: Button line → Save → `WorkflowStepObjectAction` → `ObjectAction` (optionally conditioned on the button value). The button line must also be **editable** on the current workflow step (`WorkflowStepAccess`). Set the button `saveAction` to **0** (Save) so the request stays open; **1** (Save & close) closes it after the click and the user never sees ObjectAction results on the form.
 
@@ -98,7 +99,7 @@ Three seed types. All are **Last**. They change `Request.RoleID` / `RequestStatu
 | `spRequestWorkflowUpdateAllVersion` | Change role and status of request (all versions) (Last) | Same update on **every submitted** version with the same `RequestCode`. |
 | `spRequestWorkflowUpdateExclusion` | Change role and status of request keep exclusion (Last) | Like the first, but keeps `RequestUserExclusion`. |
 
-Typical in-progress edit: form buttons + first type (not all-versions). Params `RoleID1` / `RequestStatusID1` — spec `{ role: requestor }` / `{ status: updating }` (or raw IDs). Condition the action on the button; assign it only to the **source** step. Hide footer Save with `steps[].suppressSave` so users transition via those buttons, not `WorkflowStepAction`.
+Typical in-progress edit: **ObjectLine Button** (type 18) plus Change role and status (this request). Params `RoleID1` / `RequestStatusID1` — spec `{ role: requestor }` / `{ status: updating }` (or raw IDs). Condition the action on the button value `1`; assign it only to the **source** step. Hide the request **Save** control with `steps[].suppressSave` so users click those form buttons. Keep a `WorkflowStepAction` targeting the extra status so `spRefreshWorkflowStep` leaves that step active — that targeting action is not the on-form button.
 
 Do **not** confuse with **WorkflowStepAction** (workflow transition buttons in the request footer).
 
@@ -112,4 +113,4 @@ Assigns an `ObjectAction` to a `WorkflowStep` (optional `RequestTypeID`). Withou
 - Scripts / Context: [nodejs-esm.md](nodejs-esm.md)
 - GraphQL schema: [graphql.md](graphql.md)
 - Generate/extract: `scripts/ot_builder/object_actions.py`, `rows.py`, `extract.py`
-- Recipes: [`add-object-action.md`](../../recipes/add-object-action.md), [`nodejs-graphql-patterns.md`](../../recipes/nodejs-graphql-patterns.md)
+- Recipes: [`add-object-action.md`](../../recipes/add-object-action.md), [`add-notification.md`](../../recipes/add-notification.md), [`nodejs-graphql-patterns.md`](../../recipes/nodejs-graphql-patterns.md)

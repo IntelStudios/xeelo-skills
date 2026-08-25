@@ -125,6 +125,10 @@
       "type": "array",
       "items": { "$ref": "#/$defs/objectMessage" }
     },
+    "notifications": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/notification" }
+    },
     "periodics": {
       "type": "array",
       "items": { "$ref": "#/$defs/periodic" }
@@ -549,6 +553,11 @@
         "isActive": {
           "type": "boolean",
           "description": "WorkflowStepAction.IsActive — false soft-disables the footer button (OT does not delete)"
+        },
+        "notification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Notification key → WorkflowStepAction.NotificationID"
         }
       }
     },
@@ -580,6 +589,11 @@
         "isActive": {
           "type": "boolean",
           "description": "WorkflowStep.IsActive — false soft-disables the step (OT does not delete). spRefreshWorkflowStep may still deactivate untargeted steps."
+        },
+        "notifications": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "Notification keys → WorkflowStepNotification"
         }
       }
     },
@@ -596,6 +610,26 @@
         "steps": {
           "type": "array",
           "items": { "$ref": "#/$defs/workflowStep" }
+        },
+        "notification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Notification key → Workflow.NotificationID (SaveNew)"
+        },
+        "exportFailNotification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Notification key → Workflow.ExportFailNotificationID"
+        },
+        "recallNotification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Notification key → Workflow.RecallNotificationID"
+        },
+        "failNotification": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Notification key → Workflow.WorkflowFailNotificationID"
         }
       }
     },
@@ -715,6 +749,12 @@
           "required": ["status"],
           "additionalProperties": false,
           "properties": { "status": { "type": "string" } }
+        },
+        {
+          "type": "object",
+          "required": ["notification"],
+          "additionalProperties": false,
+          "properties": { "notification": { "type": "string" } }
         }
       ]
     },
@@ -813,6 +853,65 @@
         "visible": { "type": "boolean" }
       }
     },
+    "notificationAttachment": {
+      "type": "object",
+      "required": ["field"],
+      "additionalProperties": false,
+      "properties": {
+        "field": { "type": "string", "minLength": 1 },
+        "compressed": { "type": "boolean" },
+        "sublineId": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "notification": {
+      "type": "object",
+      "required": ["key", "name", "subject", "format"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "type": {
+          "type": "string",
+          "enum": ["single", "summary", "request_summary"],
+          "description": "NotificationTypeID: single=1, summary=2"
+        },
+        "subject": { "type": "string", "minLength": 1 },
+        "format": { "type": "string", "minLength": 1 },
+        "fromEmail": { "type": "string" },
+        "compressedFileName": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "sendTo": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "requestor": { "type": "boolean" },
+            "requestorManager": { "type": "boolean" },
+            "owner": { "type": "boolean" },
+            "watch": { "type": "boolean" },
+            "role": { "type": "boolean" },
+            "roleManager": { "type": "boolean" },
+            "currentUser": { "type": "boolean" }
+          }
+        },
+        "extra": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "to": { "type": "string" },
+            "cc": { "type": "string" },
+            "bcc": { "type": "string" }
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/actionCondition" }
+        },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/notificationAttachment" }
+        }
+      }
+    },
     "objectMessage": {
       "type": "object",
       "required": ["key", "name", "html"],
@@ -907,6 +1006,10 @@
         "objectUpdateMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectMessages": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectMessageConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "notifications": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "notificationConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "notificationAttachments": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "workflowStepNotifications": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionParams": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "objectActionConditions": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },

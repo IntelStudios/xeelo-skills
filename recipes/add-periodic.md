@@ -107,4 +107,5 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] Periodic JS **may** `createType: UPDATE` on `Context.RequestID`; ObjectAction on the same request must not
 - [ ] Service account 0 has WRITE
 - [ ] `cron` is Quartz **7-field** (`0 0 * ? * * *` = hourly at :00, Europe/Prague)
+- [ ] Email: `spNotificationDataInsert` + `NotificationID1` (single) or `…Summary` + `NotificationID2` ([add-notification.md](add-notification.md))
 - [ ] `languageTable` Czech for periodic / action / scheduler names

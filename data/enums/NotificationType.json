@@ -1,0 +1,4 @@
+[
+  {"id": 1, "code": "single", "name": "Single request"},
+  {"id": 2, "code": "summary", "name": "Request summary"}
+]

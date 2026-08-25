@@ -15,6 +15,7 @@ Spec fragment: [`spec/object-messages.yaml`](../transfer/spec-format.md#object-m
 | **ObjectDefaultMessage** | Junction: show on **create** (template). Site refresh inserts rows at `IsVisible=0` |
 | **WorkflowMessage** / **WorkflowStepMessage** | Same ObjectMessage, shown on submitted workflow actions |
 | **WorkflowStepSuccessMessage** | Toast after a step action — different entity |
+| **Notification** | Email template (subject + HTML body). Not a form modal. [notifications.md](notifications.md) |
 
 ## User GUI
 

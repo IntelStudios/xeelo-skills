@@ -2,7 +2,9 @@
 
 Process definition for requests on an object.
 
-Schemas: [`Workflow.json`](../data/schemas/Workflow.json), [`WorkflowStep.json`](../data/schemas/WorkflowStep.json), [`WorkflowStepAction.json`](../data/schemas/WorkflowStepAction.json), [`WorkflowStepAccess.json`](../data/schemas/WorkflowStepAccess.json)
+Schemas: [`Workflow.json`](../data/schemas/Workflow.json), [`WorkflowStep.json`](../data/schemas/WorkflowStep.json), [`WorkflowStepAction.json`](../data/schemas/WorkflowStepAction.json), [`WorkflowStepAccess.json`](../data/schemas/WorkflowStepAccess.json), [`WorkflowStepNotification.json`](../data/schemas/WorkflowStepNotification.json)
+
+Email templates: [notifications.md](notifications.md). Spec keys: `workflow.notification` / `exportFailNotification` / `recallNotification` / `failNotification`, `steps[].actions[].notification`, `steps[].notifications`.
 
 ## Workflow
 
@@ -14,7 +16,10 @@ Header for a process. Linked to object via `ObjectDefault.WorkflowID` (not direc
 |--------|-----------|
 | `WorkflowName` | Process name |
 | `RoleID`, `RequestStatusID` | Initial state when request is **created** |
-| `NotificationID` | Notification on create |
+| `NotificationID` | Email on create (`SaveNew`). Spec: `workflow.notification` |
+| `ExportFailNotificationID` | Email on export fail. Spec: `workflow.exportFailNotification` |
+| `RecallNotificationID` | Email on recall. Spec: `workflow.recallNotification` |
+| `WorkflowFailNotificationID` | Email on workflow fail. Spec: `workflow.failNotification` |
 | `ExportFailRoleID`, `ExportFailRequestStatusID` | State when export fails |
 | `RecallRoleID`, `RecallRequestStatusID` | State when request recalled |
 | `WorkflowFailRoleID`, `WorkflowFailRequestStatusID` | State on workflow failure |
@@ -32,7 +37,7 @@ One step = role + request status (+ optional org chart restriction).
 | `RequestStatusID` | Status while in this step |
 | `UserOrgChartGroupID` | Optional org chart filter |
 | `WorkflowStepSuccessMessage` | Message after transition (supports `{RequestID}`, `{RoleName}`, `{RequestStatusName}`) |
-| `WorkflowStepIsSuppressSave` | Admin **Suppress save**. Spec: `steps[].suppressSave`. Hides the **footer Save** on that step (`showSaveBtn`). Form **Button** lines (type 18) still save on click. |
+| `WorkflowStepIsSuppressSave` | Admin **Suppress save**. Spec: `steps[].suppressSave`. Hides the request **Save** control (`showSaveBtn`). **ObjectLine Button** (type 18) still saves on click. |
 | `IsActive` | Soft-disable. Spec: `steps[].isActive: false`. Object Transfer does not delete the step. |
 
 Unique index: `(WorkflowID, RoleID, RequestStatusID)`.
@@ -50,7 +55,7 @@ Which object lines are **visible** and **editable** while the request is on a wo
 | `WorkflowStepAccessIsEditable` | Line editable in this step | `0` |
 | `WorkflowStepAccessIsVisible` | Line visible in this step | `1` |
 
-Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format.md#full). Object Transfer edge: `WorkflowStep → WorkflowStepAccess`. Same dual-list as template **ObjectDefaultAccess** (create) and **ObjectUpdateAccess** (EditableUpdate); refresh defaults differ — [object-model.md](object-model.md#create-form-access-objectdefaultaccess).
+Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format.md#full). Object Transfer edge: `WorkflowStep → WorkflowStepAccess`. Same dual-list as template **ObjectDefaultAccess** (create) and **ObjectUpdateAccess** (EditableUpdate); refresh defaults differ — [object-model.md](object-model.md#create-form-access-objectdefaultaccess). Extract keeps default-row Orig. IDs in `ids.explicit.workflowStepAccess` even when it omits those rows from the spec list.
 
 ## WorkflowStepAction
 
@@ -65,7 +70,12 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 | `WorkflowStepActionIsCommented` | Comment required |
 | `WorkflowStepActionConfirmMethod` | QR / Push / TOTP confirmation |
 | `WorkflowStepActionReopenTypeID` | Reopen after this **workflow button**. Spec: `workflow.steps[].actions[].reopenOnSave`. Same catalog as template — [`ReopenActionType.json`](../data/enums/ReopenActionType.json). Omit/`none` = close. |
+| `NotificationID` | Email for this transition (`WorkflowAction`). Spec: `actions[].notification` |
 | `IsActive` | Soft-disable the footer button. Spec: `steps[].actions[].isActive: false`. Omit the action from spec and the site row stays active. |
+
+## WorkflowStepNotification
+
+Junction: extra templates on a **target** step (event `WorkflowAction` / `SaveNew` / `WorkflowUpdate`). Spec: `workflow.steps[].notifications: [key]`. Object Transfer edges: `WorkflowStep → WorkflowStepNotification → Notification`.
 
 ## Role & RequestStatus
 
@@ -91,8 +101,8 @@ When creating a **new object** or **update action**, always ask whether to creat
 
 ## Recipe
 
-[`recipes/add-workflow.md`](../recipes/add-workflow.md) · [`recipes/create-object.md`](../recipes/create-object.md) · [`recipes/add-update-action.md`](../recipes/add-update-action.md)
+[`recipes/add-workflow.md`](../recipes/add-workflow.md) · [`recipes/create-object.md`](../recipes/create-object.md) · [`recipes/add-update-action.md`](../recipes/add-update-action.md) · [`recipes/add-notification.md`](../recipes/add-notification.md)
 
 ## DB transfer
 
-`Workflow`, `WorkflowStep`, `WorkflowStepAction`, `Role`, `RequestStatus`, `WorkflowStepActionStyle` — all in transfer scope.
+`Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `Role`, `RequestStatus`, `WorkflowStepActionStyle` — all in transfer scope. Email templates: [notifications.md](notifications.md).

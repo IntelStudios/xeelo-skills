@@ -10,6 +10,7 @@ from ot_builder.object_actions import (
     param_spec_value,
     resolve_param_value,
 )
+from ot_builder.notifications import NOTIFICATION_ID_PARAM_CODES
 from ot_builder.update_actions import condition_slug, condition_type_id, slugify
 
 NODEJS_TYPE = "spEndPointRunNodeJSMain"
@@ -215,18 +216,25 @@ def build_periodics(spec: dict, registry: IdRegistry, oid: int, result: Any) -> 
                     "periodicActionParams",
                     action_param_registry_key(periodic_key, action_key, param_code),
                 )
+                resolved = resolve_param_value(
+                    raw_value, param_code=param_code, registry=registry
+                )
                 param_rows.append(
                     {
                         "PeriodicActionID": action_id,
                         "PeriodicActionParamID": param_id,
                         "PeriodicActionTypeParamCode": param_code,
-                        "PeriodicActionParamValue": resolve_param_value(
-                            raw_value, param_code=param_code, registry=registry
-                        ),
+                        "PeriodicActionParamValue": resolved,
                         "IsActive": 1,
                     }
                 )
                 _append_edge(result, "PeriodicAction", action_id, "PeriodicActionParam", param_id)
+                if (
+                    param_code in NOTIFICATION_ID_PARAM_CODES
+                    and resolved is not None
+                    and str(resolved).isdigit()
+                ):
+                    _append_edge(result, "PeriodicAction", action_id, "Notification", int(resolved))
 
             action_condition_rows.extend(
                 _emit_conditions(
@@ -374,6 +382,7 @@ def extract_periodics(
     *,
     role_id_to_key: dict[int, str] | None = None,
     status_id_to_key: dict[int, str] | None = None,
+    notification_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     rows = [
         row
@@ -477,6 +486,7 @@ def extract_periodics(
                     field_id_to_code,
                     role_id_to_key=role_id_to_key,
                     status_id_to_key=status_id_to_key,
+                    notification_id_to_key=notification_id_to_key,
                 )
             if params:
                 spec_action["params"] = params

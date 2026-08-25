@@ -10,6 +10,7 @@ from ot_builder.update_actions import condition_slug, condition_type_id, slugify
 OBJECT_LINE_ID_PARAM_SUFFIX = "ObjectLineID"
 ROLE_ID_PARAM_CODES = {"RoleID1"}
 STATUS_ID_PARAM_CODES = {"RequestStatusID1"}
+NOTIFICATION_ID_PARAM_CODES = frozenset({"NotificationID1", "NotificationID2"})
 
 
 def param_registry_key(action_key: str, param_code: str) -> str:
@@ -51,8 +52,17 @@ def resolve_param_value(
             return str(registry.require("roles", str(value["role"])))
         if value.get("status"):
             return str(registry.require("statuses", str(value["status"])))
+        if value.get("notification"):
+            return str(registry.require("notifications", str(value["notification"])))
     if param_code.endswith(OBJECT_LINE_ID_PARAM_SUFFIX) and isinstance(value, str) and not value.isdigit():
         return str(registry.require("fields", value))
+    if (
+        param_code in NOTIFICATION_ID_PARAM_CODES
+        and isinstance(value, str)
+        and value
+        and not value.isdigit()
+    ):
+        return str(registry.require("notifications", value))
     return str(value)
 
 
@@ -63,6 +73,7 @@ def param_spec_value(
     *,
     role_id_to_key: dict[int, str] | None = None,
     status_id_to_key: dict[int, str] | None = None,
+    notification_id_to_key: dict[int, str] | None = None,
 ) -> Any:
     if raw_value is None:
         return None
@@ -81,4 +92,8 @@ def param_spec_value(
             key = (status_id_to_key or {}).get(row_id)
             if key:
                 return {"status": key}
+        if param_code in NOTIFICATION_ID_PARAM_CODES:
+            key = (notification_id_to_key or {}).get(row_id)
+            if key:
+                return {"notification": key}
     return raw_value if not isinstance(raw_value, str) else text

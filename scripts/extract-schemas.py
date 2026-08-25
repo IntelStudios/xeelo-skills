@@ -43,6 +43,12 @@ PRIORITY_TABLES = [
     "WorkflowStepObjectAction",
     "LanguageTable",
     "ObjectLineAutoNumber",
+    "Notification",
+    "NotificationAttachment",
+    "NotificationCondition",
+    "NotificationPrintout",
+    "NotificationCalculation",
+    "WorkflowStepNotification",
 ]
 
 

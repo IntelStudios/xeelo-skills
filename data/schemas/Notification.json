@@ -1,0 +1,194 @@
+{
+  "table": "Notification",
+  "columns": [
+    {
+      "name": "NotificationID",
+      "type": "INT",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "NotificationName",
+      "type": "VARCHAR (255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationTypeID",
+      "type": "INT",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationEmailRequestor",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailRequestorManager",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailOwner",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailWatch",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailRole",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailRoleManager",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationEmailUser",
+      "type": "BIT",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "NotificationToEmailExtra",
+      "type": "VARCHAR (255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationCcEmailExtra",
+      "type": "VARCHAR (255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationBccEmailExtra",
+      "type": "VARCHAR (255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationFromEmail",
+      "type": "VARCHAR (255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationSubject",
+      "type": "NVARCHAR (255)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationFormat",
+      "type": "NVARCHAR (MAX)",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "DataClassificationID",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "NotificationCompressedFileName",
+      "type": "nvarchar(255)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "BIT",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "NotificationTypeID",
+      "referencesTable": "NotificationType",
+      "referencesColumn": "NotificationTypeID"
+    }
+  ]
+}
