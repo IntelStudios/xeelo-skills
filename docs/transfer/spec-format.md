@@ -168,7 +168,7 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `reference` | `ObjectLineSource` on **ObjectLine** (číselník) — combo, radio, multi |
 | `lookup` | `ObjectLineLookup` on **template line** (dotazovací mapa) |
 | `objectSubId` | `ObjectLine.ObjectSubID` (subgrid fields) |
-| `saveAction` | `ObjectLineButtonSaveAction` (button fields) |
+| `saveAction` | `ObjectLineButtonSaveAction` (button fields): **0 Save** (stay on the request), **1 Save & close**. Enum: [`ObjectLineButtonSaveAction.json`](../../data/enums/ObjectLineButtonSaveAction.json) |
 | `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
 | `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
 | `webFrameTypeId` | `WebFrameTypeID` (1–4) |

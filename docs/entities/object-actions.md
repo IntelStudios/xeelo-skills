@@ -15,7 +15,7 @@ Spec fragment: [`spec/object-actions.yaml`](../transfer/spec-format.md#object-ac
 | **WorkflowStepAction** | Workflow transition button |
 | **ObjectLine type 18 (Button)** | Form control; click sets value `1` and **saves**, which then runs ObjectActions |
 
-A form button does **not** reference `ObjectActionID`. Typical pattern: Button line → Save → `WorkflowStepObjectAction` → `ObjectAction` (optionally conditioned on the button value). The button line must also be **editable** on the current workflow step (`WorkflowStepAccess`).
+A form button does **not** reference `ObjectActionID`. Typical pattern: Button line → Save → `WorkflowStepObjectAction` → `ObjectAction` (optionally conditioned on the button value). The button line must also be **editable** on the current workflow step (`WorkflowStepAccess`). Set the button `saveAction` to **0** (Save) so the request stays open; **1** (Save & close) closes it after the click and the user never sees ObjectAction results on the form.
 
 For **Run Node.js (Last)** that talks to GraphQL: button condition → Last action → `Select_` / `Mutate_` in `CustomJS` → optional result memo. Self-update of **this** request must not refresh; `CREATE` on another object may. See [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md) and [graphql.md](graphql.md).
 

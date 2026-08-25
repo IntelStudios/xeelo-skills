@@ -9,7 +9,7 @@ Entity reference: [docs/entities/object-actions.md](../docs/entities/object-acti
 ## Preconditions
 
 - Object exists with layout, **ObjectDefault** template, and a workflow step that stays on the request when the action should run
-- For a form **Button**: `ObjectLineTypeID = 18`; click saves the request (`value = 1`), then ObjectActions run
+- For a form **Button**: `ObjectLineTypeID = 18`; `saveAction: 0` (Save — stay on the request). Click saves (`value = 1`), then ObjectActions run. `saveAction: 1` is Save & close.
 - Target site already has `ObjectActionType` seed (including `spEndPointRunNodeJSMainLast`)
 
 ## Admin UI path
