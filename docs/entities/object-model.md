@@ -77,7 +77,7 @@ Note: no direct `ObjectID` FK — association is via sections → lines → obje
 | `ObjectLineCode` | Optional stable code (GraphQL, integrations). After insert, Admin often persists `line_{ObjectLineID}_{slug}` even if the transfer sent a shorter code. GraphQL uses the stored value — take it from env after `/download-db`. |
 | `ObjectLineIsHidden` | Hide this line in GUI (definition-level). Spec: `fields[].alwaysHidden`. Distinct from template `hidden: true` / `extended.hidden`. Helper fields often live on an `alwaysHidden` tab instead. |
 | `IsActive` | Soft-disable the line. Spec: `fields[].isActive: false`. Object Transfer does not delete. Distinct from `alwaysHidden` (line still active, just not shown). |
-| `ObjectLineOnGridIsAllowed` | Line may appear on the request grid |
+| `ObjectLineOnGridIsAllowed` | Line may appear on the request grid — [ongrid.md](ongrid.md) |
 | `ObjectLineOnGridIsTag` | Tag filter: field **values** as chips on the request grid. Admin enables only types **3, 4** — [object-line-types.md](object-line-types.md#on-grid-tag) |
 | `ObjectLineOnGridIsSearch` | Typed search on the request grid (types 3, 4, 8, 12) |
 | `ObjectLineOnGridIsTotal` | Sum this **number** line in inbox Summarization. Spec: `onGrid.fields.<code>.isTotal`. Type 12 only — [object-line-types.md](object-line-types.md#on-grid-total) |

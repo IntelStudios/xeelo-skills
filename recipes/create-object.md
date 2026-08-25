@@ -15,7 +15,7 @@ Transfer JSON is a **delta vs download**: omit any entity row that already exist
 
 See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
 
-Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Optional `onGrid` for inbox layout. Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
+Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Inbox `onGrid`: [ongrid.md](../docs/entities/ongrid.md) (seven default layouts on a new object). Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
 
 ### 2. Allocate IDs
 
@@ -46,10 +46,14 @@ ObjectLineTab → ObjectLineSection
 
 One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`. Comments: `Parent → TableComments` from `spec/comments.yaml`.
 
-### 5. onGrid (optional)
+### 5. onGrid
+
+Canonical: [ongrid.md](../docs/entities/ongrid.md). YAML: [spec-format.md](../docs/transfer/spec-format.md#ongrid).
 
 - `onGrid.fields.<code>` → ObjectLine display flags
-- `onGrid.layouts[]` → ObjectLineOnGrid placement (`size` × Grid/Table × `module`). Table = one visual row, no wrap (scroll right). System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
+- `onGrid.layouts[]` → ObjectLineOnGrid placement. For a **new object**, write **seven** layouts: Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. Copy the same columns across Items Grid sizes and across Items Table sizes. Phone card: `row: T` and optional `row: A` (not `B`).
+- Do not spec Tasks / Relation / Relation Map / Mobile Tasks unless asked.
+- System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
 - Edge: `Object → ObjectLineOnGrid`
 
 ### 6. Ask which workflow
@@ -99,4 +103,4 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 - JSON object keyed by table name (same shape as DB-transfer download)
 - Only tables the spec emits; no TransferInfo / ObjectSetup
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`
-- onGrid `field` codes match layout field codes
+- onGrid `field` codes match layout field codes; new object has seven default layouts ([ongrid.md](../docs/entities/ongrid.md#default-for-a-new-object))

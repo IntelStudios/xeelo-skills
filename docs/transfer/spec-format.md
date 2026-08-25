@@ -80,7 +80,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
-| `onGrid` | no | Inbox grid display + placement (typically in `object.yaml`) |
+| `onGrid` | no | Inbox grid flags + placement (`object.yaml`). Catalog and new-object default: [ongrid.md](../entities/ongrid.md) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
 | `objectMessages` | no | HTML modals — [`spec/object-messages.yaml`](#object-messages-specobject-messagesyaml) |
@@ -843,6 +843,8 @@ After import on site: re-export object from Admin, extract again, commit updated
 
 ## onGrid
 
+Semantics (modules × Grid/Table × size, rows `T`/`A`–`E`, new-object default): [ongrid.md](../entities/ongrid.md). This section is the spec grammar.
+
 ### `onGrid.fields` (by field `code`)
 
 Sets **ObjectLine** display flags for inbox grid:
@@ -875,7 +877,9 @@ Inbox cells parse `[badge:{CustomColorCode}_{text}]` as a colored chip (`.xe-bad
 
 ### `onGrid.layouts`
 
-Creates **ObjectLineOnGrid** rows — placement per layout variant. A variant is **`size` + `type`** (`Grid` / `Table`) + `module`. The same field or system line may appear in several layouts; each variant is its own row.
+Creates **ObjectLineOnGrid** rows — one per layout variant (`size` + `type` + `module`). The same field or system line may appear in several layouts; each variant is its own row.
+
+Which triples exist in cache, rows `T`/`A`–`E`, and the **seven layouts to write for a new object**: [ongrid.md](../entities/ongrid.md). YAML below is the grammar only.
 
 `ids.explicit.objectLineOnGrid` keys:
 
@@ -884,18 +888,16 @@ Creates **ObjectLineOnGrid** rows — placement per layout variant. A variant is
 
 | Spec key | DB column |
 |----------|-----------|
-| `size` | `ObjectLineOnGridSize` — `Small` (mobile), `Medium` (tablet), `Large` (desktop) |
+| `size` | `ObjectLineOnGridSize` — `Small` (phone), `Medium` (tablet), `Large` (desktop) |
 | `type` | `ObjectLineOnGridType` — `Grid` or `Table` |
-| `module` | `ObjectLineOnGridModule` — `Items`, `Tasks`, `MobileItems`, `MobileTasks`, `Relation`, `RelationMap`. Desktop inbox is usually `Items`; phone layouts use **`MobileItems`**. |
-| `placements[].row` | `ObjectLineOnGridRow` — `T`, `A`–`E` (spec “pseudo-rows”; see Grid vs Table) |
+| `module` | `ObjectLineOnGridModule` — `Items`, `Tasks`, `MobileItems`, `MobileTasks`, `Relation`, `RelationMap`. Not every module has Grid+Table and L/M/S — see [ongrid.md](../entities/ongrid.md#objectline-catalog-request-inbox). |
+| `placements[].row` | `ObjectLineOnGridRow` — `T`, `A`–`E` ([ongrid.md](../entities/ongrid.md#rows-t-a-b-c-d-e)) |
 | `placements[].columns[].field` | resolves to `ObjectLineID` — **xor** `systemLine` |
 | `placements[].columns[].systemLine` | resolves to `SystemLineID` — **xor** `field`. Codes: [`SystemLine.json`](../../data/enums/SystemLine.json) (`role` = 40, `status` = 50, …). Row has **no** `ObjectLineID`. |
 | `position` | `ObjectLineOnGridPosition` — start column in percent (0–99) |
 | `length` | `ObjectLineOnGridLength` — column span in percent (1–100); row columns should sum to 100 |
 | `valueWidth` | `ObjectLineOnGridValueWidth` — percent of the cell for the **value**. `0` = auto. **`100` + Horizontal = hide the column label** (Admin ValueWidthLabelHidden). |
 | `labelType` | `ObjectLineOnGridLabelType` — **1 Horizontal** (default), **2 Vertical**. SQL also has `0` None; Admin does not offer it — do not spec `0`. |
-
-Omit a size to keep the platform default for that breakpoint. Add `Small` + `module: MobileItems` when the inbox on a phone should show fewer columns than desktop `Large` / `Items`.
 
 To show chips without a column title on **Grid**, set `labelType: 1` and `valueWidth: 100`. Role / Status on the inbox are typically that plus `systemLine: role` / `systemLine: status` on the right of the title row.
 
@@ -908,7 +910,7 @@ onGrid:
     placements:
     - row: T
       columns:
-      - field: CUT_NO
+      - field: REQ_NO
         position: 0
         length: 80
         valueWidth: 0
@@ -936,7 +938,7 @@ onGrid:
 | **Grid** | Each letter (`T`, `A`–`E`) is a visual row; cards wrap/stack. |
 | **Table** | Always **one** visual row. Pseudo-rows from the spec **do not wrap** — columns stay on a single line and the table **scrolls horizontally**. |
 
-Use **Grid** when the inbox card should stack (typical mobile `Small`). Use **Table** when the inbox is a spreadsheet-like list and overflow should scroll right, not wrap.
+Use **Grid** when the inbox card should stack (typical `MobileItems` Small). Use **Table** when the inbox is a spreadsheet-like list and overflow should scroll right, not wrap. Full catalog and new-object default: [ongrid.md](../entities/ongrid.md).
 
 ## Generate
 
