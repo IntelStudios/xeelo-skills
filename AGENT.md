@@ -314,7 +314,7 @@ Canonical: [docs/entities/ongrid.md](docs/entities/ongrid.md) (module × Grid/Ta
 
 Two layers: `onGrid.fields` (ObjectLine flags) and `onGrid.layouts` (one `ObjectLineOnGrid` row per variant). Inbox Role / Status / … are `columns[].systemLine` — [`SystemLine.json`](data/enums/SystemLine.json). Explicit ID `{size}/{type}/{module}/{code}` or `sys:{code}`.
 
-**New object default** (write all seven; generator does not invent them): Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. Skip Tasks / Relation / Relation Map / Mobile Tasks unless asked. Phone uses `row: T` and optional `row: A` (not `B`).
+**New object default** (write all seven; generator does not invent them): Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. Medium ≈ ½ Large and Small ≈ ½ Medium for **Grid and Table** — wrap onto more `T`/`A`/`B` rows; do not copy Large columns down. Phone: `row: T` then `A` (not a skipped `B`). Skip Tasks / Relation / Relation Map / Mobile Tasks unless asked.
 
 `onGrid.fields.<code>.isTag` (`ObjectLineOnGridIsTag`) marks a line as a **request-grid tag filter**: distinct field values become finer filters (AND). Set it only on **`text` / `textarea`** (Admin types 3, 4) — not combo-box. After deploy, **/publish**. Details: [object-line-types.md](docs/entities/object-line-types.md#on-grid-tag).
 
