@@ -1,0 +1,145 @@
+{
+  "table": "ObjectSubLineOnGrid",
+  "columns": [
+    {
+      "name": "ObjectSubLineOnGridID",
+      "type": "int",
+      "nullable": false,
+      "identity": true,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineOnGridSize",
+      "type": "varchar(50)",
+      "nullable": false,
+      "identity": false,
+      "default": "'Large'"
+    },
+    {
+      "name": "ObjectSubLineOnGridType",
+      "type": "varchar(50)",
+      "nullable": false,
+      "identity": false,
+      "default": "'Grid'"
+    },
+    {
+      "name": "ObjectSubLineOnGridModule",
+      "type": "varchar(50)",
+      "nullable": false,
+      "identity": false,
+      "default": "'Items'"
+    },
+    {
+      "name": "ObjectSubLineID",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineOnGridRow",
+      "type": "char(1)",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineOnGridPosition",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineOnGridLength",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ObjectSubLineOnGridIsLabel",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectSubLineOnGridLabelType",
+      "type": "int",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "ObjectSubLineOnGridValueWidth",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": "0"
+    },
+    {
+      "name": "CreatedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "CreatedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedBy",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedByAdmin",
+      "type": "int",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "datetime",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    },
+    {
+      "name": "IsActive",
+      "type": "bit",
+      "nullable": false,
+      "identity": false,
+      "default": "1"
+    },
+    {
+      "name": "CopyID",
+      "type": "INT",
+      "nullable": true,
+      "identity": false,
+      "default": null
+    }
+  ],
+  "foreignKeys": [
+    {
+      "column": "ObjectSubLineID",
+      "referencesTable": "ObjectSubLine",
+      "referencesColumn": "ObjectSubLineID"
+    }
+  ]
+}

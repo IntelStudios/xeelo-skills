@@ -109,6 +109,7 @@ Extract includes **all** objects from the site; `companyId` is metadata on each 
 | GraphQL schema | [docs/entities/graphql.md](docs/entities/graphql.md) (`Select_` / `Mutate_`, `lines` vs `linesFormatted`) |
 | Localization | [docs/entities/localization.md](docs/entities/localization.md) (`LanguageTable`, `spec/language-table.yaml`) |
 | Admin comments | [docs/entities/comments.md](docs/entities/comments.md) (`TableComments`, `spec/comments.yaml`) |
+| onGrid (inbox / subgrid) | [docs/entities/ongrid.md](docs/entities/ongrid.md) (modules × Grid/Table × size, rows T–E, new-object default) |
 | Object Transfer format | [object-transfer-format.md](docs/transfer/object-transfer-format.md) |
 
 Object Transfer JSON is a **delta vs the latest DB-transfer download**: emit a row only when it is **new** or its generated cells **differ** from the snapshot. FK columns may point at Orig. IDs that already exist on the site — do not re-send the referenced row. `/publish` applies that subset (Orig. ID upsert). Manual Admin UI still works for selecting rows in batches.
@@ -309,10 +310,11 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 
 ## onGrid
 
-Two layers in spec:
+Canonical: [docs/entities/ongrid.md](docs/entities/ongrid.md) (module × Grid/Table × size catalog, rows `T`/`A`–`E`, failover). YAML: [spec-format.md](docs/transfer/spec-format.md#ongrid).
 
-- `onGrid.fields` — ObjectLine display flags (by field `code`)
-- `onGrid.layouts` — ObjectLineOnGrid placement (`size` × `type` × `module`). `size`: **Small** = mobile, **Medium** = tablet, **Large** = desktop. `type`: **Grid** or **Table**. `module`: desktop **Items** / **Tasks**; phone **MobileItems** / **MobileTasks**. The same field or **system line** can sit in more than one layout (each row has its own ID). **Table** always paints **one visual row** — `placements[].row` letters (`T`, `A`–`E`) do not wrap; extra columns scroll horizontally. **Grid** stacks those placement rows. Inbox Role / Status / Requestor / … are `columns[].systemLine` (`SystemLineID`, no `ObjectLineID`) — codes in [`SystemLine.json`](data/enums/SystemLine.json). Explicit ID key `{size}/{type}/{module}/sys:{code}`.
+Two layers: `onGrid.fields` (ObjectLine flags) and `onGrid.layouts` (one `ObjectLineOnGrid` row per variant). Inbox Role / Status / … are `columns[].systemLine` — [`SystemLine.json`](data/enums/SystemLine.json). Explicit ID `{size}/{type}/{module}/{code}` or `sys:{code}`.
+
+**New object default** (write all seven; generator does not invent them): Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. Skip Tasks / Relation / Relation Map / Mobile Tasks unless asked. Phone uses `row: T` and optional `row: A` (not `B`).
 
 `onGrid.fields.<code>.isTag` (`ObjectLineOnGridIsTag`) marks a line as a **request-grid tag filter**: distinct field values become finer filters (AND). Set it only on **`text` / `textarea`** (Admin types 3, 4) — not combo-box. After deploy, **/publish**. Details: [object-line-types.md](docs/entities/object-line-types.md#on-grid-tag).
 
@@ -395,6 +397,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
 - [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions (`ask` → offer now / remember / skip; `auto` → write HTML on new/changed entities) ([comments.md](docs/entities/comments.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
+- [ ] New object onGrid: Items Grid + Table at Large/Medium/Small and Mobile Items Grid Small ([ongrid.md](docs/entities/ongrid.md#default-for-a-new-object))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
 - [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs-esm.md](docs/entities/nodejs-esm.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))
 - [ ] Periodics: `spec/periodics.yaml` on the **batch** object; Node.js type `spEndPointRunNodeJSMain`; `cron` is Quartz 7-field; GraphQL mutate **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — not the ObjectAction no-refresh rule ([add-periodic.md](recipes/add-periodic.md))
@@ -419,7 +422,8 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 | [`data/enums/ObjectLineUnique.json`](data/enums/ObjectLineUnique.json) | Unique level 1–4 |
 | [`data/enums/ObjectLineAutoNumberResetType.json`](data/enums/ObjectLineAutoNumberResetType.json) | Autonumber reset (`1` Yearly) |
 | [`data/enums/SystemLine.json`](data/enums/SystemLine.json) | Inbox system columns (`ObjectLineOnGrid.SystemLineID`) |
-| [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | onGrid columns |
+| [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | ObjectLine onGrid placement columns |
+| [`data/schemas/ObjectSubLineOnGrid.json`](data/schemas/ObjectSubLineOnGrid.json) | ObjectSubLine onGrid placement columns |
 | [`data/schemas/LanguageTable.json`](data/schemas/LanguageTable.json) | Translated labels |
 
 ## What is NOT in transfer

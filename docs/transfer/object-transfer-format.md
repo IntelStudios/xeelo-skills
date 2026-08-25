@@ -111,12 +111,17 @@ python scripts/generate-object-transfer.py projects/<name>/xeelo-spec.yaml \
 
 ## onGrid in transfer
 
-Two layers:
+Two layers on the **object** (inbox):
 
 1. **ObjectLine** — display flags (`ObjectLineOnGridIsAllowed`, `ObjectLineOnGridName`, `ObjectLineOnGridIsTag`, …)
-2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). Either `ObjectLineID` (spec `field`) or `SystemLineID` (spec `systemLine`, e.g. Role=40, Status=50) — not both. `Type` is `Grid` or `Table`; Table is one visual row (spec pseudo-rows do not wrap — horizontal scroll).
+2. **ObjectLineOnGrid** — placement per layout variant (`Size` × `Type` × `Module`). Either `ObjectLineID` (spec `field`) or `SystemLineID` (spec `systemLine`) — not both.
 
-Spec: `onGrid.fields` + `onGrid.layouts` in [`spec-format.md`](spec-format.md)
+**Subgrid** analog (not in spec/generate today):
+
+1. **ObjectSubLine** — `ObjectSubLineOnGridIsAllowed`, `ObjectSubLineOnGridName`, `ObjectSubLineOnGridIsTag`, `ObjectSubLineIsSearch`, `ObjectSubLineIsTotal`
+2. **ObjectSubLineOnGrid** — placement (`Size` × `Type` × `Module`). `ObjectSubLineID` only — no `SystemLineID`.
+
+Which triples exist, Grid vs Table, and rows `T`/`A`–`E`: [ongrid.md](../entities/ongrid.md). Spec YAML: [`spec-format.md`](spec-format.md#ongrid).
 
 ## Legacy XML
 

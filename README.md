@@ -54,6 +54,6 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 ## Spec v2 highlights
 
 - **Multiple tabs** (left/right) and **sections** per tab
-- **onGrid** — inbox grid field flags + layout placements
+- **onGrid** — inbox flags + placement; catalog and new-object default in [docs/entities/ongrid.md](docs/entities/ongrid.md)
 - **subgrids** — ObjectSub trees on object specs
 - **Object transfer** output as JSON (table → rows, same shape as DB download)
