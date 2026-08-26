@@ -14,13 +14,14 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 6. Use [data/schemas/](data/schemas/) and [data/object-transfer-map.json](data/object-transfer-map.json)
 7. Generate change packages with `python scripts/generate-change-loop.py projects/<project>/changes/<slug>`
 
-**Skills** live in [`.agents/skills/`](.agents/skills/). When the user invokes `/new-project`, asks for a new Xeelo project/site, invokes `/download-db`, or asks to download/refresh/pull a DB transfer or sync env from the site, invokes `/publish` or asks to publish/deploy an Object Transfer, invokes `/precompile` or asks to precompile settings only, invokes `/graphql` or asks to query/mutate GraphQL (`Select_` / `Mutate_`, ticket counts, `access_rights`, header filters such as `createdDate`), **read** the matching `SKILL.md` and follow it **before** product source:
+**Skills** live in [`.agents/skills/`](.agents/skills/). When the user invokes `/new-project`, asks for a new Xeelo project/site, invokes `/download-db`, or asks to download/refresh/pull a DB transfer or sync env from the site, invokes `/publish` or asks to publish/deploy an Object Transfer, invokes `/precompile` or asks to precompile settings only, invokes `/graphql` or asks to query/mutate GraphQL (`Select_` / `Mutate_`, ticket counts, `access_rights`, header filters such as `createdDate`), invokes `/sync-main` or asks to regularly check/pull/sync **xeelo-skills `main`**, **read** the matching `SKILL.md` and follow it **before** product source:
 
 - [`.agents/skills/new-project/SKILL.md`](.agents/skills/new-project/SKILL.md)
 - [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md)
 - [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md)
 - [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md)
 - [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md)
+- [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md)
 
 **New project:** after the `projects/` check, create `projects/<name>/` + empty `snapshots/`, `env/`, `changes/` + `.xeelo-connection.json` with **empty** `token` (never copy from other projects). Infer `xeeloUrl` as `https://<name>.xeelo.online/` only when reasonable; then tell the user what to fill in — see [AGENT.md § Creating a new project](AGENT.md). Commit in the nested `projects/` repo, not in xeelo-skills.
 
