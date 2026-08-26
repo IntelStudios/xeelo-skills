@@ -391,6 +391,23 @@ def _apply_sub_default_line_lookup_calc(
         dl_row["ObjectSubDefaultLineClientCalculation"] = compile_extended_condition(
             str(expr), spec, registry, resolve_id=resolve_id
         )
+    if type_slug == "service":
+        service_key = calc.get("service")
+        if not service_key:
+            raise ValueError(
+                f"subgrids.{sub_key} field {code_f!r} clientCalculation.type 'service' "
+                "requires service"
+            )
+        service_id = registry.require("objectServices", str(service_key))
+        dl_row["ObjectServiceID"] = service_id
+        result.edges.append(
+            {
+                "TableName": "ObjectSubDefaultLine",
+                "TableRowID": dl_row["ObjectSubDefaultLineID"],
+                "ChildTableName": "ObjectService",
+                "ChildTableRowID": service_id,
+            }
+        )
 
 
 def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) -> None:
@@ -881,6 +898,7 @@ def extract_subgrids_spec(
     object_id: int,
     type_map: dict[int, str],
     autonumber_id_to_key: dict[int, str] | None = None,
+    object_service_id_to_key: dict[int, str] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[int, str], set[int], set[int]]:
     """Return (subgrids spec, explicit ids, ObjectSubID → key, used source IDs, used lookup IDs)."""
     sub_ids: set[int] = set()
@@ -1108,6 +1126,12 @@ def extract_subgrids_spec(
                         calc_spec: dict[str, Any] = {"type": type_slug}
                         if calc_expr:
                             calc_spec["_expr"] = str(calc_expr)
+                        if type_slug == "service" and object_service_id_to_key:
+                            svc_id = _int(dl.get("ObjectServiceID"))
+                            if svc_id is not None:
+                                svc_key = object_service_id_to_key.get(svc_id)
+                                if svc_key:
+                                    calc_spec["service"] = svc_key
                         cfg["clientCalculation"] = calc_spec
                 layout_field = layout_fields_by_code.get(str(code_f))
                 ftype = str((layout_field or {}).get("type") or "")
@@ -1236,6 +1260,25 @@ def used_subgrid_autonumber_ids(index: TransferIndex, object_id: int) -> set[int
                 an_id = _int(dl.get("ObjectSubDefaultLineAutoNumberID"))
                 if an_id:
                     used.add(an_id)
+    return used
+
+
+def used_subgrid_object_service_ids(index: TransferIndex, object_id: int) -> set[int]:
+    used: set[int] = set()
+    sub_ids: set[int] = set()
+    for row in index.rows_for("ObjectLine", "ObjectID", object_id):
+        sid = _int(row.get("ObjectSubID"))
+        if sid is not None:
+            sub_ids.add(sid)
+    for sub_id in sub_ids:
+        for default in index.rows_for("ObjectSubDefault", "ObjectSubID", sub_id):
+            did = default.get("ObjectSubDefaultID")
+            if did is None:
+                continue
+            for dl in index.rows_for("ObjectSubDefaultLine", "ObjectSubDefaultID", int(did)):
+                svc_id = _int(dl.get("ObjectServiceID"))
+                if svc_id:
+                    used.add(svc_id)
     return used
 
 

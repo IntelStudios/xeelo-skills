@@ -215,6 +215,10 @@ Typical **request identifier**: text field + autonumber bind + Unique (below). S
 
 Subgrid template lines bind the same catalog (`ObjectSubDefaultLineAutoNumberID`). Spec: `subgrids.*.templates[].fields.*.autonumber`.
 
+## Object Service
+
+Site HTTP catalog (`ObjectService`) bound on the template line as **Client-Service**. Spec: `spec/object-services.yaml` + `templates.fields.<code>.clientCalculation` (`type: service`). [object-services.md](object-services.md). Recipe: [`add-client-service.md`](../../recipes/add-client-service.md).
+
 ## Unique
 
 **Columns:** `ObjectLineUniqueID` (level), `ObjectLineIsUnique` (bit)

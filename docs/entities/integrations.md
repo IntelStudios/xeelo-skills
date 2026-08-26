@@ -109,7 +109,9 @@ Admin: Scheduler portlet. Periodic edit shows assigned scheduler lines.
 
 **Tables:** `ObjectService`, `ObjectWebhook`
 
-External HTTP/service integrations callable from workflow or templates.
+**Object Service** is a site catalog of endpoints for **Client-Service** (and report/chart types). Type **1 External service** is in spec (`spec/object-services.yaml`). Contract, `{@n}` URL params, and known wrappers (ARES, VIES, Vatpayer): [object-services.md](object-services.md). Recipe: [add-client-service.md](../../recipes/add-client-service.md).
+
+**Webhook** (`ObjectWebhook`) is a separate HTTP POST hook — not in spec yet.
 
 ## DB transfer
 

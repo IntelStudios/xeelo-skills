@@ -15,6 +15,7 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 7 | `ObjectLineLookup` | — |
 | 8 | `ObjectLineLookupValue` | ObjectLineLookup |
 | 9 | `ObjectLineAutoNumber` | — |
+| 9s | `ObjectService` | — |
 | 9a | `ObjectSub` | — |
 | 9b | `ObjectSubLineTab` | — |
 | 9c | `ObjectSubLineSection` | ObjectSubLineTab |
@@ -32,8 +33,8 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 15 | `ObjectDefault` | Object, Workflow |
 | 16 | `ObjectDefaultAccess` | ObjectDefault, ObjectLine (`ObjectSubLineID` optional) |
 | 16a | `ObjectSubDefault` | ObjectSub |
-| 16b | `ObjectSubDefaultLine` | ObjectSubDefault, ObjectSubLine, ObjectLineAutoNumber? |
-| 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber?, ObjectSubDefault? |
+| 16b | `ObjectSubDefaultLine` | ObjectSubDefault, ObjectSubLine, ObjectLineAutoNumber?, ObjectService? |
+| 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber?, ObjectService?, ObjectSubDefault? |
 | 18 | `ObjectUpdateAction` | Object |
 | 19 | `ObjectUpdateAccess` | ObjectUpdateAction, ObjectLine (`ObjectSubLineID` optional) |
 | 19a | `ObjectMessage` | Object |

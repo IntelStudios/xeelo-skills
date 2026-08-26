@@ -15,6 +15,7 @@
     {"name": "ObjectSubDefaultLineClientCalculation", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineClientCalcDelay", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineIsClientCalcConfirm", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectServiceID", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
   ],
   "foreignKeys": [
@@ -23,6 +24,7 @@
     {"column": "ObjectSubDefaultLineAutoNumberID", "referencesTable": "ObjectLineAutoNumber", "referencesColumn": "ObjectLineAutoNumberID"},
     {"column": "ObjectSubDefaultLineLookupID", "referencesTable": "ObjectLineLookup", "referencesColumn": "ObjectLineLookupID"},
     {"column": "ObjectSubDefaultLineLookupObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"},
-    {"column": "ObjectSubDefaultLineLookupFilterObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"}
+    {"column": "ObjectSubDefaultLineLookupFilterObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"},
+    {"column": "ObjectServiceID", "referencesTable": "ObjectService", "referencesColumn": "ObjectServiceID"}
   ]
 }

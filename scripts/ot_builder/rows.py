@@ -51,6 +51,7 @@ from ot_builder.templates import (
     iter_layout_fields,
     iter_subgrid_fields,
     iter_templates,
+    OBJECT_SERVICE_TYPE_IDS,
     require_template_line_id,
     resolve_template_id,
     template_access_registry_key,
@@ -509,6 +510,70 @@ def _emit_autonumbers(spec: dict, registry: IdRegistry, result: BuildResult) -> 
             row["ObjectLineAutoNumberResetTypeID"] = int(reset_type)
         rows.append(row)
     result.rows["ObjectLineAutoNumber"] = rows
+
+
+def _iter_client_calc_maps(spec: dict) -> list[dict[str, Any]]:
+    calcs: list[dict[str, Any]] = []
+    for template_cfg in iter_templates(spec):
+        for field_cfg in (template_cfg.get("fields") or {}).values():
+            if isinstance(field_cfg, dict) and isinstance(field_cfg.get("clientCalculation"), dict):
+                calcs.append(field_cfg["clientCalculation"])
+    for tree in (spec.get("subgrids") or {}).values():
+        if not isinstance(tree, dict):
+            continue
+        for tpl in tree.get("templates") or []:
+            if not isinstance(tpl, dict):
+                continue
+            for field_cfg in (tpl.get("fields") or {}).values():
+                if isinstance(field_cfg, dict) and isinstance(
+                    field_cfg.get("clientCalculation"), dict
+                ):
+                    calcs.append(field_cfg["clientCalculation"])
+    return calcs
+
+
+def _collect_object_service_defs(spec: dict) -> dict[str, dict]:
+    defs = dict(spec.get("objectServices") or {})
+    used: set[str] = set()
+    for calc in _iter_client_calc_maps(spec):
+        if str(calc.get("type") or "") != "service":
+            continue
+        key = calc.get("service")
+        if key:
+            used.add(str(key))
+    for key in used:
+        if key not in defs:
+            raise ValueError(f"Unknown object service key: {key!r}")
+    return defs
+
+
+def _emit_object_services(spec: dict, registry: IdRegistry, result: BuildResult) -> None:
+    defs = _collect_object_service_defs(spec)
+    if not defs:
+        return
+
+    rows: list[dict] = []
+    for key in sorted(defs.keys()):
+        svc = defs[key]
+        type_slug = str(svc.get("type") or "external")
+        if type_slug not in OBJECT_SERVICE_TYPE_IDS:
+            raise ValueError(
+                f"objectServices.{key}: type {type_slug!r} is not supported "
+                "(only 'external')"
+            )
+        link = svc.get("link")
+        if not link or not str(link).strip():
+            raise ValueError(f"objectServices.{key} requires link")
+        service_id = registry.require("objectServices", key)
+        row: dict[str, Any] = {
+            "ObjectServiceID": service_id,
+            "ObjectServiceName": str(svc.get("name") or key),
+            "ObjectServiceTypeID": OBJECT_SERVICE_TYPE_IDS[type_slug],
+            "ObjectServiceLink": str(link),
+            "IsActive": 1,
+        }
+        rows.append(row)
+    result.rows["ObjectService"] = rows
 
 
 def _section_key(tab_name: str, section_name: str) -> str:
@@ -1276,6 +1341,16 @@ def _build_templates(
                         "ChildTableRowID": autonumber_id,
                     }
                 )
+            service_id = template_line.get("ObjectServiceID")
+            if service_id:
+                result.edges.append(
+                    {
+                        "TableName": "ObjectDefaultLine",
+                        "TableRowID": template_line_id,
+                        "ChildTableName": "ObjectService",
+                        "ChildTableRowID": service_id,
+                    }
+                )
 
         for access, subline_id in with_subgrid_column_access(
             template_cfg.get("access") or [], spec, registry, default_editable=True
@@ -1506,6 +1581,7 @@ def build_rows(spec: dict) -> BuildResult:
     _emit_sources(spec, registry, result)
     _emit_lookups(spec, registry, result)
     _emit_autonumbers(spec, registry, result)
+    _emit_object_services(spec, registry, result)
     emit_subgrids(spec, registry, mapping, result)
 
     tab_rows = []

@@ -314,6 +314,11 @@
       "column": "ObjectDefaultLineValidationID",
       "referencesTable": "ObjectLineValidation",
       "referencesColumn": "ObjectLineValidationID"
+    },
+    {
+      "column": "ObjectServiceID",
+      "referencesTable": "ObjectService",
+      "referencesColumn": "ObjectServiceID"
     }
   ]
 }

@@ -93,6 +93,11 @@
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/autonumberDefinition" }
     },
+    "objectServices": {
+      "type": "object",
+      "description": "ObjectService catalog (External service). Bind via templates.fields.<code>.clientCalculation.service",
+      "additionalProperties": { "$ref": "#/$defs/objectServiceDefinition" }
+    },
     "subgrids": {
       "type": "object",
       "description": "ObjectSub trees. Parent type-5 field uses objectSub: key. objectSubId binds an existing/shared ObjectSub without emitting the tree.",
@@ -403,6 +408,25 @@
           "type": "integer",
           "minimum": 1,
           "description": "ObjectLineAutoNumberResetTypeID. 1 = Yearly"
+        }
+      }
+    },
+    "objectServiceDefinition": {
+      "type": "object",
+      "required": ["link"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "type": {
+          "type": "string",
+          "enum": ["external"],
+          "default": "external",
+          "description": "ObjectServiceTypeID 1 External service. Only type in spec."
+        },
+        "link": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectServiceLink URL template. Keep {@1}…{@n} for Client-Service params."
         }
       }
     },
@@ -778,7 +802,12 @@
         },
         "expr": {
           "type": "string",
-          "description": "Stored without the G4 prefix. Math/string expression, or for user_info/device_info a single {Placeholder} such as {UserName} or {DeviceIP}."
+          "description": "Stored without the G4 prefix. Math/string expression, Client-Service {@n} params, or for user_info/device_info a single {Placeholder} such as {UserName} or {DeviceIP}."
+        },
+        "service": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key of objectServices:. Required when type is service → ObjectServiceID."
         }
       }
     },
@@ -1078,6 +1107,7 @@
         "lookups": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "lookupValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "autonumbers": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "objectServices": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "subgrids": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "subgridTabs": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "subgridSections": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },

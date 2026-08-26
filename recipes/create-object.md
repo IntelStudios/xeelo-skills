@@ -104,5 +104,5 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 - User chose new vs existing workflow (not a silent minimal default)
 - JSON object keyed by table name (same shape as DB-transfer download)
 - Only tables the spec emits; no TransferInfo / ObjectSetup
-- Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`
+- Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`; Client-Service in `spec/object-services.yaml`
 - onGrid `field` codes match layout field codes; new object has seven default layouts ([ongrid.md](../docs/entities/ongrid.md#default-for-a-new-object))

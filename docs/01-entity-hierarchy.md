@@ -93,7 +93,7 @@ flowchart TB
 - **Export / Import** — data pipelines
 - **Notification** — email templates (site catalog; OT child of workflow / ObjectAction / Periodic). [notifications.md](entities/notifications.md)
 - **Printout / Report** — documents. [outputs.md](entities/outputs.md)
-- **Scheduler, Object Service, Webhook** — automation
+- **Scheduler, Object Service, Webhook** — automation. Object Service + Client-Service: [object-services.md](entities/object-services.md)
 
 ### Users (config UI, limited transfer)
 - **User, UserAccess, Delegation, OrgChart** — **users not in DB transfer**
@@ -108,7 +108,7 @@ flowchart TB
 
 Priority tables for **create object** recipe:
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineOnGrid`, `ObjectSub`, `ObjectSubLineTab`, `ObjectSubLineSection`, `ObjectSubLine`, `ObjectSubLineOnGrid`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Notification`, `NotificationCondition`, `NotificationAttachment`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectSubDefault`, `ObjectSubDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineOnGrid`, `ObjectSub`, `ObjectSubLineTab`, `ObjectSubLineSection`, `ObjectSubLine`, `ObjectSubLineOnGrid`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `ObjectService`, `Notification`, `NotificationCondition`, `NotificationAttachment`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectSubDefault`, `ObjectSubDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
 
 ## Entity docs
 
@@ -118,7 +118,7 @@ Detailed semantics from admin hints:
 |-----|----------|
 | [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, lookups, autonumber, unique, **subgrid** |
 | [entities/object-line-types.md](entities/object-line-types.md) | ObjectLine types 1–20, extras, template capabilities |
-| [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String expressions |
+| [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String/Service expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |
 | [entities/object-messages.md](entities/object-messages.md) | ObjectMessage HTML modal, styles, update/create/workflow junctions |
 | [entities/notifications.md](entities/notifications.md) | Email templates, recipients, placeholders, workflow / ObjectAction / Periodic bindings |
@@ -127,6 +127,7 @@ Detailed semantics from admin hints:
 | [entities/graphql.md](entities/graphql.md) | `Select_` / `Mutate_` names, query args, `createType`, `lines` vs `linesFormatted` |
 | [entities/workflow.md](entities/workflow.md) | Workflow, steps, actions |
 | [entities/integrations.md](entities/integrations.md) | Export, import, periodic, scheduler |
+| [entities/object-services.md](entities/object-services.md) | ObjectService catalog, Client-Service, External service contract, ARES/VIES/Vatpayer |
 | [entities/outputs.md](entities/outputs.md) | Printout, report |
 | [entities/users-and-access.md](entities/users-and-access.md) | Users vs transfer scope |
 | [entities/localization.md](entities/localization.md) | `LanguageTable` translations |

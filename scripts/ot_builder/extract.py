@@ -42,10 +42,12 @@ from ot_builder.subgrids import (
     extract_subgrids_spec,
     object_sub_default_id_to_template_key,
     used_subgrid_autonumber_ids,
+    used_subgrid_object_service_ids,
 )
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
+    OBJECT_SERVICE_EXTERNAL_TYPE_ID,
     REFERENCE_FIELD_TYPES,
     template_access_registry_key,
     template_field_spec_from_line,
@@ -1342,6 +1344,50 @@ def _used_autonumber_ids(index: TransferIndex, object_id: int) -> set[int]:
     return used
 
 
+def _object_service_is_external(index: TransferIndex, service_id: int) -> bool:
+    row = index.row_by_id("ObjectService", service_id)
+    if not row:
+        return False
+    type_id = _int(row.get("ObjectServiceTypeID"))
+    return type_id == OBJECT_SERVICE_EXTERNAL_TYPE_ID or type_id is None
+
+
+def _used_object_service_ids(index: TransferIndex, object_id: int) -> set[int]:
+    template_ids = {
+        int(row["ObjectDefaultID"]) for row in _all_templates(index, object_id)
+    }
+    used: set[int] = set()
+    for tid in template_ids:
+        for tl in index.rows_for("ObjectDefaultLine", "ObjectDefaultID", tid):
+            service_id = _int(tl.get("ObjectServiceID"))
+            if service_id and _object_service_is_external(index, service_id):
+                used.add(service_id)
+    for service_id in used_subgrid_object_service_ids(index, object_id):
+        if _object_service_is_external(index, service_id):
+            used.add(service_id)
+    return used
+
+
+def _build_object_services(
+    index: TransferIndex,
+    service_ids: set[int],
+) -> tuple[dict[str, dict], dict[str, int]]:
+    items: dict[int, dict[str, Any]] = {}
+    for service_id in service_ids:
+        row = index.row_by_id("ObjectService", service_id)
+        if not row:
+            continue
+        if not _object_service_is_external(index, service_id):
+            continue
+        spec_entry: dict[str, Any] = {
+            "name": row.get("ObjectServiceName") or f"service_{service_id}",
+            "type": "external",
+            "link": row.get("ObjectServiceLink") or "",
+        }
+        items[service_id] = {"name": spec_entry["name"], "spec": spec_entry}
+    return _assign_keys(items)
+
+
 def _build_templates_spec(
     index: TransferIndex,
     object_id: int,
@@ -1349,6 +1395,7 @@ def _build_templates_spec(
     sources_spec: dict[str, dict],
     autonumber_id_to_key: dict[int, str] | None = None,
     subgrid_default_id_to_tpl_key: dict[int, str] | None = None,
+    object_service_id_to_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], bool]:
     defaults = _all_templates(index, object_id)
     if not defaults:
@@ -1365,6 +1412,7 @@ def _build_templates_spec(
     any_extended = False
     any_access = False
     any_reopen = False
+    any_fields = False
     legacy = len(defaults) <= 1
 
     for row in defaults:
@@ -1419,11 +1467,13 @@ def _build_templates_spec(
                 sources_spec,
                 autonumber_id_to_key,
                 subgrid_default_id_to_tpl_key=subgrid_default_id_to_tpl_key,
+                object_service_id_to_key=object_service_id_to_key,
             )
             if field_cfg:
                 fields_spec[field_code] = field_cfg
         if fields_spec:
             spec_tmpl["fields"] = fields_spec
+            any_fields = True
 
         access_specs: list[dict[str, Any]] = []
         for access in index.rows_for("ObjectDefaultAccess", "ObjectDefaultID", template_id):
@@ -1455,7 +1505,7 @@ def _build_templates_spec(
 
         templates.append(spec_tmpl)
 
-    emit = len(templates) > 1 or any_extended or any_access or any_reopen
+    emit = len(templates) > 1 or any_extended or any_access or any_reopen or any_fields
     return templates, explicit, emit
 
 
@@ -1594,8 +1644,14 @@ def extract_spec_from_index(
         index, _used_autonumber_ids(index, oid)
     )
     autonumber_id_to_key = {row_id: key for key, row_id in explicit_autonumbers.items()}
+    object_services_spec, explicit_object_services = _build_object_services(
+        index, _used_object_service_ids(index, oid)
+    )
+    object_service_id_to_key = {
+        row_id: key for key, row_id in explicit_object_services.items()
+    }
     subgrids_spec, sub_explicit, sub_id_to_key, sub_source_ids, sub_lookup_ids = extract_subgrids_spec(
-        index, oid, type_map, autonumber_id_to_key
+        index, oid, type_map, autonumber_id_to_key, object_service_id_to_key
     )
     extra_source_ids = set(sub_source_ids) - set((layout_explicit.get("references") or {}).values())
     if extra_source_ids:
@@ -1660,6 +1716,7 @@ def extract_spec_from_index(
         sources_spec,
         autonumber_id_to_key,
         subgrid_default_id_to_tpl_key,
+        object_service_id_to_key,
     )
     object_actions, oa_explicit = _build_object_actions(
         index,
@@ -1708,6 +1765,8 @@ def extract_spec_from_index(
     }
     if explicit_autonumbers:
         explicit["autonumbers"] = explicit_autonumbers
+    if explicit_object_services:
+        explicit["objectServices"] = explicit_object_services
     if emit_templates:
         explicit["templates"] = tmpl_explicit.get("templates") or {}
         explicit["objectDefaultLines"] = tmpl_explicit.get("objectDefaultLines") or {}
@@ -1791,6 +1850,8 @@ def extract_spec_from_index(
         spec["lookups"] = lookups_spec
     if autonumbers_spec:
         spec["autonumbers"] = autonumbers_spec
+    if object_services_spec:
+        spec["objectServices"] = object_services_spec
     if subgrids_spec:
         spec["subgrids"] = subgrids_spec
     if roles:
@@ -1863,6 +1924,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "sources",
         "lookups",
         "autonumbers",
+        "objectServices",
         "subgrids",
         "languageTable",
         "comments",

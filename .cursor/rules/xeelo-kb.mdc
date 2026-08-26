@@ -24,6 +24,8 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Autonumber:** site sequence (`spec/autonumbers.yaml`) bound on the template line; **unique** is `fields[].uniqueId` (1–4) on ObjectLine. Typical request identifier: text + autonumber + `uniqueId: 1`. See [AGENT.md](../../AGENT.md) and [docs/entities/object-model.md](../../docs/entities/object-model.md).
 
+**Object Service / Client-Service:** site catalog (`spec/object-services.yaml`, type `external`) bound on the template line (`clientCalculation.type: service` + `service` + `expr` with `{@n}` in the link). Contract and ARES/VIES/Vatpayer: [object-services.md](../../docs/entities/object-services.md).
+
 **Description memo:** new `description_memo` fields default **`descMemoBorder: false`** (omit or false). Set `true` only when the user wants a visible box.
 
 **Labels:** canonical `name` (entity columns) in English. User-visible translations in `spec/language-table.yaml`. Read `projects/<name>/conventions.md` when present (e.g. always Czech labels, onGrid stays English). See [AGENT.md](../../AGENT.md) and [docs/entities/localization.md](../../docs/entities/localization.md).

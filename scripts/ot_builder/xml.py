@@ -19,6 +19,7 @@ TABLE_ORDER = [
     "ObjectLineLookup",
     "ObjectLineLookupValue",
     "ObjectLineAutoNumber",
+    "ObjectService",
     "ObjectSub",
     "ObjectSubLineTab",
     "ObjectSubLineSection",

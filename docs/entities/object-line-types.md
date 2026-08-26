@@ -50,8 +50,8 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
   type: button
   slot: 10
   saveAction: 0
-  colorBack: blue
   colorFont: white
+  colorBack: blue
 ```
 
 Example (preview bound to the Invoice attachment on the same object):
@@ -95,7 +95,7 @@ Same extras table as above, on `subgrids.<key>.layout.tabs[].sections[].fields[]
 | Preview | `previewField` is another **subgrid** column code → `ObjectSubLineAttPreviewObjectSubLineID` |
 | `filterField` | another **subgrid** column → `ObjectSubLineSourceFilterObjectSubLineID` |
 | Lookup | same spec as ObjectLine (`lookup` + `sourceField`) on the **layout** field; binds `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`. `sourceField` is a column in **this** objectSub |
-| Client calc | `subgrids.*.templates[].fields.*.clientCalculation` / `alwaysDisabled` → `ObjectSubDefaultLine*`. `id{CODE}` → `ObjectSubLineID`. Types **1–5 and 7** only (no `focus` / `device_info`) |
+| Client calc | `subgrids.*.templates[].fields.*.clientCalculation` / `alwaysDisabled` → `ObjectSubDefaultLine*`. `id{CODE}` → `ObjectSubLineID`. Types **1–5 and 7** only (no `focus` / `device_info`). Client-Service: same ObjectService type filter as request lines (1–2 on columns) — [object-services.md](object-services.md) |
 
 ## Admin canSet (ObjectLine)
 
@@ -233,7 +233,7 @@ IDs **1–8** (`id <= 30`). Dropdown is filtered per line type. Adhoc (`id >= 30
 | 7 | Client-UserInfo | `user_info` | text (3) |
 | 8 | Client-DeviceInfo | `device_info` | text (3) |
 
-Client-Service requires `ObjectServiceID`. On a **report** line, Admin filters to external report services (service types 3–6). Subgrid client-calc (`ObjectSubDefaultLine`) has types **1–5 and 7** only — no `focus` (report) or `device_info`.
+Client-Service requires `ObjectServiceID` (`clientCalculation.service`). On a **report** line the Service dropdown is types **3–6**; on any other line (including **subgrid** columns) types **1–2**. Spec generates type **1** only — [object-services.md](object-services.md). Subgrid client-calc types **1–5 and 7** only — no `focus` (report) or `device_info`.
 
 Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix. On a subgrid, `id{CODE}` compiles to `ObjectSubLineID`.
 

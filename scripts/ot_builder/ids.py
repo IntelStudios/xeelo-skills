@@ -20,6 +20,7 @@ CATEGORY_TO_TABLE: dict[str, str] = {
     "lookups": "ObjectLineLookup",
     "lookupValues": "ObjectLineLookupValue",
     "autonumbers": "ObjectLineAutoNumber",
+    "objectServices": "ObjectService",
     "subgrids": "ObjectSub",
     "subgridTabs": "ObjectSubLineTab",
     "subgridSections": "ObjectSubLineSection",

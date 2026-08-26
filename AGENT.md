@@ -301,6 +301,7 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 - `spec/references.yaml` — numberedníky (`references:` map)
 - `spec/lookups.yaml` — dotazovací mapy (`lookups:` map)
 - `spec/autonumbers.yaml` — sequences (`autonumbers:` map; bind on template line)
+- `spec/object-services.yaml` — External ObjectService catalog (`objectServices:` map; bind `templates.fields.<code>.clientCalculation.service`)
 - `spec/language-table.yaml` — `LanguageTable` translations (`languageTable:` map)
 - `spec/comments.yaml` — `TableComments` HTML notes (`comments:` map)
 - `spec/workflow.yaml` — roles, statuses, workflow
@@ -397,6 +398,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] Field `type` slug + template capabilities per [object-line-types.md](docs/entities/object-line-types.md); slug from [field-type-mapping.json](data/field-type-mapping.json)
 - [ ] Combobox / radio / multi → **`reference` required**; lookup is optional query map (same field allowed)
 - [ ] Request identifier → **text** + `spec/autonumbers.yaml` + `templates.fields.<code>.autonumber` + `uniqueId` (usually `1`)
+- [ ] Client-Service → `spec/object-services.yaml` (type `external` + `link` with `{@n}`) + `clientCalculation.type: service` + `service` + `expr` ([object-services.md](docs/entities/object-services.md), [add-client-service.md](recipes/add-client-service.md))
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
@@ -429,6 +431,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 | [`data/fontawesome-icons.json`](data/fontawesome-icons.json) | Font Awesome 6.5.1 catalog (`search-fa-icons.py`) |
 | [`data/enums/ObjectLineUnique.json`](data/enums/ObjectLineUnique.json) | Unique level 1–4 |
 | [`data/enums/ObjectLineAutoNumberResetType.json`](data/enums/ObjectLineAutoNumberResetType.json) | Autonumber reset (`1` Yearly) |
+| [`data/enums/ObjectServiceType.json`](data/enums/ObjectServiceType.json) | ObjectService kinds (spec emits **1** External service) |
 | [`data/enums/SystemLine.json`](data/enums/SystemLine.json) | Inbox system columns (`ObjectLineOnGrid.SystemLineID`) |
 | [`data/schemas/ObjectLineOnGrid.json`](data/schemas/ObjectLineOnGrid.json) | ObjectLine onGrid placement columns |
 | [`data/schemas/ObjectSubLineOnGrid.json`](data/schemas/ObjectSubLineOnGrid.json) | ObjectSubLine onGrid placement columns |

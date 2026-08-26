@@ -20,6 +20,7 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Reference (ObjectLineSource)** | Číselník for combo/radio/multi — bind on **ObjectLine**; spec `spec/references.yaml` |
 | **Lookup (ObjectLineLookup)** | Query map on **template line** — fills the field from another line (`sourceField`) |
 | **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |
+| **Object Service** | Site HTTP/SQL catalog; Client-Service binds it on the **template line** — [object-services.md](entities/object-services.md) |
 | **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted requests — [object-model.md](entities/object-model.md#unique) |
 | **Subgrid (ObjectSub)** | Embedded table on a type-5 ObjectLine (`ObjectSubID`). May be **shared** across objects. Own tabs/lines/templates. [object-model.md](entities/object-model.md#subgrid) |
 | **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields, subgrid tabs/sections/lines — [localization.md](entities/localization.md) |
@@ -63,7 +64,8 @@ See [01-entity-hierarchy.md](01-entity-hierarchy.md) for portlet-grouped entity 
 - [transfer/spec-format.md](transfer/spec-format.md) — agent input language (v2)
 - [entities/graphql.md](entities/graphql.md) — `Select_` / `Mutate_`, `lines` vs `linesFormatted`
 - [entities/object-line-types.md](entities/object-line-types.md) — 20 ObjectLine types, template capabilities, client/server calc, calculation order
-- [entities/xeelo-grammar.md](entities/xeelo-grammar.md) — extended validation (`v#`), Client-Math/String, UserInfo/DeviceInfo
+- [entities/xeelo-grammar.md](entities/xeelo-grammar.md) — extended validation (`v#`), Client-Math/String, Client-Service, UserInfo/DeviceInfo
+- [entities/object-services.md](entities/object-services.md) — ObjectService, Client-Service, External service contract
 - [entities/localization.md](entities/localization.md) — `LanguageTable`, `spec/language-table.yaml`
 - [entities/comments.md](entities/comments.md) — `TableComments`, `spec/comments.yaml`
 - [../AGENT.md](../AGENT.md) — project loop (download → env → change-loop OT)

@@ -14,6 +14,7 @@ projects/<name>/
     references.yaml     # numberedníky (optional)
     lookups.yaml        # dotazovací mapy (optional)
     autonumbers.yaml    # sequences (optional)
+    object-services.yaml # ObjectService catalog (optional)
     language-table.yaml # LanguageTable translations (optional)
     comments.yaml       # TableComments HTML notes (optional)
     workflow.yaml       # roles, statuses, workflow
@@ -104,6 +105,7 @@ Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid flags + placement (`object.yaml`). Catalog and new-object default: [ongrid.md](../entities/ongrid.md) |
 | `autonumbers` | no | Sequences — [`spec/autonumbers.yaml`](#autonumbers-specautonumbersyaml) |
+| `objectServices` | no | External ObjectService catalog — [`spec/object-services.yaml`](#object-services-specobject-servicesyaml) |
 | `subgrids` | no | ObjectSub trees — [`spec/subgrids.yaml`](#subgrids-specsubgridsyaml) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
@@ -260,6 +262,34 @@ templates:
 
 On a single default template you may set `fields[].autonumber: request_no` instead of `templates.yaml`. Format: one contiguous `#` run (zero-padded number), optional `YYYY` / `YY` / `MM` / `DD`. **IDs:** `ids.explicit.autonumbers`.
 
+## Object services (`spec/object-services.yaml`)
+
+Site catalog of **External service** (type 1) URLs. Bind on the **template line** via Client-Service — [object-services.md](../entities/object-services.md). Recipe: [add-client-service.md](../../recipes/add-client-service.md).
+
+```yaml
+# spec/object-services.yaml
+objectServices:
+  ares_name:
+    name: ARES Name
+    type: external          # ObjectServiceTypeID 1; default; only type in spec
+    link: "https://<ares-host>/api/parse?query={@1}&field=Name"
+```
+
+```yaml
+# spec/templates.yaml
+templates:
+  - key: default
+    isDefault: true
+    fields:
+      COMPANY_NAME:
+        clientCalculation:
+          type: service
+          service: ares_name
+          expr: "id{ICO}"
+```
+
+`link` keeps `{@1}`…`{@n}` as-is (runtime). `expr` `id{CODE}` compiles like other client calcs. One service row per target field (typically `&field=`). **IDs:** `ids.explicit.objectServices`.
+
 ## Subgrids (`spec/subgrids.yaml`)
 
 ObjectSub tree bound from a parent **type 5** line. Semantics: [object-model.md](../entities/object-model.md#subgrid). Recipe: [add-subgrid.md](../../recipes/add-subgrid.md).
@@ -358,7 +388,7 @@ Also emit `workflow.steps[].access` for the parent line on every step that shoul
 | `subgrids.<key>` | `ObjectSub` (`ObjectSubName`, optional `ObjectSubCode`, `ObjectSubWidth` — add/edit-row **modal** width %; default **80**, Admin 50–100). Extra fields → extra tabs/sections or stacked `width: 100`, not a wider modal. |
 | `layout.tabs/sections/fields` | `ObjectSubLineTab` / `ObjectSubLineSection` / `ObjectSubLine`. Same type slugs and **same extras** as ObjectLine (`precision`, `reference`, … → `ObjectSubLine*`). Not 5 / 13 / 18. |
 | `templates[]` | `ObjectSubDefault` + `ObjectSubDefaultLine`. Omit → one Default template, all lines Optional |
-| `templates[].fields.*.mandatory` / `hint` / `autonumber` / `alwaysDisabled` / `clientCalculation` | `ObjectSubDefaultLine*` (lookup is on the **layout** field like ObjectLine: `lookup` + `sourceField` → `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`). `id{CODE}` in calc compiles to `ObjectSubLineID`. Client types 1–5 and 7 (no `focus` / `device_info`). |
+| `templates[].fields.*.mandatory` / `hint` / `autonumber` / `alwaysDisabled` / `clientCalculation` | `ObjectSubDefaultLine*` (lookup is on the **layout** field like ObjectLine: `lookup` + `sourceField` → `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`). `id{CODE}` in calc compiles to `ObjectSubLineID`. Client types 1–5 and 7 (no `focus` / `device_info`). Client-Service: `service` key + `ObjectServiceID` (types 1–2 on columns) — [object-services.md](../entities/object-services.md). |
 | `onGrid.fields.<code>` | `ObjectSubLine` flags: `allowed` → `ObjectSubLineOnGridIsAllowed`; `isTag` → `ObjectSubLineOnGridIsTag`; `isSearch` → `ObjectSubLineIsSearch`; `isTotal` → `ObjectSubLineIsTotal` (types **3 and 12**) |
 | `onGrid.layouts[]` | `ObjectSubLineOnGrid` placement (`size` × Grid/Table × `module`). Same shape as request inbox onGrid, but **`field` only** — no `systemLine` |
 | `fields[].objectSub` | Emit the tree (if present) and set `ObjectLine.ObjectSubID` |
@@ -966,7 +996,7 @@ templates:
 | *(neither `mandatory` nor `extended`)* | `ObjectDefaultLineValidationID = 2` (Optional) — always written; omitting the column is `NULL` and Admin autosaves |
 | `extended.hidden/disabled/mandatory` | Independent boolean `condition` expressions (no `v#` prefix) — [xeelo-grammar.md](../entities/xeelo-grammar.md#extended-validation) |
 | `access[]` | **ObjectDefaultAccess** create-form visible/editable. Refresh seeds **both true**, but OT does not run refresh — for a **new** line emit `visible: true` / `editable: true` or create form hides it. After extract, list only hide/lock exceptions. Same `{field, editable, visible, sublineId?}` shape as `workflow.steps[].access` and `updateActions[].access`. Not `hidden` / `alwaysDisabled`. |
-| `clientCalculation.type` / `expr` | Client-Math (`math`) / Client-String (`string`) — stored **without** `1#`/`2#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-math-vs-client-string). Client-UserInfo (`user_info`) / Client-DeviceInfo (`device_info`) — `expr` is a required `{Placeholder}` without `7#`/`8#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-userinfo--client-deviceinfo) |
+| `clientCalculation.type` / `expr` | Client-Math (`math`) / Client-String (`string`) — stored **without** `1#`/`2#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-math-vs-client-string). Client-Service (`service`) — `service` key from `spec/object-services.yaml` → `ObjectServiceID`; `expr` is `{@n}` params without `3#` — [object-services.md](../entities/object-services.md). Client-UserInfo (`user_info`) / Client-DeviceInfo (`device_info`) — `expr` is a required `{Placeholder}` without `7#`/`8#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-userinfo--client-deviceinfo) |
 | *(server calc / calculation order)* | **Not in spec.** After generate, patch `ObjectDefaultLineCalculationTypeID` + `ObjectDefaultLineCalculation` and `ObjectDefaultLineCalculationOrder` on the OT JSON. Type-5 parents and server types **51–100** need an order row or they never run (missing order → **999999999**, skipped at precompile; type-5 missing a row is **C.72**). [object-line-types.md](../entities/object-line-types.md#server-calculations) |
 | `defaultValue` | `ObjectDefaultLineValue`, except **`description_memo`**: HTML into `ObjectDefaultLineDescMemo` |
 | `hint` | `ObjectDefaultLineHint` — runtime field hint (plain or HTML). All types except `empty_space`. Canonical English; translations in `languageTable.templateHints.<templateKey>.<code>`. Not `defaultValue` on description memo. |

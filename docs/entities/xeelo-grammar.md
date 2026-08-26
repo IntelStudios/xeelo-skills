@@ -17,6 +17,7 @@ string: '2#' (stringExpr | stringIf | getMemo | getSubMemo)
 | Extended hidden / disabled / mandatory | `v#` | `condition` | `validation.ts`, Admin `grammarValidation()` |
 | Client-Math | `1#` | `math` | `client-calculation.ts`, Admin `grammarCalculationValidation()` |
 | Client-String | `2#` | `string` | same |
+| Client-Service | `3#` | `service` | same — [object-services.md](object-services.md#client-service) |
 | Client-UserInfo | `7#` | `userInfo` | same |
 | Client-DeviceInfo | `8#` | `deviceInfo` | same |
 
@@ -102,7 +103,18 @@ id{NAME} + ' ' + substring(id{NAME}, 1, 1)
 if (id{TYPE} = 'FIO' and id{TYPE} isnotempty) then ('1') else ('0')
 ```
 
-Client-Service, DateAdd, DateDiff, and Focus share the same G4 prefixes (`3#`–`6#`) but are not specified here — see the type matrix in [object-line-types.md](object-line-types.md#client-calculations).
+## Client-Service
+
+G4 prefix `3#`. Spec `type: service` stores `expr` **without** `3#`. Params are comma-separated `id{CODE}` / STRING; `{@n}` in the ObjectService URL is filled at runtime. Bind `clientCalculation.service` to `spec/object-services.yaml`. Details: [object-services.md](object-services.md#client-service).
+
+```yaml
+clientCalculation:
+  type: service
+  service: ares_name
+  expr: "id{ICO}"
+```
+
+DateAdd, DateDiff, and Focus share G4 prefixes `4#`–`6#` but are not specified here — see the type matrix in [object-line-types.md](object-line-types.md#client-calculations).
 
 ## Client-UserInfo / Client-DeviceInfo
 

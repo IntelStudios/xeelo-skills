@@ -52,6 +52,8 @@ CLIENT_CALC_TYPE_IDS = {
     "user_info": 7,
     "device_info": 8,
 }
+OBJECT_SERVICE_TYPE_IDS = {"external": 1}
+OBJECT_SERVICE_EXTERNAL_TYPE_ID = 1
 # ObjectSubLineCalculationType seed has client 1–5 and 7 — no focus (6) or device_info (8).
 SUBGRID_CLIENT_CALC_TYPE_IDS = {
     key: value for key, value in CLIENT_CALC_TYPE_IDS.items() if key not in ("focus", "device_info")
@@ -315,6 +317,16 @@ def apply_template_line_extras(
         template_line["ObjectDefaultLineClientCalculation"] = compile_extended_condition(
             str(expr), spec, registry
         )
+    if type_slug == "service":
+        service_key = calc.get("service")
+        code = field.get("code")
+        if not service_key:
+            raise ValueError(
+                f"templates.fields.{code}: clientCalculation.type 'service' requires service"
+            )
+        template_line["ObjectServiceID"] = registry.require(
+            "objectServices", str(service_key)
+        )
 
 
 def template_field_spec_from_line(
@@ -323,6 +335,7 @@ def template_field_spec_from_line(
     sources_spec: dict[str, dict],
     autonumber_id_to_key: dict[int, str] | None = None,
     subgrid_default_id_to_tpl_key: dict[int, str] | None = None,
+    object_service_id_to_key: dict[int, str] | None = None,
 ) -> dict[str, Any] | None:
     validation_id = row.get("ObjectDefaultLineValidationID")
     hidden_cond = row.get("ObjectDefaultLineValidationExtHiddenCondition")
@@ -377,6 +390,12 @@ def template_field_spec_from_line(
                 calc_spec["expr"] = decompile_extended_condition(
                     str(calc_expr), field_id_to_code, sources_spec
                 )
+            if type_slug == "service" and object_service_id_to_key:
+                service_id = row.get("ObjectServiceID")
+                if service_id is not None:
+                    service_key = object_service_id_to_key.get(int(service_id))
+                    if service_key:
+                        calc_spec["service"] = service_key
             spec_field["clientCalculation"] = calc_spec
 
     autonumber_id = row.get("ObjectDefaultLineAutoNumberID")
