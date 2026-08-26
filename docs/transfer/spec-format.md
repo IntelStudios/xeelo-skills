@@ -14,11 +14,16 @@ projects/<name>/
     references.yaml     # numberedníky (optional)
     lookups.yaml        # dotazovací mapy (optional)
     autonumbers.yaml    # sequences (optional)
-    subgrids.yaml       # ObjectSub trees (optional)
     language-table.yaml # LanguageTable translations (optional)
     comments.yaml       # TableComments HTML notes (optional)
-    workflow.yaml       # workflow
+    workflow.yaml       # roles, statuses, workflow
+    templates.yaml      # ObjectDefault (optional)
+    object-actions.yaml # ObjectAction (optional)
+    object-messages.yaml
+    update-actions.yaml
+    periodics.yaml
     notifications.yaml  # email templates (optional)
+    subgrids.yaml       # ObjectSub trees (optional)
     ids.yaml            # ids (+ source after extract)
 ```
 
@@ -59,8 +64,9 @@ layout:
             - name: Account Number
               code: ACCOUNT_NUMBER
               type: text
-              slot: 1
               width: 50
+              order: 1
+              slot: 1
               mandatory: true
 onGrid:
   fields:
@@ -72,6 +78,19 @@ onGrid:
 
 Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot_builder/spec_loader.py) — `load_spec(path)` accepts a file or directory; monolithic YAML without `includes` still works.
 
+## YAML key order
+
+Extract writes spec YAML with PyYAML `sort_keys=False`, so mapping key order is the insertion order in [`scripts/ot_builder/extract.py`](../../scripts/ot_builder/extract.py). `write_spec` and [`scripts/normalize-spec-yaml.py`](../../scripts/normalize-spec-yaml.py) re-apply the same order from [`scripts/ot_builder/spec_key_order.py`](../../scripts/ot_builder/spec_key_order.py). If the agent writes keys in a different order, the next extract (or normalize) reshuffles the mapping and git shows a noisy diff.
+
+Rules:
+
+- **New mapping:** emit keys in extract order. Skip omitted optionals; put the next present key in its canonical slot (not at the end). New layout fields always include `width` and `order` (extract always writes them); tabs always include `placement` and `order`; sections always include `order` and `width`.
+- **Edit:** insert a new key at the canonical position among keys that are already present. Do not rewrite the rest of the file just to tidy order — run normalize after the edit.
+- **Omit** defaults extract omits (`matchId: 1`, `isActive: true`, `descMemoBorder: false`).
+- After editing a change-loop spec: `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`.
+
+Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width`, `order`, `slot`, `precision`, `objectSub` / `objectSubId`, `saveAction`, `uniqueId`, type extras, `alwaysHidden`, `isActive`, `mandatory` (layout only when there is no `templates.yaml`), `reference`, `lookup`, `autonumber`. Full tuples: [`spec_key_order.py`](../../scripts/ot_builder/spec_key_order.py).
+
 ## Top-level fields
 
 | Field | Required | Description |
@@ -79,11 +98,12 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `requestTitleField`, `gridSort`, `icon`, `color`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `icon`, `color`, `requestTitleField`, `gridSort`) |
 | `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid flags + placement (`object.yaml`). Catalog and new-object default: [ongrid.md](../entities/ongrid.md) |
+| `autonumbers` | no | Sequences — [`spec/autonumbers.yaml`](#autonumbers-specautonumbersyaml) |
 | `subgrids` | no | ObjectSub trees — [`spec/subgrids.yaml`](#subgrids-specsubgridsyaml) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
@@ -145,6 +165,7 @@ Each object can have **multiple tabs** (left/right via `placement`) and **multip
 | `name` | `ObjectLineTabName` |
 | `placement` | `ObjectLineTabPlacement` (`0` left, `1` right) |
 | `order` | `ObjectLineTabOrder` |
+| `sections` | Nested sections (YAML after `order`; extract writes `alwaysHidden` after this list) |
 | `alwaysHidden` | `ObjectLineTabAlwaysHidden` — hide the whole tab. Common for a tab that only holds helper lines. Not template `hidden: true`. |
 
 Fields are defined inside their section under `layout.tabs[]`.
@@ -164,32 +185,32 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `name` | `ObjectLineName` |
 | `code` | `ObjectLineCode` (also used in `onGrid`) |
 | `type` | `ObjectLineTypeID` via [`field-type-mapping.json`](../../data/field-type-mapping.json) — all 20 slugs in [object-line-types.md](../entities/object-line-types.md) |
-| `slot` | `ObjectLineSlot` (unique per object; not required for types 5, 6, 13, 16, 17) |
 | `width` | `ObjectLineTypeWidth` — field width in **percent** (1–100) |
 | `order` | `ObjectLineOrder` |
-| `mandatory` | `ObjectDefaultLineValidationID = 1` (default template unless overridden in `templates`). Omit `mandatory`/`extended` → still emit **`ValidationID = 2`** (Optional); do not leave the column unset |
+| `slot` | `ObjectLineSlot` (unique per object; not required for types 5, 6, 13, 16, 17) |
 | `precision` | `ObjectLineNumberPrecision` / `ObjectSubLineNumberPrecision` (number fields). **Required** on subgrid numbers — omit it and values do not store |
-| `numberSeparator` / `numberMin` / `numberMax` | Number extras |
-| `reference` | `ObjectLineSource` on **ObjectLine** (číselník) — combo, radio, multi |
-| `lookup` | `ObjectLineLookup` on **template line** (dotazovací mapa) |
 | `objectSub` | Spec key in `subgrids:` → emit `ObjectSub` tree and set `ObjectLine.ObjectSubID` |
 | `objectSubId` | Existing/shared `ObjectSub` Orig. ID (no tree emit). Type 5. Prefer `objectSub` for new trees |
 | `saveAction` | `ObjectLineButtonSaveAction` (button fields): **0 Save** (stay on the request), **1 Save & close**. Enum: [`ObjectLineButtonSaveAction.json`](../../data/enums/ObjectLineButtonSaveAction.json) |
-| `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
-| `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
-| `webFrameTypeId` | `WebFrameTypeID` (1–4) |
+| `uniqueId` | `ObjectLineUniqueID` (1 Object, 2 Object/Template, 3 Object/Requestor, 4 Object/Template/Requestor). Also sets `ObjectLineIsUnique = 1`. [object-model.md](../entities/object-model.md#unique) |
+| `numberSeparator` / `numberMin` / `numberMax` | Number extras |
 | `textInputType` | `ObjectLineTextInputType` (0 Default, 1 Bar Code, 2 Location) |
 | `columnNumbers` | `ObjectLineNumberColumns` (radio / multi) |
+| `webFrameTypeId` | `WebFrameTypeID` (1–4) |
 | `height` | `ObjectLineHeight` (memo, report) — **pixels**. Omit or `0` = unlimited. |
-| `uniqueId` | `ObjectLineUniqueID` (1 Object, 2 Object/Template, 3 Object/Requestor, 4 Object/Template/Requestor). Also sets `ObjectLineIsUnique = 1`. [object-model.md](../entities/object-model.md#unique) |
-| `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 | `descMemoBorder`, `descMemoPadding` | Description memo extras. **`descMemoBorder` defaults to false** (Admin/SQL `0`); omit it or set `false`. Use `true` only when the user wants a visible box. |
 | `buttonMessage` | Confirm text before the click saves (`ObjectLineButtonMessage`) |
-| `colorBack` | Button **background** — `CustomColor.CustomColorCode` (e.g. `blue`), not HEX. Admin Color Back. GUI: `xe-back-{code}` |
-| `colorFont` | Button **text** — same palette (e.g. `white`). Admin Color Font. GUI: `xe-font-{code}` |
+| `colorFont` | Button **text** — `CustomColor.CustomColorCode` (e.g. `white`). Admin Color Font. GUI: `xe-font-{code}` |
+| `colorBack` | Button **background** — same palette (e.g. `blue`). Admin Color Back. GUI: `xe-back-{code}` |
 | `isReferenceLink` | `ObjectLineIsReferenceLink` (combo types) |
+| `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
+| `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
 | `alwaysHidden` | `ObjectLineIsHidden` — line never shown in GUI (definition). Distinct from template `hidden: true` / `extended.hidden`. |
 | `isActive` | `ObjectLine.IsActive`. `false` soft-disables the line (OT does not delete). Omit the field from spec and the site row stays **active**. |
+| `mandatory` | `ObjectDefaultLineValidationID = 1` (default template unless overridden in `templates`). Omit `mandatory`/`extended` → still emit **`ValidationID = 2`** (Optional); do not leave the column unset |
+| `reference` | `ObjectLineSource` on **ObjectLine** (číselník) — combo, radio, multi |
+| `lookup` | `ObjectLineLookup` on **template line** (dotazovací mapa) |
+| `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 
 `object.requestTitleField` is a **field code** on the object (not a layout extra). It sets `Object.RequestTitleObjectLineID` — that line’s value is the request title in inbox, header, and links.
 
@@ -233,8 +254,8 @@ templates:
     isDefault: true
     fields:
       REQUEST_NO:
-        autonumber: request_no
         alwaysDisabled: true
+        autonumber: request_no
 ```
 
 On a single default template you may set `fields[].autonumber: request_no` instead of `templates.yaml`. Format: one contiguous `#` run (zero-padded number), optional `YYYY` / `YY` / `MM` / `DD`. **IDs:** `ids.explicit.autonumbers`.
@@ -248,7 +269,6 @@ ObjectSub tree bound from a parent **type 5** line. Semantics: [object-model.md]
 subgrids:
   invoice_lines:
     name: Invoice lines
-    code: invoice_lines
     width: 80
     layout:
       tabs:
@@ -259,17 +279,24 @@ subgrids:
                 - name: Description
                   code: DESC
                   type: text
+                  width: 100
+                  order: 1
                   slot: 1
                 - name: Qty
                   code: QTY
                   type: number
+                  width: 100
+                  order: 2
                   slot: 2
                   precision: 0
                 - name: Amount
                   code: AMOUNT
                   type: number
+                  width: 100
+                  order: 3
                   slot: 3
                   precision: 2
+    code: invoice_lines
     templates:
       - key: default
         isDefault: true

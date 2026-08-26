@@ -36,6 +36,8 @@ references:
 - name: Priority
   code: ks_priority
   type: combobox
+  width: 50
+  order: 1
   slot: 13
   reference:
     reference: ks_priority

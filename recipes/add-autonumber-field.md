@@ -23,6 +23,8 @@ autonumbers:
 - name: Request number
   code: REQUEST_NO
   type: text
+  width: 50
+  order: 1
   slot: 1
   uniqueId: 1          # 1 Object, 2 Object/Template, 3 Object/Requestor, 4 all three
 
@@ -33,8 +35,8 @@ templates:
     isDefault: true
     fields:
       REQUEST_NO:
-        autonumber: request_no
         alwaysDisabled: true
+        autonumber: request_no
 ```
 
 On a **single** default template you may set `autonumber: request_no` on the layout field instead of `templates.yaml`.

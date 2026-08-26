@@ -101,7 +101,8 @@ Extract includes **all** objects from the site; `companyId` is metadata on each 
 | Dry-run OT (`isTest`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
 | Publish (real OT + precompile) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
 | Precompile only | [`scripts/precompile-settings.py`](scripts/precompile-settings.py) |
-| Spec language | [spec-format.md](docs/transfer/spec-format.md) |
+| Spec language | [spec-format.md](docs/transfer/spec-format.md) ([YAML key order](docs/transfer/spec-format.md#yaml-key-order)) |
+| Normalize spec YAML keys | [`scripts/normalize-spec-yaml.py`](scripts/normalize-spec-yaml.py) |
 | Update actions | [docs/entities/update-actions.md](docs/entities/update-actions.md), [recipes/add-update-action.md](recipes/add-update-action.md) |
 | Object messages | [docs/entities/object-messages.md](docs/entities/object-messages.md) (HTML modal on create/update/workflow) |
 | Notifications | [docs/entities/notifications.md](docs/entities/notifications.md) (email templates; `spec/notifications.yaml`) |
@@ -294,7 +295,7 @@ Next step: greenfield Object Transfer or change loop once specs exist under `env
 
 ## Spec v2 layout
 
-Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Tree icon = Font Awesome **6.5.1** class string (`object.icon` / `objectType.icon` / `company.icon`); color = existing `CustomColorCode` (`object.color`, `objectType.color` — not HEX, not `CompanyTreeColor` / `ObjectTypeTreeColorFont`). Search icons with `python scripts/search-fa-icons.py --query bank`. Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). Per-object files typically:
+Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Tree icon = Font Awesome **6.5.1** class string (`object.icon` / `objectType.icon` / `company.icon`); color = existing `CustomColorCode` (`object.color`, `objectType.color` — not HEX, not `CompanyTreeColor` / `ObjectTypeTreeColorFont`). Search icons with `python scripts/search-fa-icons.py --query bank`. Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). YAML mapping key order must match OT extract — [spec-format.md](docs/transfer/spec-format.md#yaml-key-order); after spec edits run `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`. Per-object files typically:
 
 - `spec/object.yaml` — object, objectType, company, layout, onGrid
 - `spec/references.yaml` — numberedníky (`references:` map)
@@ -305,9 +306,10 @@ Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md
 - `spec/workflow.yaml` — roles, statuses, workflow
 - `spec/templates.yaml` — ObjectDefault rows, extended validation, client calc (optional)
 - `spec/object-actions.yaml` — ObjectAction + WorkflowStepObjectAction (optional)
+- `spec/object-messages.yaml` — ObjectMessage HTML modals (optional)
 - `spec/update-actions.yaml` — ObjectUpdateAction (optional)
-- `spec/notifications.yaml` — email templates (optional; bind from workflow / ObjectAction / Periodic)
 - `spec/periodics.yaml` — Periodic + optional Scheduler CRON (optional)
+- `spec/notifications.yaml` — email templates (optional; bind from workflow / ObjectAction / Periodic)
 - `spec/subgrids.yaml` — ObjectSub trees. Parent field `objectSub:` (emit tree) or `objectSubId:` (reuse/share). Bind `templates.fields.<code>.subgridTemplate`. Default `width: 80` (row-edit modal); extra columns → extra tabs/sections or stacked fields, not a wider modal. **New type-5 line:** emit create + per-step `access` on the parent; generator copies it onto columns or the add-row modal is empty. Always add `subgrids.<key>.onGrid` (fields + layouts) like request inbox onGrid, or the subgrid **table** has no columns. After generate, patch **`ObjectDefaultLineCalculationOrder`** for the type-5 parent (missing row → C.72; calcs skipped). Column extras = ObjectLine spec keys (`precision`, `reference`, `lookup` + `sourceField` on another subgrid column, `templates[].fields.*.clientCalculation`, …) on `ObjectSubLine*` / `ObjectSubDefaultLine*`; no types 5 / 13 / 18. Czech: `languageTable.subgrids.<key>`. Unique/prefill/Generate/server calc/calculation order not in spec yet — [object-model.md](docs/entities/object-model.md#subgrid), [add-subgrid.md](recipes/add-subgrid.md), [object-line-types.md](docs/entities/object-line-types.md#server-calculations)
 - `spec/ids.yaml` — `ids.explicit` + `ids.byTable` for Import with Orig. ID; new rows from per-table `ids.base[table]` (not one global block)
 

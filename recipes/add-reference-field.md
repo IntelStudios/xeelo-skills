@@ -37,6 +37,8 @@ fields:
   - name: Type
     code: TYPE
     type: combobox
+    width: 50
+    order: 1
     slot: 3
     reference:
       referenceId: 1    # site ID from ids.byTable.ObjectLineSource

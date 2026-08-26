@@ -6,6 +6,8 @@ import copy
 from pathlib import Path
 from typing import Any
 
+from ot_builder.spec_key_order import reorder_spec
+
 try:
     import yaml
 except ImportError:
@@ -183,7 +185,7 @@ def _write_fragment(
 
 def write_spec(spec: dict, directory: Path) -> Path:
     """Write split spec files into directory; returns entry path."""
-    spec = normalize_spec(spec)
+    spec = reorder_spec(normalize_spec(spec))
     directory.mkdir(parents=True, exist_ok=True)
     spec_dir = directory / "spec"
     spec_dir.mkdir(parents=True, exist_ok=True)

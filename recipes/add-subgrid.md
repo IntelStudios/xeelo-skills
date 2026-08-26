@@ -17,7 +17,6 @@ Default is **1:1** (tree in this object’s `spec/subgrids.yaml`). Sharing one `
 subgrids:
   invoice_lines:
     name: Invoice lines
-    code: invoice_lines
     width: 80
     layout:
       tabs:
@@ -28,17 +27,24 @@ subgrids:
                 - name: Description
                   code: DESC
                   type: text
+                  width: 100
+                  order: 1
                   slot: 1
                 - name: Qty
                   code: QTY
                   type: number
+                  width: 100
+                  order: 2
                   slot: 2
                   precision: 0
                 - name: Amount
                   code: AMOUNT
                   type: number
+                  width: 100
+                  order: 3
                   slot: 3
                   precision: 2
+    code: invoice_lines
     templates:
       - key: default
         name: Default
@@ -72,6 +78,8 @@ subgrids:
 - name: Lines
   code: LINES
   type: subgrid
+  width: 100
+  order: 1
   objectSub: invoice_lines
 
 # spec/templates.yaml — which ObjectSubDefault new rows use
@@ -90,6 +98,8 @@ templates:
 - name: Lines
   code: LINES
   type: subgrid
+  width: 100
+  order: 1
   objectSubId: 4242
 ```
 

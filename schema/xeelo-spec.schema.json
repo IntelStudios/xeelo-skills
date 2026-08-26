@@ -21,15 +21,15 @@
         "name": { "type": "string", "minLength": 1, "maxLength": 50 },
         "code": { "type": "string", "maxLength": 255 },
         "objectType": { "type": "string", "minLength": 1, "maxLength": 50 },
-        "requestTitleField": {
-          "type": "string",
-          "minLength": 1,
-          "description": "ObjectLine code used as the request title in GUI (Object.RequestTitleObjectLineID)"
-        },
         "icon": { "$ref": "#/$defs/treeIcon" },
         "color": {
           "$ref": "#/$defs/customColorCode",
           "description": "ObjectTreeColor — treeview icon color (CustomColorCode, not HEX)"
+        },
+        "requestTitleField": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectLine code used as the request title in GUI (Object.RequestTitleObjectLineID)"
         }
       }
     },
@@ -160,14 +160,14 @@
         "name": { "type": "string" },
         "placement": { "type": "integer", "enum": [0, 1], "default": 0 },
         "order": { "type": "integer", "minimum": 1 },
-        "alwaysHidden": {
-          "type": "boolean",
-          "description": "ObjectLineTabAlwaysHidden — hide the whole tab (typical for helper lines)"
-        },
         "sections": {
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/section" }
+        },
+        "alwaysHidden": {
+          "type": "boolean",
+          "description": "ObjectLineTabAlwaysHidden — hide the whole tab (typical for helper lines)"
         }
       }
     },
@@ -217,10 +217,9 @@
             "checkbox_multiselect"
           ]
         },
-        "slot": { "type": "integer", "minimum": 1 },
         "width": { "type": "integer", "minimum": 1, "maximum": 100 },
         "order": { "type": "integer", "minimum": 1 },
-        "mandatory": { "type": "boolean" },
+        "slot": { "type": "integer", "minimum": 1 },
         "precision": {
           "type": "integer",
           "minimum": 0,
@@ -237,30 +236,15 @@
           "minimum": 1,
           "description": "Existing/shared ObjectSub Orig. ID; generator does not emit ObjectSub* rows"
         },
-        "lookup": { "$ref": "#/$defs/lookup" },
-        "reference": { "$ref": "#/$defs/reference" },
         "saveAction": { "type": "integer", "minimum": 0, "maximum": 1 },
-        "attachmentStorageId": { "type": "integer", "minimum": 0 },
-        "ocr": { "type": "boolean" },
-        "ocrLang": { "type": "string", "maxLength": 5 },
-        "imageResizeMax": { "type": "integer", "minimum": 1 },
-        "mobileScan": { "type": "boolean" },
-        "mobileSignature": { "type": "boolean" },
-        "previewField": { "type": "string", "minLength": 1 },
-        "previewDownload": { "type": "boolean" },
-        "webFrameTypeId": { "type": "integer", "minimum": 1, "maximum": 4 },
-        "textInputType": { "type": "integer", "minimum": 0, "maximum": 2 },
-        "columnNumbers": { "type": "integer", "minimum": 1 },
+        "uniqueId": { "type": "integer", "minimum": 1, "maximum": 4 },
         "numberSeparator": { "type": "string", "maxLength": 1 },
         "numberMin": { "type": "integer" },
         "numberMax": { "type": "integer" },
+        "textInputType": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "columnNumbers": { "type": "integer", "minimum": 1 },
+        "webFrameTypeId": { "type": "integer", "minimum": 1, "maximum": 4 },
         "height": { "type": "integer", "minimum": 1, "description": "ObjectLineHeight in pixels (memo, report). Omit for unlimited." },
-        "uniqueId": { "type": "integer", "minimum": 1, "maximum": 4 },
-        "autonumber": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Catalog key from autonumbers:. Bind on a single default template; prefer templates.fields.<code>.autonumber when templates.yaml exists. Text only."
-        },
         "descMemoBorder": {
           "type": "boolean",
           "description": "ObjectLineDescMemoIsBorder. Default false (omit or false). Set true only for a visible box."
@@ -278,6 +262,14 @@
           "description": "ObjectLineColorBack — button background CustomColorCode (not HEX), e.g. blue"
         },
         "isReferenceLink": { "type": "boolean" },
+        "attachmentStorageId": { "type": "integer", "minimum": 0 },
+        "ocr": { "type": "boolean" },
+        "ocrLang": { "type": "string", "maxLength": 5 },
+        "imageResizeMax": { "type": "integer", "minimum": 1 },
+        "mobileScan": { "type": "boolean" },
+        "mobileSignature": { "type": "boolean" },
+        "previewField": { "type": "string", "minLength": 1 },
+        "previewDownload": { "type": "boolean" },
         "alwaysHidden": {
           "type": "boolean",
           "description": "ObjectLineIsHidden — line is not shown in GUI (definition-level, not template extended validation)"
@@ -285,6 +277,14 @@
         "isActive": {
           "type": "boolean",
           "description": "ObjectLine.IsActive — false soft-disables the line (OT does not delete). Omit and the site row stays active."
+        },
+        "mandatory": { "type": "boolean" },
+        "reference": { "$ref": "#/$defs/reference" },
+        "lookup": { "$ref": "#/$defs/lookup" },
+        "autonumber": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Catalog key from autonumbers:. Bind on a single default template; prefer templates.fields.<code>.autonumber when templates.yaml exists. Text only."
         }
       }
     },
@@ -292,10 +292,10 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "referenceId": { "type": "integer", "minimum": 1 },
         "reference": { "type": "string", "minLength": 1 },
-        "sourceId": { "type": "integer", "minimum": 1, "description": "Deprecated alias for referenceId" },
+        "referenceId": { "type": "integer", "minimum": 1 },
         "source": { "type": "string", "minLength": 1, "description": "Deprecated alias for reference" },
+        "sourceId": { "type": "integer", "minimum": 1, "description": "Deprecated alias for referenceId" },
         "filterField": { "type": "string", "minLength": 1 }
       },
       "oneOf": [
@@ -321,13 +321,13 @@
       "required": ["objectId", "lines"],
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
         "objectId": { "type": "integer", "minimum": 1 },
         "requestType": {
           "type": "string",
           "enum": ["all", "completed", "in-progress"],
           "default": "all"
         },
+        "name": { "type": "string" },
         "lines": {
           "type": "object",
           "additionalProperties": false,
@@ -383,12 +383,12 @@
       "additionalProperties": false,
       "properties": {
         "name": { "type": "string" },
-        "matchId": { "type": "integer", "minimum": 1, "maximum": 2, "default": 1 },
         "values": {
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/lookupValue" }
-        }
+        },
+        "matchId": { "type": "integer", "minimum": 1, "maximum": 2, "default": 1 }
       }
     },
     "autonumberDefinition": {
@@ -412,7 +412,6 @@
       "additionalProperties": false,
       "properties": {
         "name": { "type": "string", "minLength": 1, "maxLength": 50 },
-        "code": { "type": "string", "maxLength": 255 },
         "width": {
           "type": "integer",
           "minimum": 50,
@@ -432,6 +431,7 @@
             }
           }
         },
+        "code": { "type": "string", "maxLength": 255 },
         "templates": {
           "type": "array",
           "items": { "$ref": "#/$defs/subgridTemplate" }
@@ -455,11 +455,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+              "alwaysDisabled": { "type": "boolean" },
               "mandatory": { "type": "boolean" },
               "hint": { "type": "string", "minLength": 1 },
-              "autonumber": { "type": "string", "minLength": 1 },
-              "alwaysDisabled": { "type": "boolean" },
-              "clientCalculation": { "$ref": "#/$defs/clientCalculation" }
+              "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
+              "autonumber": { "type": "string", "minLength": 1 }
             }
           }
         }
@@ -721,12 +721,26 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "hidden": { "type": "boolean" },
-        "mandatory": { "type": "boolean" },
         "alwaysDisabled": {
           "type": "boolean",
           "description": "ObjectDefaultLineIsDisabled — Admin Always disabled on the template line"
         },
+        "mandatory": { "type": "boolean" },
+        "hidden": { "type": "boolean" },
+        "extended": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hidden": { "type": "string" },
+            "disabled": { "type": "string" },
+            "mandatory": { "type": "string" }
+          }
+        },
+        "defaultValue": {
+          "type": ["string", "number"],
+          "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
+        },
+        "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
         "autonumber": {
           "type": "string",
           "minLength": 1,
@@ -737,24 +751,10 @@
           "minLength": 1,
           "description": "Key of subgrids.<key>.templates[] → ObjectDefaultLine.ObjectSubDefaultID. Requires parent field objectSub."
         },
-        "defaultValue": {
-          "type": ["string", "number"],
-          "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
-        },
         "hint": {
           "type": "string",
           "minLength": 1,
           "description": "ObjectDefaultLineHint — runtime field hint (plain or HTML). All types except empty_space. Canonical English; translations in languageTable.templateHints"
-        },
-        "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
-        "extended": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "hidden": { "type": "string" },
-            "disabled": { "type": "string" },
-            "mandatory": { "type": "string" }
-          }
         }
       }
     },
@@ -800,8 +800,8 @@
       "properties": {
         "key": { "type": "string" },
         "name": { "type": "string" },
-        "isDefault": { "type": "boolean" },
         "order": { "type": "integer", "minimum": 0 },
+        "isDefault": { "type": "boolean" },
         "accessOwnerLevel": { "type": "integer", "minimum": 0 },
         "isExternal": { "type": "integer", "enum": [0, 1] },
         "externalLink": { "type": "string" },
