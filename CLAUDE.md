@@ -29,7 +29,7 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Autonumber:** site sequence (`spec/autonumbers.yaml`) bound on the template line; **unique** is `fields[].uniqueId` (1–4) on ObjectLine. Typical request identifier: text + autonumber + `uniqueId: 1`. See [AGENT.md](AGENT.md) and [docs/entities/object-model.md](docs/entities/object-model.md).
 
-**Object Service / Client-Service:** site catalog (`spec/object-services.yaml`, type `external`) bound on the template line (`clientCalculation.type: service` + `service` + `expr`). Contract and known wrappers: [object-services.md](docs/entities/object-services.md).
+**Object Service / Client-Service:** site catalog (`spec/object-services.yaml`, type `external`) bound on the template line (`clientCalculation.type: service` + `service` + `expr`). Contract and known wrappers: [object-services.md](docs/entities/object-services.md). Do **not** set `calcDelay` or `calcConfirm` unless the user asks (runtime debounce 400 ms). `defaultValue` / `defaultFilter` only when the field should have a default or combo filter.
 
 **Description memo:** new `description_memo` fields default **`descMemoBorder: false`** (omit or false). Set `true` only when the user wants a visible box.
 

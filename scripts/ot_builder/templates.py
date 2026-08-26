@@ -41,6 +41,26 @@ LOOKUP_FIELD_TYPES = frozenset(
         "checkbox_multiselect",
     }
 )
+# Admin defaultValueEnabled: 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20
+DEFAULT_VALUE_FIELD_TYPES = frozenset(
+    {
+        "combobox",
+        "combobox_search",
+        "combobox_server",
+        "text",
+        "textarea",
+        "checkbox",
+        "date",
+        "memo",
+        "number",
+        "time",
+        "radio",
+        "checkbox_multiselect",
+    }
+)
+DEFAULT_FILTER_FIELD_TYPES = REFERENCE_FIELD_TYPES
+CALC_DELAY_FIELD_TYPES = frozenset({"text", "textarea", "number"})
+CALC_CONFIRM_FIELD_TYPES = frozenset({"text", "number"})
 
 CLIENT_CALC_TYPE_IDS = {
     "math": 1,
@@ -273,6 +293,84 @@ def apply_template_line_validation(
     template_line["ObjectDefaultLineValidationID"] = VALIDATION_OPTIONAL
 
 
+def apply_template_value_delay_confirm(
+    row: dict[str, Any],
+    cfg: dict[str, Any],
+    field: dict[str, Any],
+    *,
+    col_prefix: str,
+    loc: str,
+) -> None:
+    """Optional defaultValue / defaultFilter / calcDelay / calcConfirm. Omit = SQL default."""
+    ftype = str(field.get("type") or "")
+    if cfg.get("defaultValue") is not None:
+        value = str(cfg["defaultValue"])
+        if ftype == "description_memo":
+            row[f"{col_prefix}DescMemo"] = value
+        elif ftype in DEFAULT_VALUE_FIELD_TYPES:
+            row[f"{col_prefix}Value"] = value
+        else:
+            raise ValueError(
+                f"{loc}: defaultValue is not allowed on type {ftype!r}"
+            )
+    filt = cfg.get("defaultFilter")
+    if filt is not None and str(filt).strip() != "":
+        if ftype not in DEFAULT_FILTER_FIELD_TYPES:
+            raise ValueError(
+                f"{loc}: defaultFilter is only allowed on combo/radio/multi"
+            )
+        row[f"{col_prefix}ValueFilter"] = str(filt)
+    if cfg.get("calcDelay") is not None:
+        try:
+            delay = int(cfg["calcDelay"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{loc}: calcDelay must be an integer (ms)") from exc
+        if delay < 0:
+            raise ValueError(f"{loc}: calcDelay must be >= 0")
+        if ftype not in CALC_DELAY_FIELD_TYPES:
+            raise ValueError(
+                f"{loc}: calcDelay is only allowed on text, textarea, or number"
+            )
+        if delay > 0:
+            row[f"{col_prefix}ClientCalcDelay"] = delay
+    if cfg.get("calcConfirm"):
+        if ftype not in CALC_CONFIRM_FIELD_TYPES:
+            raise ValueError(
+                f"{loc}: calcConfirm is only allowed on text or number"
+            )
+        row[f"{col_prefix}IsClientCalcConfirm"] = 1
+
+
+def extract_template_value_delay_confirm(
+    spec_field: dict[str, Any],
+    row: dict[str, Any],
+    *,
+    col_prefix: str,
+) -> None:
+    """Emit spec keys only when they differ from SQL defaults (omit 0 / false / empty)."""
+    desc_html = row.get(f"{col_prefix}DescMemo")
+    if desc_html is not None and str(desc_html) != "":
+        spec_field["defaultValue"] = str(desc_html)
+    else:
+        default_value = row.get(f"{col_prefix}Value")
+        if default_value is not None and str(default_value) != "":
+            spec_field["defaultValue"] = str(default_value)
+    filt = row.get(f"{col_prefix}ValueFilter")
+    if filt is not None and str(filt).strip() != "":
+        spec_field["defaultFilter"] = str(filt)
+    delay = row.get(f"{col_prefix}ClientCalcDelay")
+    if delay is not None and str(delay).strip() != "":
+        try:
+            delay_int = int(delay)
+        except (TypeError, ValueError):
+            delay_int = 0
+        if delay_int > 0:
+            spec_field["calcDelay"] = delay_int
+    confirm = row.get(f"{col_prefix}IsClientCalcConfirm")
+    if str(confirm) in ("1", "True", "true"):
+        spec_field["calcConfirm"] = True
+
+
 def apply_template_line_extras(
     template_line: dict[str, Any],
     *,
@@ -284,12 +382,13 @@ def apply_template_line_extras(
     cfg = dict(template_field or {})
     if cfg.get("alwaysDisabled"):
         template_line["ObjectDefaultLineIsDisabled"] = 1
-    if cfg.get("defaultValue") is not None:
-        value = str(cfg["defaultValue"])
-        if field.get("type") == "description_memo":
-            template_line["ObjectDefaultLineDescMemo"] = value
-        else:
-            template_line["ObjectDefaultLineValue"] = value
+    apply_template_value_delay_confirm(
+        template_line,
+        cfg,
+        field,
+        col_prefix="ObjectDefaultLine",
+        loc=f"templates.fields.{field.get('code')}",
+    )
 
     hint = cfg.get("hint")
     if hint is not None and str(hint).strip() != "":
@@ -372,13 +471,9 @@ def template_field_spec_from_line(
             if extended:
                 spec_field["extended"] = extended
 
-    desc_html = row.get("ObjectDefaultLineDescMemo")
-    if desc_html is not None and str(desc_html) != "":
-        spec_field["defaultValue"] = str(desc_html)
-    else:
-        default_value = row.get("ObjectDefaultLineValue")
-        if default_value is not None and str(default_value) != "":
-            spec_field["defaultValue"] = str(default_value)
+    extract_template_value_delay_confirm(
+        spec_field, row, col_prefix="ObjectDefaultLine"
+    )
 
     calc_type_id = row.get("ObjectDefaultLineClientCalculationTypeID")
     calc_expr = row.get("ObjectDefaultLineClientCalculation")

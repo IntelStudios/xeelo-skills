@@ -715,6 +715,78 @@ class LineTypeExtrasTests(unittest.TestCase):
             build_rows(spec)
 
 
+class TemplateValueDelayConfirmTests(unittest.TestCase):
+    def test_omit_delay_confirm_by_default(self) -> None:
+        result = build_rows(_line_types_spec())
+        name_id = next(
+            row["ObjectLineID"]
+            for row in result.rows["ObjectLine"]
+            if row["ObjectLineCode"] == "NAME"
+        )
+        name = next(
+            row for row in result.rows["ObjectDefaultLine"] if row["ObjectLineID"] == name_id
+        )
+        self.assertNotIn("ObjectDefaultLineClientCalcDelay", name)
+        self.assertNotIn("ObjectDefaultLineIsClientCalcConfirm", name)
+        self.assertNotIn("ObjectDefaultLineValueFilter", name)
+
+    def test_generate_and_extract_delay_confirm_filter(self) -> None:
+        spec = _line_types_spec()
+        spec["templates"][0]["fields"]["NAME"]["calcDelay"] = 800
+        spec["templates"][0]["fields"]["NAME"]["calcConfirm"] = True
+        spec["templates"][0]["fields"].setdefault("TYPE", {})["defaultFilter"] = "FIO,BANK"
+        result = build_rows(spec)
+        lines = {row["ObjectLineCode"]: row for row in result.rows["ObjectLine"]}
+        tmpl = {row["ObjectLineID"]: row for row in result.rows["ObjectDefaultLine"]}
+        name = tmpl[lines["NAME"]["ObjectLineID"]]
+        typ = tmpl[lines["TYPE"]["ObjectLineID"]]
+        self.assertEqual(name["ObjectDefaultLineClientCalcDelay"], 800)
+        self.assertEqual(name["ObjectDefaultLineIsClientCalcConfirm"], 1)
+        self.assertEqual(typ["ObjectDefaultLineValueFilter"], "FIO,BANK")
+
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        fields = extracted["templates"][0]["fields"]
+        self.assertEqual(fields["NAME"]["calcDelay"], 800)
+        self.assertTrue(fields["NAME"]["calcConfirm"])
+        self.assertEqual(fields["TYPE"]["defaultFilter"], "FIO,BANK")
+        self.assertNotIn("calcDelay", fields.get("QTY") or {})
+        self.assertNotIn("calcConfirm", fields.get("QTY") or {})
+
+    def test_zero_delay_is_omitted(self) -> None:
+        spec = _line_types_spec()
+        spec["templates"][0]["fields"]["NAME"]["calcDelay"] = 0
+        spec["templates"][0]["fields"]["NAME"]["calcConfirm"] = False
+        result = build_rows(spec)
+        name_id = next(
+            row["ObjectLineID"]
+            for row in result.rows["ObjectLine"]
+            if row["ObjectLineCode"] == "NAME"
+        )
+        name = next(
+            row for row in result.rows["ObjectDefaultLine"] if row["ObjectLineID"] == name_id
+        )
+        self.assertNotIn("ObjectDefaultLineClientCalcDelay", name)
+        self.assertNotIn("ObjectDefaultLineIsClientCalcConfirm", name)
+
+    def test_reject_confirm_on_combo(self) -> None:
+        spec = _line_types_spec()
+        spec["templates"][0]["fields"]["TYPE"] = {"calcConfirm": True}
+        with self.assertRaisesRegex(ValueError, "calcConfirm"):
+            build_rows(spec)
+
+    def test_reject_default_value_on_empty_space(self) -> None:
+        spec = _line_types_spec()
+        spec["templates"][0]["fields"]["GAP"] = {"defaultValue": "x"}
+        with self.assertRaisesRegex(ValueError, "defaultValue"):
+            build_rows(spec)
+
+
 class ExtendedConditionCompileTests(unittest.TestCase):
     def test_compile_unary_and_substring_conditions(self) -> None:
         spec = _line_types_spec()

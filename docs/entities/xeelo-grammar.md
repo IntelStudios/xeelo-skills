@@ -105,7 +105,7 @@ if (id{TYPE} = 'FIO' and id{TYPE} isnotempty) then ('1') else ('0')
 
 ## Client-Service
 
-G4 prefix `3#`. Spec `type: service` stores `expr` **without** `3#`. Params are comma-separated `id{CODE}` / STRING; `{@n}` in the ObjectService URL is filled at runtime. Bind `clientCalculation.service` to `spec/object-services.yaml`. Details: [object-services.md](object-services.md#client-service).
+G4 prefix `3#`. Spec `type: service` stores `expr` **without** `3#`. Params are comma-separated `id{CODE}` / STRING; `{@n}` in the ObjectService URL is filled at runtime. Bind `clientCalculation.service` to `spec/object-services.yaml`. The source field's `valueChanges` debounce is **400 ms**; `calcDelay` / `calcConfirm` on that source are opt-in — [object-line-types.md](object-line-types.md#client-calc-delay-and-confirm). Details: [object-services.md](object-services.md#client-service).
 
 ```yaml
 clientCalculation:

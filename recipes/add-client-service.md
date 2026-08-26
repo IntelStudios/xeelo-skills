@@ -66,6 +66,8 @@ Put the real host in `link`. `{@1}` stays literal. `expr` `id{CODE}` compiles to
 
 Combo source: `id{CODE}` = stored value, `id{CODE}r` = display name. Extra params: `id{ICO}, 'CZ'`.
 
+Do **not** add `calcDelay` or `calcConfirm` on ICO (or any source) unless the user asks. Runtime debounce is 400 ms; Confirm is a Refresh button on the source line — [object-line-types.md](../docs/entities/object-line-types.md#client-calc-delay-and-confirm).
+
 ## Tables to emit
 
 1. **ObjectService** (once per `objectServices:` key) — `ObjectServiceTypeID = 1`, `ObjectServiceLink`

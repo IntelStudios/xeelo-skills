@@ -106,10 +106,13 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectDefaultLineLookupID` | Lookup map (dotazovací mapa) |
 | `ObjectDefaultLineLookupObjectLineID` | Source field — whose value is matched |
 | `ObjectDefaultLineLookupFilterObjectLineID` | Optional filter field — further restricts the map row |
-| `ObjectDefaultLineValue` | Default value (not used for description memo) |
-| `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML** |
+| `ObjectDefaultLineValue` | Default value (not used for description memo). Spec: `templates.fields.<code>.defaultValue` — [object-line-types.md](object-line-types.md#default-value-and-filter) |
+| `ObjectDefaultLineValueFilter` | Default filter for combo/radio/multi. Spec: `defaultFilter`. Omit unless asked |
+| `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML**. Spec: `defaultValue` on `description_memo` |
 | `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 — [object-line-types.md](object-line-types.md#client-calculations) |
 | `ObjectDefaultLineClientCalculation` | Math/String expr without `1#`/`2#` prefix — [xeelo-grammar.md](xeelo-grammar.md) |
+| `ObjectDefaultLineClientCalcDelay` | Debounce ms on the **source** line. Spec: `calcDelay`. Omit = runtime 400. Do not set unless asked — [object-line-types.md](object-line-types.md#client-calc-delay-and-confirm) |
+| `ObjectDefaultLineIsClientCalcConfirm` | Refresh button on text/number source. Spec: `calcConfirm`. Omit = off. Do not set unless asked |
 | `ObjectDefaultLineCalculationTypeID` | Server calc **51+** ([`ObjectDefaultLineCalculationType.json`](../data/enums/ObjectDefaultLineCalculationType.json)). Spec does not emit it — [object-line-types.md](object-line-types.md#server-calculations) |
 | `ObjectDefaultLineCalculation` | Server calc formula (for example Server-SubConcat **52**: `id{type5LineId},id{subLineId}`) |
 | `ObjectDefaultLineHint` | Runtime hint for users (plain or HTML). Spec: `templates.fields.<code>.hint`. All types except empty space (6). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue`. Subgrid template hint: `ObjectSubDefaultLineHint` (`subgrids.*.templates[].fields.*.hint`). |
@@ -300,7 +303,7 @@ Spec: `access[].field` + optional `access[].sublineId`. Orig. ID keys `{field}` 
 | GraphQL | `ObjectCode` | same `Select_` / `Mutate_` prefixes from **`ObjectSubCode`** |
 | Generate + combo Multiselect | — | subgrid-only (below) |
 
-Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids`. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
+Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids`. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
 
 ### Generate + combo Multiselect
 

@@ -705,6 +705,108 @@ class SubgridRoundtripTests(unittest.TestCase):
         self.assertIn("invoice_lines", loaded["subgrids"])
         self.assertEqual(loaded["subgrids"]["invoice_lines"]["code"], "invoice_lines")
 
+    def test_subgrid_default_value_delay_confirm_filter(self) -> None:
+        spec = _base_spec()
+        spec["references"] = {
+            "ks_kind": {
+                "name": "Kind",
+                "typeId": 1,
+                "styleId": 4,
+                "values": [
+                    {"value": "demo", "label": "Demo"},
+                    {"value": "full", "label": "Full"},
+                ],
+            }
+        }
+        spec["subgrids"]["invoice_lines"]["layout"]["tabs"][0]["sections"][0]["fields"].extend(
+            [
+                {
+                    "name": "Kind",
+                    "code": "KIND",
+                    "type": "combobox",
+                    "slot": 2,
+                    "width": 50,
+                    "order": 20,
+                    "reference": {"reference": "ks_kind"},
+                },
+                {
+                    "name": "Intro",
+                    "code": "INTRO",
+                    "type": "description_memo",
+                    "width": 100,
+                    "order": 30,
+                },
+            ]
+        )
+        spec["subgrids"]["invoice_lines"]["templates"][0]["fields"] = {
+            "DESC": {
+                "mandatory": True,
+                "defaultValue": "line",
+                "calcDelay": 600,
+                "calcConfirm": True,
+            },
+            "KIND": {"defaultFilter": "demo"},
+            "INTRO": {"defaultValue": "<p>Row intro</p>"},
+        }
+        result = build_rows(spec)
+        by_code = {
+            row["ObjectSubLineCode"]: row["ObjectSubLineID"]
+            for row in result.rows["ObjectSubLine"]
+        }
+        dl = {
+            row["ObjectSubLineID"]: row for row in result.rows["ObjectSubDefaultLine"]
+        }
+        desc = dl[by_code["DESC"]]
+        self.assertEqual(desc["ObjectSubDefaultLineValue"], "line")
+        self.assertEqual(desc["ObjectSubDefaultLineClientCalcDelay"], 600)
+        self.assertEqual(desc["ObjectSubDefaultLineIsClientCalcConfirm"], 1)
+        self.assertEqual(dl[by_code["KIND"]]["ObjectSubDefaultLineValueFilter"], "demo")
+        self.assertEqual(
+            dl[by_code["INTRO"]]["ObjectSubDefaultLineDescMemo"], "<p>Row intro</p>"
+        )
+        self.assertNotIn("ObjectSubDefaultLineValue", dl[by_code["INTRO"]])
+
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        fields = extracted["subgrids"]["invoice_lines"]["templates"][0]["fields"]
+        self.assertEqual(fields["DESC"]["defaultValue"], "line")
+        self.assertEqual(fields["DESC"]["calcDelay"], 600)
+        self.assertTrue(fields["DESC"]["calcConfirm"])
+        self.assertEqual(fields["KIND"]["defaultFilter"], "demo")
+        self.assertEqual(fields["INTRO"]["defaultValue"], "<p>Row intro</p>")
+
+    def test_subgrid_reject_delay_on_combo(self) -> None:
+        spec = _base_spec()
+        spec["references"] = {
+            "ks_kind": {
+                "name": "Kind",
+                "typeId": 1,
+                "styleId": 4,
+                "values": [{"value": "demo", "label": "Demo"}],
+            }
+        }
+        spec["subgrids"]["invoice_lines"]["layout"]["tabs"][0]["sections"][0]["fields"].append(
+            {
+                "name": "Kind",
+                "code": "KIND",
+                "type": "combobox",
+                "slot": 2,
+                "width": 50,
+                "order": 20,
+                "reference": {"reference": "ks_kind"},
+            }
+        )
+        spec["subgrids"]["invoice_lines"]["templates"][0]["fields"]["KIND"] = {
+            "calcDelay": 500
+        }
+        with self.assertRaisesRegex(ValueError, "calcDelay"):
+            build_rows(spec)
+
 
 if __name__ == "__main__":
     unittest.main()

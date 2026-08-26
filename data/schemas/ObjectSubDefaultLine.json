@@ -4,6 +4,8 @@
     {"name": "ObjectSubDefaultID", "type": "INT", "nullable": false, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineID", "type": "INT", "nullable": false, "identity": true, "default": null},
     {"name": "ObjectSubLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineValue", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineValueFilter", "type": "NVARCHAR(255)", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineValidationID", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineAutoNumberID", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineHint", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
@@ -16,6 +18,7 @@
     {"name": "ObjectSubDefaultLineClientCalcDelay", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubDefaultLineIsClientCalcConfirm", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
     {"name": "ObjectServiceID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineDescMemo", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
     {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
   ],
   "foreignKeys": [

@@ -482,6 +482,24 @@
               "alwaysDisabled": { "type": "boolean" },
               "mandatory": { "type": "boolean" },
               "hint": { "type": "string", "minLength": 1 },
+              "defaultValue": {
+                "type": ["string", "number"],
+                "description": "ObjectSubDefaultLineValue, or ObjectSubDefaultLineDescMemo HTML when type is description_memo"
+              },
+              "defaultFilter": {
+                "type": "string",
+                "minLength": 1,
+                "description": "ObjectSubDefaultLineValueFilter — combo/radio/multi only"
+              },
+              "calcDelay": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "ObjectSubDefaultLineClientCalcDelay (ms). Omit = runtime 400."
+              },
+              "calcConfirm": {
+                "type": "boolean",
+                "description": "ObjectSubDefaultLineIsClientCalcConfirm. Omit/false = 0."
+              },
               "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
               "autonumber": { "type": "string", "minLength": 1 }
             }
@@ -762,7 +780,21 @@
         },
         "defaultValue": {
           "type": ["string", "number"],
-          "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo"
+          "description": "ObjectDefaultLineValue, or ObjectDefaultLineDescMemo HTML when the field type is description_memo. Same on ObjectSubDefaultLine. Omit unless the field should have a default."
+        },
+        "defaultFilter": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectDefaultLineValueFilter / ObjectSubDefaultLineValueFilter — combo/radio/multi only. Omit unless the user asks."
+        },
+        "calcDelay": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "ObjectDefaultLineClientCalcDelay (ms) on the source line. Omit = runtime 400. text/textarea/number. Do not set unless the user asks."
+        },
+        "calcConfirm": {
+          "type": "boolean",
+          "description": "ObjectDefaultLineIsClientCalcConfirm — Refresh button on text/number source. Omit/false = 0. Do not set unless the user asks."
         },
         "clientCalculation": { "$ref": "#/$defs/clientCalculation" },
         "autonumber": {

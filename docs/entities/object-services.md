@@ -55,7 +55,7 @@ clientCalculation:
 
 `ObjectServiceLink` placeholders are **`{@1}`**, `{@2}`, … (1-based, same order as `expr`). They are **not** compiled at generate time.
 
-Trigger: source field `valueChanges`, default debounce **400 ms** (not blur). `ObjectDefaultLineIsClientCalcConfirm` shows a Refresh button on text/number — not a modal; not in spec yet.
+Trigger: source field `valueChanges`, default debounce **400 ms** (not blur). Override with `calcDelay` (ms) on that **source** line; `calcConfirm: true` shows a Refresh button (text/number) instead of auto-running calcs. **Do not set `calcDelay` or `calcConfirm` unless the user asks.** Same keys on subgrid templates. Details: [object-line-types.md](object-line-types.md#client-calc-delay-and-confirm).
 
 On form load, Client-Service does **not** run until a dependency changes (external report lines are the exception; those types are not in spec).
 

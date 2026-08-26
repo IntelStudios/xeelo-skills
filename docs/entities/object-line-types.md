@@ -95,7 +95,7 @@ Same extras table as above, on `subgrids.<key>.layout.tabs[].sections[].fields[]
 | Preview | `previewField` is another **subgrid** column code → `ObjectSubLineAttPreviewObjectSubLineID` |
 | `filterField` | another **subgrid** column → `ObjectSubLineSourceFilterObjectSubLineID` |
 | Lookup | same spec as ObjectLine (`lookup` + `sourceField`) on the **layout** field; binds `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`. `sourceField` is a column in **this** objectSub |
-| Client calc | `subgrids.*.templates[].fields.*.clientCalculation` / `alwaysDisabled` → `ObjectSubDefaultLine*`. `id{CODE}` → `ObjectSubLineID`. Types **1–5 and 7** only (no `focus` / `device_info`). Client-Service: same ObjectService type filter as request lines (1–2 on columns) — [object-services.md](object-services.md) |
+| Client calc | `subgrids.*.templates[].fields.*.clientCalculation` / `alwaysDisabled` → `ObjectSubDefaultLine*`. `id{CODE}` → `ObjectSubLineID`. Types **1–5 and 7** only (no `focus` / `device_info`). Client-Service: same ObjectService type filter as request lines (1–2 on columns) — [object-services.md](object-services.md). `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` same spec keys as the request template |
 
 ## Admin canSet (ObjectLine)
 
@@ -186,13 +186,14 @@ Template behaviour depends on the **line type**:
 | Server calc | all **except** 5, 6, 16, 18; report (13) has server calc **disabled** in Admin |
 | Client calc | types in the client-calc map below |
 | Lookup | 1, 2, 3, 7, 8, 12, 14, 15, 19, 20 |
-| Default value | 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 (`ObjectDefaultLineValue`) |
-| Default filter | combo / radio / multi |
+| Default value | 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 (`ObjectDefaultLineValue`). Spec `templates.fields.<code>.defaultValue`. Description memo (16) uses `ObjectDefaultLineDescMemo` instead — [Default value and filter](#default-value-and-filter) |
+| Default filter | combo / radio / multi (`ObjectDefaultLineValueFilter`). Spec `defaultFilter` — omit unless the user asks |
 | Always disabled | all **except** 6, 10, 13, 16, 17 — spec `templates.fields.<code>.alwaysDisabled` → `ObjectDefaultLineIsDisabled` |
 | Hint | all except empty (6) — spec `templates.fields.<code>.hint` → `ObjectDefaultLineHint` (plain or HTML). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue` (`ObjectDefaultLineDescMemo`). Subgrid: `subgrids.*.templates[].fields.*.hint` → `ObjectSubDefaultLineHint`. |
 | Input mask / length / autonumber | text (3) only — autonumber bind `templates.fields.<code>.autonumber` ([object-model.md](object-model.md#autonumber)); mutually exclusive with input mask |
 | Whisperer | text (3) only |
-| Calc confirm | text (3), number (12); delay also textarea (4) |
+| Calc delay | text (3), textarea (4), number (12) — spec `calcDelay` (ms) on the **source** line. Omit = runtime **400**. Do not set unless the user asks |
+| Calc confirm | text (3), number (12) — spec `calcConfirm` → Refresh button on the **source** line. Omit = off. Do not set unless the user asks — [Client calc delay and confirm](#client-calc-delay-and-confirm) |
 | Desc memo HTML | 16 only — `ObjectDefaultLineDescMemo` is the template default; **HTML** (Admin HTML editor / `innerHTML` at runtime). Spec: `templates.fields.<code>.defaultValue` |
 | Subgrid template / prefill | 5 — spec `templates.fields.<code>.subgridTemplate` → `ObjectDefaultLine.ObjectSubDefaultID` (requires `objectSub:`). Prefill (`ObjectSubPrefillID`) not in spec yet |
 | Report result / graph | 13 (not when client calc is Service) |
@@ -238,6 +239,39 @@ Client-Service requires `ObjectServiceID` (`clientCalculation.service`). On a **
 Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix. On a subgrid, `id{CODE}` compiles to `ObjectSubLineID`.
 
 **UserInfo** / **DeviceInfo** require `expr` as a single `{Placeholder}` (without `7#` / `8#`). Catalog: [xeelo-grammar.md](xeelo-grammar.md#client-userinfo--client-deviceinfo).
+
+## Client calc delay and confirm
+
+Admin labels **Calculation Delay** and **Calculation Confirm**. They sit on the **source** template line (the field others `id{…}` depend on), not on the calculated line. Same columns on `ObjectSubDefaultLine`. Spec: `templates.fields.<code>.calcDelay` / `calcConfirm` (and the same keys under `subgrids.*.templates[].fields`). **Omit both unless the user asks** — generator does not write defaults.
+
+| Spec | Column | Runtime |
+|------|--------|---------|
+| omit `calcDelay` | `NULL` | debounce **400 ms** (`valueChanges`, not blur). Admin table hint still says 250 ms — ignore it |
+| `calcDelay: N` (`N > 0`) | `…ClientCalcDelay` | debounce **N** ms for calc/lookup/reference. Validations still run at 400 ms when `N ≠ 400` and Confirm is off |
+| omit / `false` `calcConfirm` | `0` | calcs run after the debounce |
+| `calcConfirm: true` | `1` | `valueChanges` run **validations only**; user clicks **Refresh** (not a modal) for a full recalc |
+
+Confirm Admin enable: text (3) and number (12). Delay also textarea (4). Combo has no Confirm; Refresh on combo is unique / adhoc calc only.
+
+The Refresh button also appears without Confirm when `uniqueId > 0` or the line has an adhoc client calc (`typeID > 30`).
+
+Client-Service (ARES, …) follows this: put delay/confirm on **IČO**, not Company name, and only when asked.
+
+## Default value and filter
+
+Admin **Default Value** (`ObjectDefaultLineValue` / `ObjectSubDefaultLineValue`, `nvarchar(max)`). Spec `defaultValue` — set only when the field should have a default.
+
+| Type | Stored in |
+|------|-----------|
+| 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 | `…Value` |
+| description_memo (16) | `…DescMemo` (HTML) |
+| 5, 6, 9, 10, 13, 17, 18 | not offered |
+
+Filled on a **new** request when the slot is empty, and later if the field was hidden at create and `Data` is still null. Checkbox: `"0"` or `"1"`; anything else becomes `"0"` except `{id…m}` (copy a parent request line onto a subgrid column). Combo: store the **reference bind**, not the display name. A string containing `{…}` is treated as dynamic and resolved via request placeholders ([notifications.md](notifications.md#placeholders)); `{SubLineNext}` is subgrid-only. Memo `{…}` uses a separate dynamic-content path.
+
+**Default Filter** (`…ValueFilter`, nvarchar 255): combo / radio / multi only. Restricts the reference list. Spec `defaultFilter` (plain string). Omit unless the user asks.
+
+Same keys on subgrid templates (`ObjectSubDefaultLine*`).
 
 ## Server calculations
 

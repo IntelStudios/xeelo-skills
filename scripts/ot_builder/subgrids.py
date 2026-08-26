@@ -23,8 +23,10 @@ from ot_builder.templates import (
     SUBGRID_CLIENT_CALC_TYPE_IDS,
     VALIDATION_MANDATORY,
     VALIDATION_OPTIONAL,
+    apply_template_value_delay_confirm,
     compile_extended_condition,
     decompile_extended_condition,
+    extract_template_value_delay_confirm,
     field_lookup_key,
     iter_layout_fields,
     slugify,
@@ -338,6 +340,13 @@ def _apply_sub_default_line_lookup_calc(
     ftype = str(field.get("type") or "")
     if cfg.get("alwaysDisabled"):
         dl_row["ObjectSubDefaultLineIsDisabled"] = 1
+    apply_template_value_delay_confirm(
+        dl_row,
+        cfg,
+        field,
+        col_prefix="ObjectSubDefaultLine",
+        loc=f"subgrids.{sub_key} field {code_f!r}",
+    )
     lookup = field.get("lookup")
     if isinstance(lookup, dict) and ftype in LOOKUP_FIELD_TYPES:
         source_field = lookup.get("sourceField")
@@ -1118,6 +1127,9 @@ def extract_subgrids_spec(
                         cfg["autonumber"] = an_key
                 if _boolish(dl.get("ObjectSubDefaultLineIsDisabled")):
                     cfg["alwaysDisabled"] = True
+                extract_template_value_delay_confirm(
+                    cfg, dl, col_prefix="ObjectSubDefaultLine"
+                )
                 calc_type_id = _int(dl.get("ObjectSubDefaultLineClientCalculationTypeID"))
                 calc_expr = dl.get("ObjectSubDefaultLineClientCalculation")
                 if calc_type_id is not None:
