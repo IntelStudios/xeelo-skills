@@ -132,17 +132,25 @@ def _emit_langs(
         )
 
 
-def _template_hint_parent_id(registry: IdRegistry, template_key: str, field_code: str) -> int:
-    composite = f"{template_key}/{field_code}"
-    known = registry.get("objectDefaultLines", composite)
-    if known is not None:
-        return known
-    known = registry.get("objectDefaultLines", str(field_code))
-    if known is not None:
-        return known
-    raise ValueError(
-        f"languageTable.templateHints: unknown template line {template_key}/{field_code}"
+def _template_hint_parent_id(
+    registry: IdRegistry,
+    spec: dict,
+    template_key: str,
+    field_code: str,
+) -> int:
+    from ot_builder.templates import default_template_key, lookup_template_line_id
+
+    parent_id = lookup_template_line_id(
+        registry,
+        template_key,
+        field_code,
+        is_default=template_key == default_template_key(spec),
     )
+    if parent_id is None:
+        raise ValueError(
+            f"languageTable.templateHints: unknown template line {template_key}/{field_code}"
+        )
+    return parent_id
 
 
 def _require_parent(registry: IdRegistry, category: str, key: str, *, kind: str) -> int:
@@ -344,7 +352,7 @@ def emit_language_table(spec: dict, registry: IdRegistry, result: Any) -> None:
                     if not langs:
                         continue
                     parent_id = _template_hint_parent_id(
-                        registry, str(template_key), str(field_code)
+                        registry, spec, str(template_key), str(field_code)
                     )
                     _emit_langs(
                         result,

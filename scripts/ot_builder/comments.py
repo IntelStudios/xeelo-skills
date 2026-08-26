@@ -14,6 +14,7 @@ from ot_builder.language_table import (
     _rev,
     _workflow_reused,
 )
+from ot_builder.templates import default_template_key, lookup_template_line_id
 
 DEFAULT_USER_NAME = "xeelo-skills"
 
@@ -100,15 +101,23 @@ def _step_action_id(registry: IdRegistry, key: str) -> int:
     raise ValueError(f"comments.stepActions: unknown key {key!r}")
 
 
-def _template_hint_parent_id(registry: IdRegistry, template_key: str, field_code: str) -> int:
-    composite = f"{template_key}/{field_code}"
-    known = registry.get("objectDefaultLines", composite)
-    if known is not None:
-        return known
-    known = registry.get("objectDefaultLines", str(field_code))
-    if known is not None:
-        return known
-    raise ValueError(f"comments.templateHints: unknown template line {template_key}/{field_code}")
+def _template_hint_parent_id(
+    registry: IdRegistry,
+    spec: dict,
+    template_key: str,
+    field_code: str,
+) -> int:
+    parent_id = lookup_template_line_id(
+        registry,
+        template_key,
+        field_code,
+        is_default=template_key == default_template_key(spec),
+    )
+    if parent_id is None:
+        raise ValueError(
+            f"comments.templateHints: unknown template line {template_key}/{field_code}"
+        )
+    return parent_id
 
 
 def _emit_items(
@@ -210,7 +219,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                     if not items:
                         continue
                     parent_id = _template_hint_parent_id(
-                        registry, str(template_key), str(field_code)
+                        registry, spec, str(template_key), str(field_code)
                     )
                     _emit_items(
                         result,

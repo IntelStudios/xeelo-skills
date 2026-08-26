@@ -47,14 +47,13 @@ from ot_builder.templates import (
     apply_template_line_extras,
     apply_template_line_validation,
     field_lookup_key,
-    is_legacy_single_template,
     iter_layout_fields,
     iter_subgrid_fields,
     iter_templates,
     OBJECT_SERVICE_TYPE_IDS,
+    require_template_access_id,
     require_template_line_id,
     resolve_template_id,
-    template_access_registry_key,
 )
 from ot_builder.update_actions import (
     access_registry_key,
@@ -1223,7 +1222,6 @@ def _build_templates(
     result: BuildResult,
 ) -> None:
     templates = iter_templates(spec)
-    legacy = is_legacy_single_template(spec)
     fields = iter_layout_fields(spec)
     default_seen = False
     template_rows: list[dict] = []
@@ -1264,7 +1262,7 @@ def _build_templates(
             meta = result.field_meta.get(code) or {}
             line_id = meta.get("lineId") or registry.require("fields", code)
             template_line_id = require_template_line_id(
-                registry, template_key, code, legacy=legacy
+                registry, template_key, code, is_default=is_default
             )
             template_line: dict[str, Any] = {
                 "ObjectDefaultID": template_id,
@@ -1356,10 +1354,13 @@ def _build_templates(
             template_cfg.get("access") or [], spec, registry, default_editable=True
         ):
             field_code = str(access["field"])
-            reg_key = template_access_registry_key(
-                template_key, field_code, subline_id, legacy=legacy
+            access_id = require_template_access_id(
+                registry,
+                template_key,
+                field_code,
+                subline_id,
+                is_default=is_default,
             )
-            access_id = registry.require("objectDefaultAccess", reg_key)
             editable_bit, visible_bit = resolve_access_flags(access)
             access_row: dict[str, Any] = {
                 "ObjectDefaultID": template_id,

@@ -16,6 +16,7 @@ from ot_builder.rows import build_rows  # noqa: E402
 from ot_builder.templates import (  # noqa: E402
     compile_extended_condition,
     decompile_extended_condition,
+    require_template_access_id,
     require_template_line_id,
 )
 from ot_builder.xml import build_object_transfer_xml  # noqa: E402
@@ -919,14 +920,105 @@ class RequestTitleAndHiddenFlagsTests(unittest.TestCase):
 
 
 class TemplateLineIdTests(unittest.TestCase):
-    def test_legacy_accepts_composite_extract_key(self) -> None:
+    def test_default_reuses_field_only_extract_key(self) -> None:
+        registry = IdRegistry(
+            {"ids": {"explicit": {"objectDefaultLines": {"amount": 18}}}}
+        )
+        self.assertEqual(
+            require_template_line_id(registry, "default", "amount", is_default=True),
+            18,
+        )
+
+    def test_default_prefers_composite_extract_key(self) -> None:
         registry = IdRegistry(
             {"ids": {"explicit": {"objectDefaultLines": {"default/amount": 145}}}}
         )
         self.assertEqual(
-            require_template_line_id(registry, "default", "amount", legacy=True),
+            require_template_line_id(registry, "default", "amount", is_default=True),
             145,
         )
+
+    def test_second_template_does_not_reuse_field_only_line_id(self) -> None:
+        registry = IdRegistry(
+            {
+                "ids": {
+                    "base": {"ObjectDefaultLine": 18},
+                    "explicit": {"objectDefaultLines": {"amount": 18}},
+                }
+            }
+        )
+        default_id = require_template_line_id(
+            registry, "default", "amount", is_default=True
+        )
+        other_id = require_template_line_id(
+            registry, "prefilled", "amount", is_default=False
+        )
+        self.assertEqual(default_id, 18)
+        self.assertNotEqual(other_id, 18)
+
+    def test_second_template_does_not_reuse_field_only_access_id(self) -> None:
+        registry = IdRegistry(
+            {
+                "ids": {
+                    "base": {"ObjectDefaultAccess": 50},
+                    "explicit": {"objectDefaultAccess": {"BALANCE": 50}},
+                }
+            }
+        )
+        default_id = require_template_access_id(
+            registry, "default", "BALANCE", None, is_default=True
+        )
+        other_id = require_template_access_id(
+            registry, "prefilled", "BALANCE", None, is_default=False
+        )
+        self.assertEqual(default_id, 50)
+        self.assertNotEqual(other_id, 50)
+
+    def test_generate_second_template_keeps_default_line_orig_ids(self) -> None:
+        spec = _account_like_spec()
+        spec["ids"] = {
+            "base": 9100,
+            "explicit": {
+                "objectDefaultLines": {"BALANCE": 18},
+                "objectDefaultAccess": {"BALANCE": 50},
+            },
+        }
+        spec["templates"][0]["access"] = [
+            {"field": "BALANCE", "editable": True, "visible": True}
+        ]
+        spec["templates"][1]["access"] = [
+            {"field": "BALANCE", "editable": True, "visible": True}
+        ]
+        result = build_rows(spec)
+        names = {
+            int(row["ObjectDefaultID"]): row["ObjectDefaultName"]
+            for row in result.rows["ObjectDefault"]
+        }
+        line_ids = {name: [] for name in names.values()}
+        access_ids = {name: [] for name in names.values()}
+        for row in result.rows["ObjectDefaultLine"]:
+            line_ids[names[int(row["ObjectDefaultID"])]].append(
+                int(row["ObjectDefaultLineID"])
+            )
+        for row in result.rows["ObjectDefaultAccess"]:
+            access_ids[names[int(row["ObjectDefaultID"])]].append(
+                int(row["ObjectDefaultAccessID"])
+            )
+        self.assertIn(18, line_ids["Cash register"])
+        self.assertNotIn(18, line_ids["Bank"])
+        self.assertIn(50, access_ids["Cash register"])
+        self.assertNotIn(50, access_ids["Bank"])
+
+    def test_generate_single_template_reuses_field_only_line_id(self) -> None:
+        spec = _account_like_spec()
+        spec["templates"] = [spec["templates"][0]]
+        spec["ids"] = {
+            "base": 9100,
+            "explicit": {"objectDefaultLines": {"BALANCE": 18}},
+        }
+        result = build_rows(spec)
+        line_ids = [int(row["ObjectDefaultLineID"]) for row in result.rows["ObjectDefaultLine"]]
+        self.assertIn(18, line_ids)
 
 
 class ChangeRoleParamTests(unittest.TestCase):

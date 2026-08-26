@@ -1012,7 +1012,7 @@ Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 - `id{FIELD_CODE}` → `id{ObjectLineID}`
 - `{sourceKey.valueKey}` → **`ObjectLineSourceValueBind`** of that source value (not `value`, not the row ID). Numeric bind stays unquoted (`id123 != 2`); any other bind is a STRING with **single quotes** (`id9108 != 'FIO'`). Double quotes are invalid. Full grammar: [xeelo-grammar.md](../entities/xeelo-grammar.md).
 
-**IDs:** `ids.explicit.templates`, `objectDefaultLines` keys `{template}/{field}` when more than one template (single template keeps field-only keys; generator also accepts `{template}/{field}` from extract). Optional `objectDefaultAccess` (`{template}/{field}` or field-only when a single template), optional `objectDefaultExternalLinks`.
+**IDs:** `ids.explicit.templates`, `objectDefaultLines`, `objectDefaultAccess`. Extract writes **short** field-only keys (`NAME: 18`) when the object has **one** template — not a platform-legacy format. With **two or more** templates the keys are `{template}/{field}` (`default/NAME`, `prefilled/NAME`). A new template always gets **new** Orig. IDs. Field-only keys from a one-template extract belong to the **default** template only; generate must not reuse them for another template (Object Transfer upserts by Orig. ID). Optional `objectDefaultExternalLinks`.
 
 ## Object actions (`spec/object-actions.yaml`)
 

@@ -202,14 +202,49 @@ def iter_templates(spec: dict) -> list[dict[str, Any]]:
 
 
 def is_legacy_single_template(spec: dict) -> bool:
+    """Extract writes short ids.yaml keys when there is only one ObjectDefault."""
     templates = spec.get("templates") or []
     return len(templates) <= 1
 
 
+def default_template_key(spec: dict) -> str:
+    """Key of the default ObjectDefault (isDefault, else the first template)."""
+    first_key = "default"
+    for index, cfg in enumerate(iter_templates(spec)):
+        key = str(cfg.get("key") or slugify(str(cfg.get("name", "default"))))
+        if index == 0:
+            first_key = key
+        if cfg.get("isDefault"):
+            return key
+    return first_key
+
+
 def template_line_key(template_key: str, field_code: str, *, legacy: bool) -> str:
+    """ids.yaml key shape for extract. Generate lookup does not use this switch."""
     if legacy:
         return field_code
     return f"{template_key}/{field_code}"
+
+
+def lookup_template_line_id(
+    registry: IdRegistry,
+    template_key: str,
+    field_code: str,
+    *,
+    is_default: bool,
+) -> int | None:
+    """Find an existing ObjectDefaultLine Orig. ID.
+
+    Always prefer ``{template}/{field}``. Field-only extract keys (``NAME: 18``)
+    belong to the default template only — a second template must not reuse them.
+    """
+    composite = f"{template_key}/{field_code}"
+    known = registry.get("objectDefaultLines", composite)
+    if known is not None:
+        return known
+    if is_default:
+        return registry.get("objectDefaultLines", str(field_code))
+    return None
 
 
 def require_template_line_id(
@@ -217,20 +252,16 @@ def require_template_line_id(
     template_key: str,
     field_code: str,
     *,
-    legacy: bool,
+    is_default: bool,
 ) -> int:
-    """Reuse ObjectDefaultLine IDs from extract (field-only or ``{template}/{field}``)."""
+    """Reuse ObjectDefaultLine Orig. IDs from extract; allocate under composite keys."""
     composite = f"{template_key}/{field_code}"
-    field_only = str(field_code)
-    preferred = field_only if legacy else composite
-    fallback = composite if legacy else field_only
-    known = registry.get("objectDefaultLines", preferred)
+    known = lookup_template_line_id(
+        registry, template_key, field_code, is_default=is_default
+    )
     if known is not None:
         return known
-    known = registry.get("objectDefaultLines", fallback)
-    if known is not None:
-        return known
-    return registry.require("objectDefaultLines", preferred)
+    return registry.require("objectDefaultLines", composite)
 
 
 def template_access_registry_key(
@@ -240,10 +271,41 @@ def template_access_registry_key(
     *,
     legacy: bool,
 ) -> str:
+    """ids.yaml key shape for extract. Generate uses ``require_template_access_id``."""
     base = template_line_key(template_key, field_code, legacy=legacy)
     if subline_id is not None:
         return f"{base}/sub{subline_id}"
     return base
+
+
+def _access_field_only_key(field_code: str, subline_id: int | None) -> str:
+    if subline_id is not None:
+        return f"{field_code}/sub{subline_id}"
+    return str(field_code)
+
+
+def require_template_access_id(
+    registry: IdRegistry,
+    template_key: str,
+    field_code: str,
+    subline_id: int | None,
+    *,
+    is_default: bool,
+) -> int:
+    """Reuse ObjectDefaultAccess Orig. IDs; allocate under ``{template}/{field}``."""
+    composite = template_access_registry_key(
+        template_key, field_code, subline_id, legacy=False
+    )
+    known = registry.get("objectDefaultAccess", composite)
+    if known is not None:
+        return known
+    if is_default:
+        known = registry.get(
+            "objectDefaultAccess", _access_field_only_key(field_code, subline_id)
+        )
+        if known is not None:
+            return known
+    return registry.require("objectDefaultAccess", composite)
 
 
 def resolve_template_id(registry: IdRegistry, key: str, *, is_default: bool) -> int:
