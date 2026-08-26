@@ -41,3 +41,40 @@ def require_ongrid_id(
             used_legacy.add(code)
             return legacy
     return registry.require("objectLineOnGrid", composite)
+
+
+def subgrid_layout_id_key(
+    sub_key: str, size: str, grid_type: str, module: str, field_code: str
+) -> str:
+    """Stable explicit-map key for one ObjectSubLineOnGrid row."""
+    return f"{sub_key}/{layout_id_key(size, grid_type, module, field_code)}"
+
+
+def require_subgrid_ongrid_id(
+    registry: IdRegistry,
+    *,
+    sub_key: str,
+    size: str,
+    grid_type: str,
+    module: str,
+    field_code: str,
+    used_legacy: set[str],
+) -> int:
+    """Allocate or reuse an ObjectSubLineOnGrid ID.
+
+    Extract keys by ``{sub}/{size}/{type}/{module}/{code}``. Older specs keyed
+    ``{sub}/{code}``; that ID is reused for the first layout that still has no
+    composite key.
+    """
+    code = str(field_code)
+    composite = subgrid_layout_id_key(sub_key, size, grid_type, module, code)
+    known = registry.get("subgridOnGrid", composite)
+    if known is not None:
+        return known
+    legacy_key = f"{sub_key}/{code}"
+    if legacy_key not in used_legacy:
+        legacy = registry.get("subgridOnGrid", legacy_key)
+        if legacy is not None:
+            used_legacy.add(legacy_key)
+            return legacy
+    return registry.require("subgridOnGrid", composite)

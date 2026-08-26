@@ -66,9 +66,9 @@
   "subgrid": {
     "objectLineTypeId": 5,
     "objectLineTypeName": "Sub-grid",
-    "extraTables": ["ObjectSub", "ObjectSubLine", "ObjectSubLineTab", "ObjectSubLineSection"],
+    "extraTables": ["ObjectSub", "ObjectSubLine", "ObjectSubLineTab", "ObjectSubLineSection", "ObjectSubDefault", "ObjectSubDefaultLine"],
     "extraColumns": {
-      "ObjectSubID": "objectSubId (Admin required)"
+      "ObjectSubID": "objectSub (spec key) or objectSubId (existing/shared ObjectSub)"
     }
   },
   "radio": {

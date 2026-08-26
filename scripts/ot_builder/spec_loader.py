@@ -28,7 +28,7 @@ PERIODICS_FRAGMENT_KEYS = ("periodics",)
 NOTIFICATIONS_FRAGMENT_KEYS = ("notifications",)
 SUBGRIDS_FRAGMENT_KEYS = ("subgrids",)
 IDS_FRAGMENT_KEYS = ("ids", "source")
-MAP_MERGE_KEYS = frozenset({"references", "lookups", "autonumbers"})
+MAP_MERGE_KEYS = frozenset({"references", "lookups", "autonumbers", "subgrids"})
 
 
 def _require_yaml() -> Any:

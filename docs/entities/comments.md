@@ -66,6 +66,8 @@ comments:
 | `objectMessages.<key>` | `ObjectMessage` |
 | `templateHints.<templateKey>.<code>` | `ObjectDefaultLine` |
 
+`ObjectSub*` parents are **not** in `comments.yaml` yet.
+
 `userName` defaults to **`xeelo-skills`**. `date` on generate defaults to generate time; extract keeps `TableCommentDate`. Recycled workflow (`workflow.reuse: true`) skips `workflow` / `roles` / `statuses` / `stepActions` comments (same as LanguageTable).
 
 **IDs:** `ids.explicit.tableComments` keyed `TableName:entityKey:index` (e.g. `ObjectLine:TYPE:0`).

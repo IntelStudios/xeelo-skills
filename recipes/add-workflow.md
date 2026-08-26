@@ -108,7 +108,7 @@ Rename an existing footer button (e.g. Complete → Submit) by **keeping** its `
 
 ## Optional: WorkflowStepAccess
 
-Controls which object lines are visible/editable per step. Site refresh creates a row for every line with **visible yes, editable no**. Add `access` on a full-mode step when a field must be editable after create (typical: a form button on status Open):
+Controls which object lines are visible/editable per step. Site refresh creates a row for every line with **visible yes, editable no**, but **Object Transfer does not run that refresh**. For a **new** line, emit `access` on every step that should show it. A missing row hides the field (including a type-5 subgrid). After extract, add `access` on a full-mode step when a field must be editable after create (typical: a form button on status Open):
 
 ```yaml
 workflow:
@@ -125,7 +125,7 @@ workflow:
 
 Reuse the site `WorkflowStepAccessID` in `ids.explicit.workflowStepAccess` (`Draft/LOAD_TX`) after the first DB extract.
 
-Create-form and update-form use the same `{field, editable, visible}` list on `templates[].access` (**ObjectDefaultAccess**, refresh: both yes) and `updateActions[].access` (**ObjectUpdateAccess**, refresh: visible yes, editable no). See [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
+Create-form and update-form use the same `{field, editable, visible}` list on `templates[].access` (**ObjectDefaultAccess**, refresh: both yes — **emit it for a new line**) and `updateActions[].access` (**ObjectUpdateAccess**, refresh: visible yes, editable no). See [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
 
 ## Hints
 

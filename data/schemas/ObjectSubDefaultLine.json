@@ -1,0 +1,28 @@
+{
+  "table": "ObjectSubDefaultLine",
+  "columns": [
+    {"name": "ObjectSubDefaultID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectSubLineID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineValidationID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineAutoNumberID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineHint", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineIsDisabled", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectSubDefaultLineLookupID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineLookupObjectSubLineID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineLookupFilterObjectSubLineID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineClientCalculationTypeID", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineClientCalculation", "type": "NVARCHAR(MAX)", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineClientCalcDelay", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultLineIsClientCalcConfirm", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": [
+    {"column": "ObjectSubDefaultID", "referencesTable": "ObjectSubDefault", "referencesColumn": "ObjectSubDefaultID"},
+    {"column": "ObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"},
+    {"column": "ObjectSubDefaultLineAutoNumberID", "referencesTable": "ObjectLineAutoNumber", "referencesColumn": "ObjectLineAutoNumberID"},
+    {"column": "ObjectSubDefaultLineLookupID", "referencesTable": "ObjectLineLookup", "referencesColumn": "ObjectLineLookupID"},
+    {"column": "ObjectSubDefaultLineLookupObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"},
+    {"column": "ObjectSubDefaultLineLookupFilterObjectSubLineID", "referencesTable": "ObjectSubLine", "referencesColumn": "ObjectSubLineID"}
+  ]
+}

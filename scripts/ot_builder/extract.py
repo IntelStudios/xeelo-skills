@@ -35,6 +35,14 @@ from ot_builder.notifications import (
     step_notification_registry_key,
     _nid,
 )
+from ot_builder.subgrids import (
+    bind_extracted_subgrid_calcs,
+    bind_extracted_subgrid_lookups,
+    bind_extracted_subgrid_references,
+    extract_subgrids_spec,
+    object_sub_default_id_to_template_key,
+    used_subgrid_autonumber_ids,
+)
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
@@ -618,10 +626,11 @@ def _build_layout(
             "name": line["ObjectLineName"],
             "code": code,
             "type": ftype,
-            "slot": line.get("ObjectLineSlot"),
             "width": line.get("ObjectLineTypeWidth", 100),
             "order": line.get("ObjectLineOrder"),
         }
+        if line.get("ObjectLineSlot") is not None:
+            field["slot"] = line.get("ObjectLineSlot")
         if ftype == "number" and line.get("ObjectLineNumberPrecision") is not None:
             field["precision"] = int(line["ObjectLineNumberPrecision"])
         if ftype == "subgrid" and line.get("ObjectSubID") is not None:
@@ -1307,6 +1316,8 @@ def _template_has_extended(row: dict) -> bool:
         return True
     if row.get("ObjectDefaultLineHint"):
         return True
+    if row.get("ObjectSubDefaultID"):
+        return True
     return any(
         row.get(col)
         for col in (
@@ -1327,6 +1338,7 @@ def _used_autonumber_ids(index: TransferIndex, object_id: int) -> set[int]:
             autonumber_id = _int(tl.get("ObjectDefaultLineAutoNumberID"))
             if autonumber_id:
                 used.add(autonumber_id)
+    used.update(used_subgrid_autonumber_ids(index, object_id))
     return used
 
 
@@ -1336,6 +1348,7 @@ def _build_templates_spec(
     field_id_to_code: dict[int, str],
     sources_spec: dict[str, dict],
     autonumber_id_to_key: dict[int, str] | None = None,
+    subgrid_default_id_to_tpl_key: dict[int, str] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], bool]:
     defaults = _all_templates(index, object_id)
     if not defaults:
@@ -1401,7 +1414,11 @@ def _build_templates_spec(
                 template_line_key(key, field_code, legacy=legacy)
             ] = int(tl["ObjectDefaultLineID"])
             field_cfg = template_field_spec_from_line(
-                tl, field_id_to_code, sources_spec, autonumber_id_to_key
+                tl,
+                field_id_to_code,
+                sources_spec,
+                autonumber_id_to_key,
+                subgrid_default_id_to_tpl_key=subgrid_default_id_to_tpl_key,
             )
             if field_cfg:
                 fields_spec[field_code] = field_cfg
@@ -1577,6 +1594,48 @@ def extract_spec_from_index(
         index, _used_autonumber_ids(index, oid)
     )
     autonumber_id_to_key = {row_id: key for key, row_id in explicit_autonumbers.items()}
+    subgrids_spec, sub_explicit, sub_id_to_key, sub_source_ids, sub_lookup_ids = extract_subgrids_spec(
+        index, oid, type_map, autonumber_id_to_key
+    )
+    extra_source_ids = set(sub_source_ids) - set((layout_explicit.get("references") or {}).values())
+    if extra_source_ids:
+        extra_sources, extra_explicit, extra_values, extra_ref_objects, extra_ref_lines = (
+            _build_sources(index, extra_source_ids)
+        )
+        sources_spec.update(extra_sources)
+        layout_explicit.setdefault("references", {}).update(extra_explicit)
+        layout_explicit.setdefault("sourceValues", {}).update(extra_values)
+        layout_explicit.setdefault("sourceRefObjects", {}).update(extra_ref_objects)
+        layout_explicit.setdefault("refObjectLines", {}).update(extra_ref_lines)
+    extra_lookup_ids = set(sub_lookup_ids) - set((layout_explicit.get("lookups") or {}).values())
+    if extra_lookup_ids:
+        extra_lookups, extra_lu_explicit, extra_lu_values = _build_lookups(index, extra_lookup_ids)
+        lookups_spec.update(extra_lookups)
+        layout_explicit.setdefault("lookups", {}).update(extra_lu_explicit)
+        layout_explicit.setdefault("lookupValues", {}).update(extra_lu_values)
+    source_id_to_key = {
+        int(row_id): key for key, row_id in (layout_explicit.get("references") or {}).items()
+    }
+    bind_extracted_subgrid_references(subgrids_spec, source_id_to_key)
+    lookup_id_to_key = {
+        int(row_id): key for key, row_id in (layout_explicit.get("lookups") or {}).items()
+    }
+    bind_extracted_subgrid_lookups(subgrids_spec, lookup_id_to_key)
+    subline_id_to_code = {
+        int(row_id): str(key).rsplit("/", 1)[-1]
+        for key, row_id in (sub_explicit.get("subgridFields") or {}).items()
+    }
+    bind_extracted_subgrid_calcs(subgrids_spec, subline_id_to_code, sources_spec)
+    for tab in tabs:
+        for section in tab.get("sections") or []:
+            for field in section.get("fields") or []:
+                sub_id = field.get("objectSubId")
+                if sub_id is not None and int(sub_id) in sub_id_to_key:
+                    field["objectSub"] = sub_id_to_key[int(sub_id)]
+                    field.pop("objectSubId", None)
+    subgrid_default_id_to_tpl_key = object_sub_default_id_to_template_key(
+        index, sub_id_to_key
+    )
     ongrid, ongrid_explicit = _build_ongrid(index, oid, field_id_to_code)
     notifications, n_explicit, notification_id_to_key = extract_notifications(
         index,
@@ -1595,7 +1654,12 @@ def extract_spec_from_index(
     update_actions, ua_explicit = _build_update_actions(index, oid, field_id_to_code)
     object_messages, om_explicit = _build_object_messages(index, oid, field_id_to_code)
     templates, tmpl_explicit, emit_templates = _build_templates_spec(
-        index, oid, field_id_to_code, sources_spec, autonumber_id_to_key
+        index,
+        oid,
+        field_id_to_code,
+        sources_spec,
+        autonumber_id_to_key,
+        subgrid_default_id_to_tpl_key,
     )
     object_actions, oa_explicit = _build_object_actions(
         index,
@@ -1639,6 +1703,7 @@ def extract_spec_from_index(
         **oa_explicit,
         **pe_explicit,
         **n_explicit,
+        **sub_explicit,
         "objectLineOnGrid": ongrid_explicit,
     }
     if explicit_autonumbers:
@@ -1726,6 +1791,8 @@ def extract_spec_from_index(
         spec["lookups"] = lookups_spec
     if autonumbers_spec:
         spec["autonumbers"] = autonumbers_spec
+    if subgrids_spec:
+        spec["subgrids"] = subgrids_spec
     if roles:
         spec["roles"] = roles
     if statuses:
@@ -1796,6 +1863,7 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "sources",
         "lookups",
         "autonumbers",
+        "subgrids",
         "languageTable",
         "comments",
         "object",

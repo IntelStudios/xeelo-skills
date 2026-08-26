@@ -146,8 +146,18 @@ def collect_object_by_table(index: TransferIndex, object_id: int) -> dict[str, d
         add("ObjectSub", sub_id)
         for row in index.rows_for("ObjectSubLine", "ObjectSubID", sub_id):
             add("ObjectSubLine", row.get("ObjectSubLineID"))
+            lid = row.get("ObjectSubLineID")
+            if lid is not None:
+                for og in index.rows_for("ObjectSubLineOnGrid", "ObjectSubLineID", int(lid)):
+                    add("ObjectSubLineOnGrid", og.get("ObjectSubLineOnGridID"))
         for row in index.rows_for("ObjectSubDefault", "ObjectSubID", sub_id):
-            add("ObjectSubDefault", row.get("ObjectSubDefaultID"))
+            def_id = row.get("ObjectSubDefaultID")
+            add("ObjectSubDefault", def_id)
+            if def_id is not None:
+                for dl in index.rows_for(
+                    "ObjectSubDefaultLine", "ObjectSubDefaultID", int(def_id)
+                ):
+                    add("ObjectSubDefaultLine", dl.get("ObjectSubDefaultLineID"))
         sub_section_ids = {
             int(r["ObjectSubLineSectionID"])
             for r in index.rows_for("ObjectSubLine", "ObjectSubID", sub_id)

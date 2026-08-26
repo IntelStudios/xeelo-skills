@@ -1,0 +1,14 @@
+{
+  "table": "ObjectSubLineSection",
+  "columns": [
+    {"name": "ObjectSubLineSectionID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectSubSectionName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubSectionOrder", "type": "INT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectSubLineTabID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubSectionWidth", "type": "int", "nullable": true, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": [
+    {"column": "ObjectSubLineTabID", "referencesTable": "ObjectSubLineTab", "referencesColumn": "ObjectSubLineTabID"}
+  ]
+}

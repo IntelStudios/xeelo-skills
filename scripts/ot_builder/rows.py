@@ -34,14 +34,22 @@ from ot_builder.notifications import (
     step_notification_registry_key,
 )
 from ot_builder.spec_loader import normalize_spec, spec_references
+from ot_builder.subgrids import (
+    bind_parent_subgrid_template,
+    emit_subgrids,
+    resolve_parent_object_sub_id,
+    with_subgrid_column_access,
+)
 from ot_builder.templates import (
     COMBO_FIELD_TYPES,
     LOOKUP_FIELD_TYPES,
     REFERENCE_FIELD_TYPES,
     apply_template_line_extras,
     apply_template_line_validation,
+    field_lookup_key,
     is_legacy_single_template,
     iter_layout_fields,
+    iter_subgrid_fields,
     iter_templates,
     require_template_line_id,
     resolve_template_id,
@@ -385,17 +393,9 @@ def _lookup_value_parts(value: dict) -> tuple[str, str, str | None, str | None]:
     return source, ret, filt_s, source_to_s
 
 
-def _field_lookup_key(field: dict, lookup: dict) -> str:
-    key = lookup.get("lookup")
-    if key:
-        return str(key)
-    name = lookup.get("name") or field.get("name") or "lookup"
-    return slugify(str(name)) or "lookup"
-
-
 def _collect_lookup_defs(spec: dict) -> dict[str, dict]:
     defs = dict(spec.get("lookups") or {})
-    for field in iter_layout_fields(spec):
+    for field in [*iter_layout_fields(spec), *iter_subgrid_fields(spec)]:
         lookup = field.get("lookup")
         if not isinstance(lookup, dict):
             continue
@@ -628,9 +628,10 @@ def _emit_workflow_step_access(
     for step in steps:
         step_key = workflow_step_key(step)
         step_id = registry.require("workflowSteps", step_key)
-        for access in step.get("access") or []:
+        for access, subline_id in with_subgrid_column_access(
+            step.get("access") or [], spec, registry, default_editable=False
+        ):
             field_code = str(access["field"])
-            subline_id = access.get("sublineId")
             reg_key = step_access_registry_key(step_key, field_code, subline_id)
             access_id = registry.require("workflowStepAccess", reg_key)
             editable_bit, visible_bit = resolve_access_flags(access)
@@ -1063,9 +1064,10 @@ def _build_update_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
             }
         )
 
-        for access in action.get("access") or []:
+        for access, subline_id in with_subgrid_column_access(
+            action.get("access") or [], spec, registry, default_editable=False
+        ):
             field_code = str(access["field"])
-            subline_id = access.get("sublineId")
             reg_key = access_registry_key(action_key, field_code, subline_id)
             access_id = registry.require("objectUpdateAccess", reg_key)
             line_id = registry.require("fields", field_code)
@@ -1220,6 +1222,13 @@ def _build_templates(
                 spec=spec,
                 registry=registry,
             )
+            bind_parent_subgrid_template(
+                template_line,
+                field=field,
+                template_field=field_cfg if isinstance(field_cfg, dict) else None,
+                spec=spec,
+                registry=registry,
+            )
             lookup_id = meta.get("lookupId")
             if lookup_id:
                 template_line["ObjectDefaultLineLookupID"] = lookup_id
@@ -1268,9 +1277,10 @@ def _build_templates(
                     }
                 )
 
-        for access in template_cfg.get("access") or []:
+        for access, subline_id in with_subgrid_column_access(
+            template_cfg.get("access") or [], spec, registry, default_editable=True
+        ):
             field_code = str(access["field"])
-            subline_id = access.get("sublineId")
             reg_key = template_access_registry_key(
                 template_key, field_code, subline_id, legacy=legacy
             )
@@ -1496,6 +1506,7 @@ def build_rows(spec: dict) -> BuildResult:
     _emit_sources(spec, registry, result)
     _emit_lookups(spec, registry, result)
     _emit_autonumbers(spec, registry, result)
+    emit_subgrids(spec, registry, mapping, result)
 
     tab_rows = []
     section_rows = []
@@ -1547,20 +1558,31 @@ def build_rows(spec: dict) -> BuildResult:
                     "ObjectID": oid,
                     "ObjectLineID": line_id,
                     "ObjectLineSectionID": section_id,
-                    "ObjectLineSlot": field.get("slot", line_index),
                     "ObjectLineName": field["name"],
                     "ObjectLineOrder": field.get("order", line_index * 10),
                     "ObjectLineTypeID": type_info["objectLineTypeId"],
                     "ObjectLineTypeWidth": field.get("width", 100),
                     "IsActive": 1 if field.get("isActive", True) else 0,
                 }
+                if ftype != "subgrid" or field.get("slot") is not None:
+                    line_row["ObjectLineSlot"] = field.get("slot", line_index)
                 if field.get("code"):
                     line_row["ObjectLineCode"] = field["code"]
                 _set_optional_bool(line_row, "ObjectLineIsHidden", field.get("alwaysHidden"))
                 if ftype == "number" and field.get("precision") is not None:
                     line_row["ObjectLineNumberPrecision"] = field["precision"]
-                if ftype == "subgrid" and field.get("objectSubId") is not None:
-                    line_row["ObjectSubID"] = field["objectSubId"]
+                if ftype == "subgrid":
+                    object_sub_id = resolve_parent_object_sub_id(field, spec, registry)
+                    if object_sub_id is not None:
+                        line_row["ObjectSubID"] = object_sub_id
+                        result.edges.append(
+                            {
+                                "TableName": "ObjectLine",
+                                "TableRowID": line_id,
+                                "ChildTableName": "ObjectSub",
+                                "ChildTableRowID": object_sub_id,
+                            }
+                        )
                 if ftype == "button" and field.get("saveAction") is not None:
                     line_row["ObjectLineButtonSaveAction"] = field["saveAction"]
                 _apply_object_line_extras(line_row, field, ftype, registry)
@@ -1627,7 +1649,7 @@ def build_rows(spec: dict) -> BuildResult:
                     source_field = lookup.get("sourceField")
                     if not source_field:
                         raise ValueError(f"Field {code!r} lookup requires sourceField")
-                    lookup_key = _field_lookup_key(field, lookup)
+                    lookup_key = field_lookup_key(field, lookup)
                     lookup_id = registry.require("lookups", lookup_key)
                     result.field_meta[code]["lookupId"] = lookup_id
                     result.field_meta[code]["lookupSourceFieldId"] = registry.require(

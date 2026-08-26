@@ -52,6 +52,10 @@ CLIENT_CALC_TYPE_IDS = {
     "user_info": 7,
     "device_info": 8,
 }
+# ObjectSubLineCalculationType seed has client 1–5 and 7 — no focus (6) or device_info (8).
+SUBGRID_CLIENT_CALC_TYPE_IDS = {
+    key: value for key, value in CLIENT_CALC_TYPE_IDS.items() if key not in ("focus", "device_info")
+}
 CLIENT_CALC_ID_TYPES = {value: key for key, value in CLIENT_CALC_TYPE_IDS.items()}
 PLACEHOLDER_CALC_TYPES = frozenset({"user_info", "device_info"})
 PLACEHOLDER_PARAM_RE = re.compile(r"^\{[^{}]+\}")
@@ -81,10 +85,24 @@ def format_bind_for_grammar(bind: str) -> str:
     return f"'{escaped}'"
 
 
-def compile_extended_condition(expr: str, spec: dict, registry: IdRegistry) -> str:
+def field_lookup_key(field: dict, lookup: dict) -> str:
+    key = lookup.get("lookup")
+    if key:
+        return str(key)
+    name = lookup.get("name") or field.get("name") or "lookup"
+    return slugify(str(name)) or "lookup"
+
+
+def compile_extended_condition(
+    expr: str,
+    spec: dict,
+    registry: IdRegistry,
+    *,
+    resolve_id: Any | None = None,
+) -> str:
     def repl_id(match: re.Match[str]) -> str:
         code = match.group(1)
-        line_id = registry.require("fields", code)
+        line_id = resolve_id(code) if resolve_id else registry.require("fields", code)
         return f"id{line_id}"
 
     compiled = ID_FIELD_RE.sub(repl_id, expr)
@@ -134,6 +152,18 @@ def iter_layout_fields(spec: dict) -> list[dict[str, Any]]:
         for section in tab.get("sections") or []:
             for field in section.get("fields") or []:
                 fields.append(field)
+    return fields
+
+
+def iter_subgrid_fields(spec: dict) -> list[dict[str, Any]]:
+    fields: list[dict[str, Any]] = []
+    for sub_def in (spec.get("subgrids") or {}).values():
+        if not isinstance(sub_def, dict):
+            continue
+        for tab in (sub_def.get("layout") or {}).get("tabs") or []:
+            for section in tab.get("sections") or []:
+                for field in section.get("fields") or []:
+                    fields.append(field)
     return fields
 
 
@@ -292,6 +322,7 @@ def template_field_spec_from_line(
     field_id_to_code: dict[int, str],
     sources_spec: dict[str, dict],
     autonumber_id_to_key: dict[int, str] | None = None,
+    subgrid_default_id_to_tpl_key: dict[int, str] | None = None,
 ) -> dict[str, Any] | None:
     validation_id = row.get("ObjectDefaultLineValidationID")
     hidden_cond = row.get("ObjectDefaultLineValidationExtHiddenCondition")
@@ -353,6 +384,12 @@ def template_field_spec_from_line(
         key = autonumber_id_to_key.get(int(autonumber_id))
         if key:
             spec_field["autonumber"] = key
+
+    sub_def_id = row.get("ObjectSubDefaultID")
+    if sub_def_id is not None and subgrid_default_id_to_tpl_key:
+        tpl_key = subgrid_default_id_to_tpl_key.get(int(sub_def_id))
+        if tpl_key:
+            spec_field["subgridTemplate"] = tpl_key
 
     hint = row.get("ObjectDefaultLineHint")
     if hint is not None and str(hint).strip() != "":

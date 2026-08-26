@@ -1,0 +1,20 @@
+{
+  "table": "ObjectSubLine",
+  "columns": [
+    {"name": "ObjectSubID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectSubLineSectionID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineSlot", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubLineName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineOrder", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineTypeID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineTypeWidth", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineCode", "type": "nvarchar(255)", "nullable": true, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": [
+    {"column": "ObjectSubID", "referencesTable": "ObjectSub", "referencesColumn": "ObjectSubID"},
+    {"column": "ObjectSubLineSectionID", "referencesTable": "ObjectSubLineSection", "referencesColumn": "ObjectSubLineSectionID"},
+    {"column": "ObjectSubLineTypeID", "referencesTable": "ObjectLineType", "referencesColumn": "ObjectLineTypeID"}
+  ]
+}

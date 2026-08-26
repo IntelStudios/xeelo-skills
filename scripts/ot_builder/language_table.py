@@ -53,6 +53,7 @@ KNOWN_TYPES = frozenset(
         "stepActions",
         "templateHints",
         "objectMessages",
+        "subgrids",
     }
 )
 
@@ -198,6 +199,102 @@ def emit_language_table(spec: dict, registry: IdRegistry, result: Any) -> None:
                 entity_key=kind,
                 langs=langs,
             )
+            continue
+        if kind == "subgrids":
+            if not isinstance(body, dict):
+                raise ValueError("languageTable.subgrids must be a mapping")
+            for sub_key, entry in body.items():
+                if not isinstance(entry, dict):
+                    raise ValueError(f"languageTable.subgrids.{sub_key}: expected mapping")
+                for tab_name, langs_raw in (entry.get("tabs") or {}).items():
+                    langs = _lang_map(langs_raw)
+                    if not langs:
+                        continue
+                    entity_key = f"{sub_key}/{tab_name}"
+                    parent_id = _require_parent(
+                        registry, "subgridTabs", entity_key, kind="subgrids"
+                    )
+                    _emit_langs(
+                        result,
+                        registry,
+                        parent_table="ObjectSubLineTab",
+                        parent_id=parent_id,
+                        column="ObjectSubLineTabName",
+                        entity_key=entity_key,
+                        langs=langs,
+                    )
+                for sec_key, langs_raw in (entry.get("sections") or {}).items():
+                    langs = _lang_map(langs_raw)
+                    if not langs:
+                        continue
+                    entity_key = f"{sub_key}/{sec_key}"
+                    parent_id = _require_parent(
+                        registry, "subgridSections", entity_key, kind="subgrids"
+                    )
+                    _emit_langs(
+                        result,
+                        registry,
+                        parent_table="ObjectSubLineSection",
+                        parent_id=parent_id,
+                        column="ObjectSubSectionName",
+                        entity_key=entity_key,
+                        langs=langs,
+                    )
+                for code, line_entry in (entry.get("lines") or {}).items():
+                    if not isinstance(line_entry, dict):
+                        raise ValueError(
+                            f"languageTable.subgrids.{sub_key}.lines.{code}: expected mapping"
+                        )
+                    entity_key = f"{sub_key}/{code}"
+                    parent_id = _require_parent(
+                        registry, "subgridFields", entity_key, kind="subgrids"
+                    )
+                    langs = _lang_map(line_entry)
+                    if langs:
+                        _emit_langs(
+                            result,
+                            registry,
+                            parent_table="ObjectSubLine",
+                            parent_id=parent_id,
+                            column="ObjectSubLineName",
+                            entity_key=entity_key,
+                            langs=langs,
+                        )
+                    grid_langs = _lang_map(
+                        line_entry.get("onGrid") if isinstance(line_entry.get("onGrid"), dict) else {}
+                    )
+                    if grid_langs:
+                        _emit_langs(
+                            result,
+                            registry,
+                            parent_table="ObjectSubLine",
+                            parent_id=parent_id,
+                            column="ObjectSubLineOnGridName",
+                            entity_key=entity_key,
+                            langs=grid_langs,
+                        )
+                for tpl_key, fields in (entry.get("templateHints") or {}).items():
+                    if not isinstance(fields, dict):
+                        raise ValueError(
+                            f"languageTable.subgrids.{sub_key}.templateHints.{tpl_key}: expected mapping"
+                        )
+                    for field_code, langs_raw in fields.items():
+                        langs = _lang_map(langs_raw)
+                        if not langs:
+                            continue
+                        entity_key = f"{sub_key}/{tpl_key}/{field_code}"
+                        parent_id = _require_parent(
+                            registry, "subgridDefaultLines", entity_key, kind="subgrids"
+                        )
+                        _emit_langs(
+                            result,
+                            registry,
+                            parent_table="ObjectSubDefaultLine",
+                            parent_id=parent_id,
+                            column="ObjectSubDefaultLineHint",
+                            entity_key=entity_key,
+                            langs=langs,
+                        )
             continue
         if kind == "lines":
             if not isinstance(body, dict):
@@ -528,5 +625,72 @@ def extract_language_table(
         )
     if hint_bucket:
         language_table["templateHints"] = hint_bucket
+
+    sub_bucket: dict[str, Any] = {}
+
+    def sub_entry(sub_key: str) -> dict[str, Any]:
+        return sub_bucket.setdefault(sub_key, {})
+
+    for row_id, key in _rev(explicit.get("subgridTabs")).items():
+        if "/" not in str(key):
+            continue
+        sub_key, tab_name = str(key).split("/", 1)
+        langs = _translations_for(by_parent, "ObjectSubLineTab", "ObjectSubLineTabName", row_id)
+        if not langs:
+            continue
+        sub_entry(sub_key).setdefault("tabs", {})[tab_name] = dict(langs)
+        record("ObjectSubLineTab", "ObjectSubLineTabName", str(key), row_id, langs)
+
+    for row_id, key in _rev(explicit.get("subgridSections")).items():
+        parts = str(key).split("/", 2)
+        if len(parts) < 3:
+            continue
+        sub_key, sec_rest = parts[0], "/".join(parts[1:])
+        langs = _translations_for(by_parent, "ObjectSubLineSection", "ObjectSubSectionName", row_id)
+        if not langs:
+            continue
+        sub_entry(sub_key).setdefault("sections", {})[sec_rest] = dict(langs)
+        record("ObjectSubLineSection", "ObjectSubSectionName", str(key), row_id, langs)
+
+    for row_id, key in _rev(explicit.get("subgridFields")).items():
+        if "/" not in str(key):
+            continue
+        sub_key, code = str(key).split("/", 1)
+        name_langs = _translations_for(by_parent, "ObjectSubLine", "ObjectSubLineName", row_id)
+        grid_langs = _translations_for(by_parent, "ObjectSubLine", "ObjectSubLineOnGridName", row_id)
+        if not name_langs and not grid_langs:
+            continue
+        line_entry: dict[str, Any] = {}
+        if name_langs:
+            _put_langs(line_entry, name_langs)
+            record("ObjectSubLine", "ObjectSubLineName", str(key), row_id, name_langs)
+        if grid_langs:
+            line_entry["onGrid"] = dict(grid_langs)
+            record("ObjectSubLine", "ObjectSubLineOnGridName", str(key), row_id, grid_langs)
+        sub_entry(sub_key).setdefault("lines", {})[code] = line_entry
+
+    for row_id, key in _rev(explicit.get("subgridDefaultLines")).items():
+        parts = str(key).split("/", 2)
+        if len(parts) < 3:
+            continue
+        sub_key, tpl_key, field_code = parts[0], parts[1], parts[2]
+        langs = _translations_for(
+            by_parent, "ObjectSubDefaultLine", "ObjectSubDefaultLineHint", row_id
+        )
+        if not langs:
+            continue
+        sub_entry(sub_key).setdefault("templateHints", {}).setdefault(tpl_key, {})[
+            field_code
+        ] = dict(langs)
+        record(
+            "ObjectSubDefaultLine",
+            "ObjectSubDefaultLineHint",
+            str(key),
+            row_id,
+            langs,
+        )
+
+    if sub_bucket:
+        language_table["subgrids"] = sub_bucket
 
     return language_table, explicit_lt

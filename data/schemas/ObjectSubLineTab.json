@@ -1,0 +1,11 @@
+{
+  "table": "ObjectSubLineTab",
+  "columns": [
+    {"name": "ObjectSubLineTabID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectSubLineTabName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubLineTabOrder", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubLineTabPlacement", "type": "INT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": []
+}

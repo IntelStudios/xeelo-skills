@@ -14,6 +14,12 @@ flowchart TB
     ObjectLineTab --> ObjectLineSection
     ObjectLineSection --> ObjectLine
     ObjectLine --> ObjectSub
+    ObjectSub --> ObjectSubLineTab
+    ObjectSubLineTab --> ObjectSubLineSection
+    ObjectSubLineSection --> ObjectSubLine
+    ObjectSubLine --> ObjectSubLineOnGrid
+    ObjectSub --> ObjectSubDefault
+    ObjectSubDefault --> ObjectSubDefaultLine
     Object --> ObjectDefault
     ObjectDefault --> ObjectDefaultAccess
     ObjectDefault --> ObjectDefaultLine
@@ -64,7 +70,7 @@ flowchart TB
 ### Objects
 - **Object** — form definition
 - **ObjectLineTab / Section / Line** — layout and fields
-- **Subgrid (ObjectSub)** — embedded table on a line
+- **Subgrid (ObjectSub)** — embedded table on a type-5 line; may be shared across objects
 - **ObjectDefault / ObjectDefaultLine** — template (defaults, validation, lookup, autonumber)
 - **ObjectDefaultAccess** — create-form visible/editable per template (same dual-list as update/workflow access)
 - **Lookup / Reference / Autonumber** — field data sources; autonumber is a sequence catalog bound on the template line
@@ -102,7 +108,7 @@ flowchart TB
 
 Priority tables for **create object** recipe:
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Notification`, `NotificationCondition`, `NotificationAttachment`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineOnGrid`, `ObjectSub`, `ObjectSubLineTab`, `ObjectSubLineSection`, `ObjectSubLine`, `ObjectSubLineOnGrid`, `LanguageTable`, `TableComments`, `ObjectLineLookup`, `ObjectLineLookupValue`, `ObjectLineAutoNumber`, `Notification`, `NotificationCondition`, `NotificationAttachment`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `ObjectDefault`, `ObjectDefaultAccess`, `ObjectDefaultLine`, `ObjectSubDefault`, `ObjectSubDefaultLine`, `ObjectUpdateAction`, `ObjectUpdateAccess`, `ObjectAction`, `ObjectActionParam`, `ObjectActionCondition`, `WorkflowStepObjectAction`
 
 ## Entity docs
 
@@ -110,7 +116,7 @@ Detailed semantics from admin hints:
 
 | Doc | Entities |
 |-----|----------|
-| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, lookups, autonumber, unique |
+| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, lookups, autonumber, unique, **subgrid** |
 | [entities/object-line-types.md](entities/object-line-types.md) | ObjectLine types 1–20, extras, template capabilities |
 | [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |

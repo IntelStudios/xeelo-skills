@@ -54,7 +54,7 @@ updateActions:
     # omit workflow: → template ObjectDefault workflow (default after asking)
 ```
 
-Refresh default for update access is **visible yes, editable no** — list every field that must be editable (or `visible: false` to hide). Extract skips those default-locked rows; reuse the site `ObjectUpdateAccessID` from the DB transfer when flipping a line to editable (unique `(action, line)`). Same dual-list as template create access (`templates[].access`) and `workflow.steps[].access`; see [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
+Refresh default for update access is **visible yes, editable no** — list every field that must be editable (or `visible: false` to hide). Extract skips those default-locked rows; reuse the site `ObjectUpdateAccessID` from the DB transfer when flipping a line to editable (same action, `ObjectLineID`, optional `ObjectSubLineID`). Same dual-list as template create access (`templates[].access`) and `workflow.steps[].access`; see [object-model.md](../docs/entities/object-model.md#create-form-access-objectdefaultaccess).
 
 Include in `xeelo-spec.yaml`:
 

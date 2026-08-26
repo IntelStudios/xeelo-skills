@@ -29,7 +29,7 @@ string: '2#' (stringExpr | stringIf | getMemo | getSubMemo)
 | `id123m` | Memo-style accessor |
 | `'text'` | STRING — **single quotes** only (escape `\` and `'`) |
 
-In spec, write `id{FIELD_CODE}`; generator replaces with `id{ObjectLineID}`. Reference binds: `{referenceKey.valueKey}` → `ObjectLineSourceValueBind` (numeric unquoted; else `'bind'`).
+In spec, write `id{FIELD_CODE}`; generator replaces with `id{ObjectLineID}` (request template) or `id{ObjectSubLineID}` (subgrid `clientCalculation`). Reference binds: `{referenceKey.valueKey}` → `ObjectLineSourceValueBind` (numeric unquoted; else `'bind'`).
 
 ## Condition (extended validation and `if`)
 

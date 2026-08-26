@@ -2,6 +2,8 @@
 
 `ObjectLineTypeID` (1–20) drives which **ObjectLine** columns Admin enables and which **ObjectDefaultLine** (template) capabilities apply. Spec slugs: [`data/field-type-mapping.json`](../data/field-type-mapping.json). Grammar for extended validation and Client-Math/String: [xeelo-grammar.md](xeelo-grammar.md).
 
+**ObjectSubLine** uses the **same spec keys** and the same type IDs for every type that exists on a subgrid. SQL columns are `ObjectSubLine*` instead of `ObjectLine*` (`AttachmentStorageID` and `WebFrameTypeID` are shared names). Číselník is still `ObjectLineSource`. See [Subgrid columns](#subgrid-columns-objectsubline).
+
 ## Catalog
 
 Slot is required when the line is **active** and the type is **not** 5, 6, 13, 16, 17.
@@ -33,11 +35,11 @@ Never omit **reference** on combo / radio / multi (`ObjectLineSourceID` is requi
 
 ## ObjectLine extras by type
 
-Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `objectSubId`, `saveAction`, `reference`.
+Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `objectSub` / `objectSubId`, `saveAction`, `reference`.
 
 | Type | Required / typical extras |
 |------|---------------------------|
-| `number` | `precision` required in Admin; `numberSeparator`, `numberMin`, `numberMax`; on-grid **total** (`onGrid.fields.<code>.isTotal`) |
+| `number` | `precision` required in Admin (`ObjectLineNumberPrecision` / **`ObjectSubLineNumberPrecision`**); without it a **subgrid** number does not store. `numberSeparator`, `numberMin`, `numberMax`; on-grid **total** (`onGrid.fields.<code>.isTotal`; subgrid: `subgrids.<key>.onGrid.fields.<code>.isTotal`) |
 | `button` | `saveAction` required — **0 Save** (stay on the request), **1 Save & close** ([`ObjectLineButtonSaveAction.json`](../data/enums/ObjectLineButtonSaveAction.json)). Use **0** when the click should run an ObjectAction / Node.js Last. Optional `buttonMessage`; **`colorBack` / `colorFont`** = `CustomColorCode` from the site palette (Admin Color Back / Color Font; not HEX). GUI classes `xe-back-{code}` / `xe-font-{code}`. Palette: [`CustomColor.json`](../data/enums/CustomColor.json). |
 | `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` |
 | `attachment_preview` | `previewField` (attachment field **code**) required → `ObjectLineAttPreviewObjectLineID`; optional `previewDownload` |
@@ -68,7 +70,7 @@ Example (preview bound to the Invoice attachment on the same object):
   previewDownload: true
 ```
 
-| `subgrid` | `objectSubId` required |
+| `subgrid` | `objectSub` (spec `subgrids:` key) or `objectSubId` (existing/shared `ObjectSub`). Parent line has **no slot**. Bind template: `templates.fields.<code>.subgridTemplate` |
 | `combobox`, `combobox_search`, `combobox_server`, `radio`, `checkbox_multiselect` | `reference` required; `filterField` optional (this object’s line vs source `values[].filter` or refObject `valueFilter`); combo: `isReferenceLink` |
 | `text` | `textInputType` (0 Default, 1 Bar Code, 2 Location); source optional |
 | `radio`, `checkbox_multiselect` | `columnNumbers` required (`ObjectLineNumberColumns`) |
@@ -77,6 +79,25 @@ Example (preview bound to the Invoice attachment on the same object):
 | `memo`, `report` | `height` in **px** (`ObjectLineHeight`). Omit or `0` = unlimited. Typical values 50–150, not row count. Memo **slot** = memo record ID; HTML is separate (notification `{idXXXX}`). Line conditions (`is_not_empty`, `contains`, …) see the ID, not the body — gate on text / number / button. [object-actions.md](object-actions.md#objectactioncondition) |
 | `date` | stored **`dd-MM-yyyy`** (GraphQL `lines`); do not parse with `new Date()` — [graphql.md](graphql.md#date-picker-type-8) |
 | Unique-capable (1, 2, 3, 4, 7, 8, 12, 14, 15) | `uniqueId` 1–4 ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)) — [object-model.md](object-model.md#unique) |
+
+## Subgrid columns (`ObjectSubLine`)
+
+Same extras table as above, on `subgrids.<key>.layout.tabs[].sections[].fields[]`. Generator maps the spec key to `ObjectSubLine*` (e.g. `precision` → `ObjectSubLineNumberPrecision`). Combo still needs `reference`; number still needs `precision`.
+
+**Not on a subgrid** (`ObjectSubLineType` seed has no row): **5** `subgrid`, **13** `report`, **18** `button`. Generator rejects those slugs under `subgrids:`.
+
+| vs ObjectLine | Subgrid |
+|---------------|---------|
+| Slot skip | **6, 16, 17** only (5 and 13 are not in the catalog) |
+| Unique | boolean `ObjectSubLineIsUnique` — not `uniqueId` 1–4; not in spec yet |
+| Total | `ObjectSubLineIsTotal` on types **3 and 12** (`subgrids.<key>.onGrid.fields.<code>.isTotal`) |
+| Tag | `ObjectSubLineOnGridIsTag`; Admin does not type-gate the checkbox (compile still 3/4) |
+| Preview | `previewField` is another **subgrid** column code → `ObjectSubLineAttPreviewObjectSubLineID` |
+| `filterField` | another **subgrid** column → `ObjectSubLineSourceFilterObjectSubLineID` |
+| Lookup | same spec as ObjectLine (`lookup` + `sourceField`) on the **layout** field; binds `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`. `sourceField` is a column in **this** objectSub |
+| Client calc | `subgrids.*.templates[].fields.*.clientCalculation` / `alwaysDisabled` → `ObjectSubDefaultLine*`. `id{CODE}` → `ObjectSubLineID`. Types **1–5 and 7** only (no `focus` / `device_info`) |
+
+## Admin canSet (ObjectLine)
 
 **canSet\*** (Admin):
 
@@ -104,7 +125,7 @@ Do not put commas in tag values — split is by comma. Prefer short discrete lab
 
 Not the same as **On-grid search** (`isSearch`): that is typed search on types 3, 4, 8, 12.
 
-Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec/generator do not emit subgrid tags.
+Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec: `subgrids.<key>.onGrid.fields.<code>.isTag`.
 
 ## On-grid total
 
@@ -114,7 +135,7 @@ Only **number** (12). After precompile, inbox grid SQL adds `TOTAL_{ObjectLineID
 
 Changing Total requires **/publish** after OT (or `/precompile` if already deployed) so the cache SQL is rebuilt.
 
-Subgrid analog: `ObjectSubLineIsTotal` on types **3** and **12**. Spec/generator do not emit subgrid totals.
+Subgrid analog: `ObjectSubLineIsTotal` on types **3** and **12**. Spec: `subgrids.<key>.onGrid.fields.<code>.isTotal`.
 
 ## On-grid badge
 
@@ -168,12 +189,12 @@ Template behaviour depends on the **line type**:
 | Default value | 1, 2, 3, 4, 7, 8, 11, 12, 14, 15, 19, 20 (`ObjectDefaultLineValue`) |
 | Default filter | combo / radio / multi |
 | Always disabled | all **except** 6, 10, 13, 16, 17 — spec `templates.fields.<code>.alwaysDisabled` → `ObjectDefaultLineIsDisabled` |
-| Hint | all except empty (6) — spec `templates.fields.<code>.hint` → `ObjectDefaultLineHint` (plain or HTML). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue` (`ObjectDefaultLineDescMemo`). Subgrid `ObjectSubDefaultLineHint` is not in spec yet. |
+| Hint | all except empty (6) — spec `templates.fields.<code>.hint` → `ObjectDefaultLineHint` (plain or HTML). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue` (`ObjectDefaultLineDescMemo`). Subgrid: `subgrids.*.templates[].fields.*.hint` → `ObjectSubDefaultLineHint`. |
 | Input mask / length / autonumber | text (3) only — autonumber bind `templates.fields.<code>.autonumber` ([object-model.md](object-model.md#autonumber)); mutually exclusive with input mask |
 | Whisperer | text (3) only |
 | Calc confirm | text (3), number (12); delay also textarea (4) |
 | Desc memo HTML | 16 only — `ObjectDefaultLineDescMemo` is the template default; **HTML** (Admin HTML editor / `innerHTML` at runtime). Spec: `templates.fields.<code>.defaultValue` |
-| Subgrid template / prefill | 5 |
+| Subgrid template / prefill | 5 — spec `templates.fields.<code>.subgridTemplate` → `ObjectDefaultLine.ObjectSubDefaultID` (requires `objectSub:`). Prefill (`ObjectSubPrefillID`) not in spec yet |
 | Report result / graph | 13 (not when client calc is Service) |
 | Save suppress | when the line has a slot |
 
@@ -212,8 +233,8 @@ IDs **1–8** (`id <= 30`). Dropdown is filtered per line type. Adhoc (`id >= 30
 | 7 | Client-UserInfo | `user_info` | text (3) |
 | 8 | Client-DeviceInfo | `device_info` | text (3) |
 
-Client-Service requires `ObjectServiceID`. On a **report** line, Admin filters to external report services (service types 3–6).
+Client-Service requires `ObjectServiceID`. On a **report** line, Admin filters to external report services (service types 3–6). Subgrid client-calc (`ObjectSubDefaultLine`) has types **1–5 and 7** only — no `focus` (report) or `device_info`.
 
-Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix.
+Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix. On a subgrid, `id{CODE}` compiles to `ObjectSubLineID`.
 
 **UserInfo** / **DeviceInfo** require `expr` as a single `{Placeholder}` (without `7#` / `8#`). Catalog: [xeelo-grammar.md](xeelo-grammar.md#client-userinfo--client-deviceinfo).

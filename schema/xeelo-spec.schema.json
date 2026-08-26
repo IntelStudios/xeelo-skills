@@ -93,6 +93,11 @@
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/autonumberDefinition" }
     },
+    "subgrids": {
+      "type": "object",
+      "description": "ObjectSub trees. Parent type-5 field uses objectSub: key. objectSubId binds an existing/shared ObjectSub without emitting the tree.",
+      "additionalProperties": { "$ref": "#/$defs/subgridDefinition" }
+    },
     "languageTable": { "$ref": "#/$defs/languageTable" },
     "comments": { "$ref": "#/$defs/comments" },
     "ids": { "$ref": "#/$defs/ids" },
@@ -216,8 +221,22 @@
         "width": { "type": "integer", "minimum": 1, "maximum": 100 },
         "order": { "type": "integer", "minimum": 1 },
         "mandatory": { "type": "boolean" },
-        "precision": { "type": "integer", "minimum": 0, "maximum": 10 },
-        "objectSubId": { "type": "integer", "minimum": 1 },
+        "precision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "ObjectLineNumberPrecision / ObjectSubLineNumberPrecision. Required on subgrid number columns."
+        },
+        "objectSub": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key in subgrids: — emit ObjectSub tree and set ObjectLine.ObjectSubID"
+        },
+        "objectSubId": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Existing/shared ObjectSub Orig. ID; generator does not emit ObjectSub* rows"
+        },
         "lookup": { "$ref": "#/$defs/lookup" },
         "reference": { "$ref": "#/$defs/reference" },
         "saveAction": { "type": "integer", "minimum": 0, "maximum": 1 },
@@ -387,6 +406,65 @@
         }
       }
     },
+    "subgridDefinition": {
+      "type": "object",
+      "required": ["name", "layout"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "code": { "type": "string", "maxLength": 255 },
+        "width": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 100,
+          "default": 80,
+          "description": "ObjectSubWidth — add/edit-row modal width in percent. Admin 50–100. Default 80. Extra fields go in more tabs/sections or stacked (field width 100); do not bump this just because the tree grew."
+        },
+        "layout": {
+          "type": "object",
+          "required": ["tabs"],
+          "additionalProperties": false,
+          "properties": {
+            "tabs": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/tab" }
+            }
+          }
+        },
+        "templates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/subgridTemplate" }
+        },
+        "onGrid": {
+          "$ref": "#/$defs/onGrid",
+          "description": "Subgrid table display. fields → ObjectSubLine flags (allowed/isTag/isSearch/isTotal). layouts → ObjectSubLineOnGrid. No systemLine (table has ObjectSubLineID only). Typical module Items or MobileItems."
+        }
+      }
+    },
+    "subgridTemplate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "name": { "type": "string" },
+        "isDefault": { "type": "boolean" },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "mandatory": { "type": "boolean" },
+              "hint": { "type": "string", "minLength": 1 },
+              "autonumber": { "type": "string", "minLength": 1 },
+              "alwaysDisabled": { "type": "boolean" },
+              "clientCalculation": { "$ref": "#/$defs/clientCalculation" }
+            }
+          }
+        }
+      }
+    },
     "lookup": {
       "type": "object",
       "required": ["sourceField"],
@@ -421,7 +499,8 @@
               "allowed": { "type": "boolean" },
               "name": { "type": "string" },
               "isTag": { "type": "boolean" },
-              "isSearch": { "type": "boolean" }
+              "isSearch": { "type": "boolean" },
+              "isTotal": { "type": "boolean" }
             }
           }
         },
@@ -531,7 +610,12 @@
         "field": { "type": "string", "minLength": 1 },
         "editable": { "type": "boolean" },
         "visible": { "type": "boolean" },
-        "sublineId": { "type": "integer", "minimum": 1 }
+        "sublineId": { "type": "integer", "minimum": 1 },
+        "subline": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectSubLine code in the parent field's objectSub tree. Prefer this over sublineId for new trees."
+        }
       }
     },
     "workflowStepAction": {
@@ -647,6 +731,11 @@
           "type": "string",
           "minLength": 1,
           "description": "Catalog key from autonumbers: → ObjectDefaultLineAutoNumberID. Text (3) only."
+        },
+        "subgridTemplate": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key of subgrids.<key>.templates[] → ObjectDefaultLine.ObjectSubDefaultID. Requires parent field objectSub."
         },
         "defaultValue": {
           "type": ["string", "number"],
@@ -989,6 +1078,13 @@
         "lookups": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "lookupValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "autonumbers": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgrids": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridTabs": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridSections": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridFields": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridTemplates": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridDefaultLines": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
+        "subgridOnGrid": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "references": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "sources": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
         "sourceValues": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } },
@@ -1080,6 +1176,32 @@
       },
       "additionalProperties": { "type": "string", "minLength": 1 }
     },
+    "languageTableSubgrid": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Translations for one ObjectSub tree. ObjectSubName is not in Admin mass-translate.",
+      "properties": {
+        "tabs": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/langMap" }
+        },
+        "lines": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/languageTableLine" }
+        },
+        "templateHints": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#/$defs/langMap" }
+          }
+        }
+      }
+    },
     "languageTable": {
       "type": "object",
       "additionalProperties": false,
@@ -1148,6 +1270,11 @@
             "type": "object",
             "additionalProperties": { "$ref": "#/$defs/langMap" }
           }
+        },
+        "subgrids": {
+          "type": "object",
+          "description": "ObjectSubLineTab / Section / Line / ObjectSubDefaultLineHint translations, nested under the subgrids: key.",
+          "additionalProperties": { "$ref": "#/$defs/languageTableSubgrid" }
         }
       }
     },

@@ -21,7 +21,8 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Lookup (ObjectLineLookup)** | Query map on **template line** — fills the field from another line (`sourceField`) |
 | **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |
 | **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted requests — [object-model.md](entities/object-model.md#unique) |
-| **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields — [localization.md](entities/localization.md) |
+| **Subgrid (ObjectSub)** | Embedded table on a type-5 ObjectLine (`ObjectSubID`). May be **shared** across objects. Own tabs/lines/templates. [object-model.md](entities/object-model.md#subgrid) |
+| **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields, subgrid tabs/sections/lines — [localization.md](entities/localization.md) |
 | **Admin comments (TableComments)** | HTML notes on config entities — [comments.md](entities/comments.md) |
 
 ## Configuration vs runtime
@@ -39,7 +40,9 @@ Object
 └── ObjectLineTab (placement 0=left, 1=right)
     └── ObjectLineSection
         └── ObjectLine (field: type, slot, width)
-            └── [optional] ObjectSub (sub-grid)
+            └── [optional] ObjectSub (type 5; ObjectSubID — may be shared)
+                ├── ObjectSubLineTab → ObjectSubLineSection → ObjectSubLine
+                └── ObjectSubDefault → ObjectSubDefaultLine
 ```
 
 Template layer (required for usable object):

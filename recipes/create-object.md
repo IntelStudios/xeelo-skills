@@ -15,7 +15,7 @@ Transfer JSON is a **delta vs download**: omit any entity row that already exist
 
 See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
 
-Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Inbox `onGrid`: [ongrid.md](../docs/entities/ongrid.md) (seven default layouts on a new object). Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
+Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Inbox `onGrid`: [ongrid.md](../docs/entities/ongrid.md) (seven default layouts on a new object). Optional `spec/subgrids.yaml` for a type-5 subgrid — emit `templates[].access` and per-step `workflow.steps[].access` for the parent type-5 line or the widget is hidden; emit `subgrids.<key>.onGrid` or the subgrid **table** has no columns ([add-subgrid.md](add-subgrid.md)). Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
 
 ### 2. Allocate IDs
 
@@ -42,9 +42,10 @@ For each field, generator emits:
 Object → ObjectLine
 ObjectLine → ObjectLineTab
 ObjectLineTab → ObjectLineSection
+ObjectLine → ObjectSub          # type 5; ObjectSub tree is emitted first
 ```
 
-One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`. Comments: `Parent → TableComments` from `spec/comments.yaml`.
+One section edge per section (not per field). Translations: `Parent → LanguageTable` from `spec/language-table.yaml`. Comments: `Parent → TableComments` from `spec/comments.yaml`. Optional subgrid: [add-subgrid.md](add-subgrid.md).
 
 ### 5. onGrid
 
@@ -55,6 +56,7 @@ Canonical: [ongrid.md](../docs/entities/ongrid.md). YAML: [spec-format.md](../do
 - Do not spec Tasks / Relation / Relation Map / Mobile Tasks unless asked.
 - System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
 - Edge: `Object → ObjectLineOnGrid`
+- Subgrid table: `subgrids.<key>.onGrid` → ObjectSubLine flags + ObjectSubLineOnGrid (`field` only) — [add-subgrid.md](add-subgrid.md#ongrid)
 
 ### 6. Ask which workflow
 
@@ -95,7 +97,7 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 
 ## Tables in minimal create_object package
 
-`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectLineLookup?`, `ObjectLineLookupValue?`, `ObjectLineAutoNumber?`, `ObjectLineOnGrid?`, `Role`, `RequestStatus`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultLine`
+`Company`, `ObjectType`, `Object`, `ObjectLineTab`, `ObjectLineSection`, `ObjectLine`, `ObjectSub?`, `ObjectSubLineTab?`, `ObjectSubLineSection?`, `ObjectSubLine?`, `ObjectSubLineOnGrid?`, `ObjectSubDefault?`, `ObjectSubDefaultLine?`, `ObjectLineLookup?`, `ObjectLineLookupValue?`, `ObjectLineAutoNumber?`, `ObjectLineOnGrid?`, `Role`, `RequestStatus`, `Workflow`, `WorkflowStep`, `WorkflowStepAction`, `ObjectDefault`, `ObjectDefaultLine`
 
 ## Validate
 

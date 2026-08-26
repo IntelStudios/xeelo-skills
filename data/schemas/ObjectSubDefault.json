@@ -1,0 +1,13 @@
+{
+  "table": "ObjectSubDefault",
+  "columns": [
+    {"name": "ObjectSubID", "type": "INT", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultID", "type": "INT", "nullable": false, "identity": true, "default": null},
+    {"name": "ObjectSubDefaultName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
+    {"name": "ObjectSubDefaultIsDefault", "type": "BIT", "nullable": false, "identity": false, "default": null},
+    {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
+  ],
+  "foreignKeys": [
+    {"column": "ObjectSubID", "referencesTable": "ObjectSub", "referencesColumn": "ObjectSubID"}
+  ]
+}

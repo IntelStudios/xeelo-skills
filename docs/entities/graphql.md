@@ -33,7 +33,7 @@ For `code` = sanitized `ObjectCode`:
 
 Example: `object_9100_account` → `Select_object_9100_account`, `Mutate_object_9100_account`, input `Mutateobject_9100_accountInput`.
 
-**SubGrid** uses the same prefixes from `subgrid.code`.
+**SubGrid** uses the same prefixes from **`ObjectSubCode`** (`subgrids.<key>.code` / `subgrid.code`), not from the parent type-5 `ObjectLineCode`. After `/download-db`, take the stored code from env. New rows live under the parent request; mutations still go through the subgrid’s `Mutate_{code}`.
 
 Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` is documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
 

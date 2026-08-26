@@ -1,6 +1,6 @@
 # Inbox and subgrid onGrid
 
-Request inbox cards and subgrid lists are **onGrid**: flags on the line, plus one **placement** row per layout variant. Spec YAML: [`spec-format.md`](../transfer/spec-format.md#ongrid). Type gates (tag / search / total / badge): [object-line-types.md](object-line-types.md). Recipe: [create-object.md](../../recipes/create-object.md).
+Request inbox cards and subgrid lists are **onGrid**: flags on the line, plus one **placement** row per layout variant. Spec YAML: [`spec-format.md`](../transfer/spec-format.md#ongrid) (inbox) and [`spec-format.md`](../transfer/spec-format.md#subgrids-specsubgridsyaml) (`subgrids.<key>.onGrid`). Type gates (tag / search / total / badge): [object-line-types.md](object-line-types.md). Recipe: [create-object.md](../../recipes/create-object.md).
 
 SQL columns can store any Size / Type / Module string. **Precompile only builds cache slots listed below.** Do not spec combinations outside that catalog — they will not appear in User GUI cache.
 
@@ -74,7 +74,7 @@ Three cache slots. No SystemLine columns (`ObjectSubLineOnGrid` has only `Object
 
 No Tasks / Relation / Relation Map / Mobile Tasks slots for subgrid.
 
-Spec/extract/generate **do not** emit subgrid onGrid today (`spec/subgrids.yaml` is id / name / code / slot). Placement lives in Admin / Object Transfer table `ObjectSubLineOnGrid` ([`data/transfer-tables.json`](../data/transfer-tables.json)). Schema: [`ObjectSubLineOnGrid.json`](../schemas/ObjectSubLineOnGrid.json) (no `ObjectID` or `SystemLineID`; `ObjectSubLineID` is required).
+Spec: `subgrids.<key>.onGrid` (`fields` + `layouts`) — [add-subgrid.md](../../recipes/add-subgrid.md#ongrid). Schema: [`ObjectSubLineOnGrid.json`](../schemas/ObjectSubLineOnGrid.json) (no `ObjectID` or `SystemLineID`; `ObjectSubLineID` is required).
 
 ## Default for a new object
 

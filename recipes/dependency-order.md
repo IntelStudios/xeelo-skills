@@ -15,20 +15,27 @@ Insert / generate tables in this order to satisfy foreign keys.
 | 7 | `ObjectLineLookup` | — |
 | 8 | `ObjectLineLookupValue` | ObjectLineLookup |
 | 9 | `ObjectLineAutoNumber` | — |
-| 10 | `ObjectLine` | Object, ObjectLineSection |
+| 9a | `ObjectSub` | — |
+| 9b | `ObjectSubLineTab` | — |
+| 9c | `ObjectSubLineSection` | ObjectSubLineTab |
+| 9d | `ObjectSubLine` | ObjectSub, ObjectSubLineSection |
+| 9e | `ObjectSubLineOnGrid` | ObjectSubLine |
+| 10 | `ObjectLine` | Object, ObjectLineSection (`ObjectSubID` if type 5 → ObjectSub) |
 | 10a | `Notification` | — (site catalog; emit before Workflow FKs) |
 | 10b | `NotificationCondition` | Notification, ObjectLine |
 | 10c | `NotificationAttachment` | Notification, ObjectLine |
 | 11 | `Workflow` | Role, RequestStatus, Notification |
 | 12 | `WorkflowStep` | Workflow, Role, RequestStatus |
-| 13 | `WorkflowStepAccess` | WorkflowStep, ObjectLine |
+| 13 | `WorkflowStepAccess` | WorkflowStep, ObjectLine (`ObjectSubLineID` optional) |
 | 14 | `WorkflowStepAction` | WorkflowStep, Role, RequestStatus, WorkflowStepActionStyle, Notification |
 | 14a | `WorkflowStepNotification` | WorkflowStep, Notification |
 | 15 | `ObjectDefault` | Object, Workflow |
-| 16 | `ObjectDefaultAccess` | ObjectDefault, ObjectLine |
-| 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber? |
+| 16 | `ObjectDefaultAccess` | ObjectDefault, ObjectLine (`ObjectSubLineID` optional) |
+| 16a | `ObjectSubDefault` | ObjectSub |
+| 16b | `ObjectSubDefaultLine` | ObjectSubDefault, ObjectSubLine, ObjectLineAutoNumber? |
+| 17 | `ObjectDefaultLine` | ObjectDefault, ObjectLine, ObjectLineLookup?, ObjectLineAutoNumber?, ObjectSubDefault? |
 | 18 | `ObjectUpdateAction` | Object |
-| 19 | `ObjectUpdateAccess` | ObjectUpdateAction, ObjectLine |
+| 19 | `ObjectUpdateAccess` | ObjectUpdateAction, ObjectLine (`ObjectSubLineID` optional) |
 | 19a | `ObjectMessage` | Object |
 | 19b | `ObjectMessageCondition` | ObjectMessage, ObjectLine |
 | 19c | `ObjectUpdateMessage` | ObjectUpdateAction, ObjectMessage |

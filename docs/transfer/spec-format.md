@@ -13,6 +13,8 @@ projects/<name>/
     object.yaml         # object, objectType, company, layout, onGrid
     references.yaml     # numberedníky (optional)
     lookups.yaml        # dotazovací mapy (optional)
+    autonumbers.yaml    # sequences (optional)
+    subgrids.yaml       # ObjectSub trees (optional)
     language-table.yaml # LanguageTable translations (optional)
     comments.yaml       # TableComments HTML notes (optional)
     workflow.yaml       # workflow
@@ -82,6 +84,7 @@ Generator and extract use [`scripts/ot_builder/spec_loader.py`](../../scripts/ot
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
 | `onGrid` | no | Inbox grid flags + placement (`object.yaml`). Catalog and new-object default: [ongrid.md](../entities/ongrid.md) |
+| `subgrids` | no | ObjectSub trees — [`spec/subgrids.yaml`](#subgrids-specsubgridsyaml) |
 | `languageTable` | no | Translated labels — [`spec/language-table.yaml`](#localization-speclanguage-tableyaml) |
 | `comments` | no | Admin HTML comments — [`spec/comments.yaml`](#admin-comments-speccommentsyaml) |
 | `objectMessages` | no | HTML modals — [`spec/object-messages.yaml`](#object-messages-specobject-messagesyaml) |
@@ -165,11 +168,12 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `width` | `ObjectLineTypeWidth` — field width in **percent** (1–100) |
 | `order` | `ObjectLineOrder` |
 | `mandatory` | `ObjectDefaultLineValidationID = 1` (default template unless overridden in `templates`). Omit `mandatory`/`extended` → still emit **`ValidationID = 2`** (Optional); do not leave the column unset |
-| `precision` | `ObjectLineNumberPrecision` (number fields) |
+| `precision` | `ObjectLineNumberPrecision` / `ObjectSubLineNumberPrecision` (number fields). **Required** on subgrid numbers — omit it and values do not store |
 | `numberSeparator` / `numberMin` / `numberMax` | Number extras |
 | `reference` | `ObjectLineSource` on **ObjectLine** (číselník) — combo, radio, multi |
 | `lookup` | `ObjectLineLookup` on **template line** (dotazovací mapa) |
-| `objectSubId` | `ObjectLine.ObjectSubID` (subgrid fields) |
+| `objectSub` | Spec key in `subgrids:` → emit `ObjectSub` tree and set `ObjectLine.ObjectSubID` |
+| `objectSubId` | Existing/shared `ObjectSub` Orig. ID (no tree emit). Type 5. Prefer `objectSub` for new trees |
 | `saveAction` | `ObjectLineButtonSaveAction` (button fields): **0 Save** (stay on the request), **1 Save & close**. Enum: [`ObjectLineButtonSaveAction.json`](../../data/enums/ObjectLineButtonSaveAction.json) |
 | `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
 | `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
@@ -235,6 +239,117 @@ templates:
 
 On a single default template you may set `fields[].autonumber: request_no` instead of `templates.yaml`. Format: one contiguous `#` run (zero-padded number), optional `YYYY` / `YY` / `MM` / `DD`. **IDs:** `ids.explicit.autonumbers`.
 
+## Subgrids (`spec/subgrids.yaml`)
+
+ObjectSub tree bound from a parent **type 5** line. Semantics: [object-model.md](../entities/object-model.md#subgrid). Recipe: [add-subgrid.md](../../recipes/add-subgrid.md).
+
+```yaml
+# spec/subgrids.yaml
+subgrids:
+  invoice_lines:
+    name: Invoice lines
+    code: invoice_lines
+    width: 80
+    layout:
+      tabs:
+        - name: General
+          sections:
+            - name: Details
+              fields:
+                - name: Description
+                  code: DESC
+                  type: text
+                  slot: 1
+                - name: Qty
+                  code: QTY
+                  type: number
+                  slot: 2
+                  precision: 0
+                - name: Amount
+                  code: AMOUNT
+                  type: number
+                  slot: 3
+                  precision: 2
+    templates:
+      - key: default
+        isDefault: true
+        fields:
+          DESC:
+            mandatory: true
+            # hint: Line description
+            # autonumber: line_no   # same catalog as spec/autonumbers.yaml; text only
+          TOTAL:
+            alwaysDisabled: true
+            clientCalculation:
+              type: math
+              expr: id{QTY} * id{AMOUNT}   # compiles to ObjectSubLineID
+    onGrid:
+      fields:
+        DESC:
+          allowed: true
+          isSearch: true
+      layouts:
+      - size: Large
+        type: Grid
+        module: Items
+        placements:
+        - row: T
+          columns:
+          - field: DESC
+            position: 0
+            length: 100
+            valueWidth: 0
+            labelType: 1
+```
+
+Parent line + which subgrid template new rows use:
+
+```yaml
+# layout
+- name: Lines
+  code: LINES
+  type: subgrid
+  objectSub: invoice_lines
+
+# spec/templates.yaml
+templates:
+  - key: default
+    isDefault: true
+    fields:
+      LINES:
+        subgridTemplate: default   # ObjectDefaultLine.ObjectSubDefaultID
+    access:
+      - field: LINES               # ObjectDefaultAccess — required for a new type-5 line
+        visible: true
+        editable: true
+```
+
+Also emit `workflow.steps[].access` for the parent line on every step that should show the grid. Missing access row = hidden. Recipe: [add-subgrid.md](../../recipes/add-subgrid.md#access).
+
+| Spec | Maps to |
+|------|---------|
+| `subgrids.<key>` | `ObjectSub` (`ObjectSubName`, optional `ObjectSubCode`, `ObjectSubWidth` — add/edit-row **modal** width %; default **80**, Admin 50–100). Extra fields → extra tabs/sections or stacked `width: 100`, not a wider modal. |
+| `layout.tabs/sections/fields` | `ObjectSubLineTab` / `ObjectSubLineSection` / `ObjectSubLine`. Same type slugs and **same extras** as ObjectLine (`precision`, `reference`, … → `ObjectSubLine*`). Not 5 / 13 / 18. |
+| `templates[]` | `ObjectSubDefault` + `ObjectSubDefaultLine`. Omit → one Default template, all lines Optional |
+| `templates[].fields.*.mandatory` / `hint` / `autonumber` / `alwaysDisabled` / `clientCalculation` | `ObjectSubDefaultLine*` (lookup is on the **layout** field like ObjectLine: `lookup` + `sourceField` → `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`). `id{CODE}` in calc compiles to `ObjectSubLineID`. Client types 1–5 and 7 (no `focus` / `device_info`). |
+| `onGrid.fields.<code>` | `ObjectSubLine` flags: `allowed` → `ObjectSubLineOnGridIsAllowed`; `isTag` → `ObjectSubLineOnGridIsTag`; `isSearch` → `ObjectSubLineIsSearch`; `isTotal` → `ObjectSubLineIsTotal` (types **3 and 12**) |
+| `onGrid.layouts[]` | `ObjectSubLineOnGrid` placement (`size` × Grid/Table × `module`). Same shape as request inbox onGrid, but **`field` only** — no `systemLine` |
+| `fields[].objectSub` | Emit the tree (if present) and set `ObjectLine.ObjectSubID` |
+| `fields[].objectSubId` | Bind an **existing/shared** `ObjectSub` — generator does **not** emit `ObjectSub*` |
+| `templates.fields.<parent>.subgridTemplate` | Parent `ObjectDefaultLine.ObjectSubDefaultID` (requires `objectSub:` key) |
+
+**IDs:** `ids.explicit.subgrids`, `subgridTabs` (`{sub}/{tab}`), `subgridSections` (`{sub}/{tab}/{section}`), `subgridFields` (`{sub}/{code}`), `subgridTemplates` (`{sub}/{template}`), `subgridDefaultLines` (`{sub}/{template}/{code}`), `subgridOnGrid` (`{sub}/{size}/{type}/{module}/{code}`).
+
+Always emit `onGrid` when adding a subgrid (same habit as request inbox `onGrid`): `fields` so columns are allowed on the table, `layouts` for placement. Without `allowed`, the add-row modal still has fields but the **subgrid table** has no columns.
+
+Column extras match ObjectLine ([object-line-types.md](../entities/object-line-types.md#subgrid-columns-objectsubline)): combo/radio/multi **`reference`**, number **`precision`**, attachment `attachmentStorageId`, preview `previewField` (subgrid column code), radio/multi `columnNumbers`. Lookup and client-calc use the same spec keys as the request template; `sourceField` / `id{CODE}` resolve **inside this objectSub**. Types **5 / 13 / 18** are not in `ObjectSubLineType` — do not spec them here.
+
+Not emitted yet: unique/gridSort on sublines, Generate + combo Multiselect, `ObjectSubPrefill*`, comments for `ObjectSub*`.
+
+Czech (and other languages): `languageTable.subgrids.<key>.tabs` / `sections` / `lines` / `templateHints` — [localization.md](../entities/localization.md). Inbox/subgrid **onGrid** titles stay English unless the user asks (`lines.<code>.onGrid`).
+
+Share a site `ObjectSub` on a second object with `objectSubId:` only (same Orig. ID). Do not allocate a new tree.
+
 ## Localization (`spec/language-table.yaml`)
 
 Canonical `name` values stay on the entity (usually English). Translations are a separate map — [localization.md](../entities/localization.md).
@@ -257,11 +372,26 @@ languageTable:
     default:
       ACCOUNT_NUMBER:
         cs: Zadejte IBAN bez mezer
+  subgrids:
+    kitchensink_lines:
+      tabs:
+        Extra:
+          cs: Další
+      sections:
+        Extra/Kind:
+          cs: Druh
+      lines:
+        KIND:
+          cs: Druh
+      templateHints:
+        default:
+          KIND:
+            cs: Vyberte druh
 ```
 
 Generator emits `LanguageTable` rows and parent→`LanguageTable` ObjectSetup edges. Extract writes this fragment only when translations exist. After `/publish` (or `/precompile` if the OT is already applied) so User GUI picks up labels.
 
-Do not put Czech (or other languages) into `object.yaml` `name` fields. Site rules (always `cs`, onGrid stays English): `projects/<name>/conventions.md`.
+Do not put Czech (or other languages) into `object.yaml` `name` fields. Site rules (always `cs`, onGrid stays English): `projects/<name>/conventions.md`. `ObjectSubName` is not in Admin mass-translate. Subgrid onGrid titles stay English unless asked (`subgrids.*.lines.<code>.onGrid`).
 
 ## Admin comments (`spec/comments.yaml`)
 
@@ -584,7 +714,7 @@ workflow:
           editable: true
 ```
 
-`steps[].access` maps to **WorkflowStepAccess** (editable/visible per line on that step). Site refresh inserts missing rows as visible + **not** editable. Extract omits those defaults from the spec access list; it still writes their Orig. IDs into `ids.explicit.workflowStepAccess` so a later generate can flip editable without minting a duplicate `(WorkflowStepID, ObjectLineID)`. Admin UI groups this by request status name (e.g. Open).
+`steps[].access` maps to **WorkflowStepAccess** (editable/visible per line on that step). Site refresh inserts missing rows as visible + **not** editable, but **Object Transfer does not run that refresh**. For a **new** line, emit `access` on every step that should show it (`editable: true` where users edit; `visible: true` on the rest). A missing row means hidden. Extract omits those defaults from the spec access list; it still writes their Orig. IDs into `ids.explicit.workflowStepAccess` so a later generate can flip editable without minting a duplicate. Admin UI groups this by request status name (e.g. Open).
 
 `steps[].suppressSave: true` → `WorkflowStepIsSuppressSave`. Hides the request **Save** control (`showSaveBtn`). ObjectLine **Button** lines still save. Extract writes the flag only when true.
 
@@ -602,7 +732,7 @@ Bind email templates by **key** (not Orig. ID). See [notifications](#notificatio
 
 An extra step stays **active** only if `spRefreshWorkflowStep` sees its `(role, status)` as the workflow header, a fail/recall target, or a **`WorkflowStepAction` target**. Change-role ObjectActions alone do not count — omit the targeting step action and the site stores the step with `IsActive = 0`.
 
-**IDs:** `ids.explicit.workflowStepAccess` keys `{stepName}/{field}`. After the first site refresh, reuse the existing `WorkflowStepAccessID` (Orig. ID) — do not allocate a new one or the unique `(WorkflowStepID, ObjectLineID)` index will fail. Extract records those IDs even for default (visible, not editable) rows.
+**IDs:** `ids.explicit.workflowStepAccess` keys `{stepName}/{field}` or `{stepName}/{field}/sub{sublineId}`. After the first site refresh, reuse the existing `WorkflowStepAccessID` for the same (step, `ObjectLineID`, `ObjectSubLineID`) — do not allocate a new Orig. ID or the unique index will fail. Extract records those IDs even for default (visible, not editable) rows. `ObjectSubLineID` null is the parent type-5 widget; set `access[].sublineId` for a subgrid column.
 
 Extract sets `mode: full` when steps differ from minimal template **or** any step has non-default access.
 
@@ -808,11 +938,12 @@ templates:
 | `mandatory: true` | `ObjectDefaultLineValidationID = 1` (unless extended is also set) |
 | *(neither `mandatory` nor `extended`)* | `ObjectDefaultLineValidationID = 2` (Optional) — always written; omitting the column is `NULL` and Admin autosaves |
 | `extended.hidden/disabled/mandatory` | Independent boolean `condition` expressions (no `v#` prefix) — [xeelo-grammar.md](../entities/xeelo-grammar.md#extended-validation) |
-| `access[]` | **ObjectDefaultAccess** create-form visible/editable. Refresh seeds **both true**; list only hide/lock exceptions. Same `{field, editable, visible, sublineId?}` shape as `workflow.steps[].access` and `updateActions[].access`. Not `hidden` / `alwaysDisabled`. |
+| `access[]` | **ObjectDefaultAccess** create-form visible/editable. Refresh seeds **both true**, but OT does not run refresh — for a **new** line emit `visible: true` / `editable: true` or create form hides it. After extract, list only hide/lock exceptions. Same `{field, editable, visible, sublineId?}` shape as `workflow.steps[].access` and `updateActions[].access`. Not `hidden` / `alwaysDisabled`. |
 | `clientCalculation.type` / `expr` | Client-Math (`math`) / Client-String (`string`) — stored **without** `1#`/`2#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-math-vs-client-string). Client-UserInfo (`user_info`) / Client-DeviceInfo (`device_info`) — `expr` is a required `{Placeholder}` without `7#`/`8#` — [xeelo-grammar.md](../entities/xeelo-grammar.md#client-userinfo--client-deviceinfo) |
 | `defaultValue` | `ObjectDefaultLineValue`, except **`description_memo`**: HTML into `ObjectDefaultLineDescMemo` |
 | `hint` | `ObjectDefaultLineHint` — runtime field hint (plain or HTML). All types except `empty_space`. Canonical English; translations in `languageTable.templateHints.<templateKey>.<code>`. Not `defaultValue` on description memo. |
 | `autonumber` | Catalog key from `spec/autonumbers.yaml` → `ObjectDefaultLineAutoNumberID`. Text (3) only. Mutually exclusive with input mask. |
+| `subgridTemplate` | Key of `subgrids.<key>.templates[]` → `ObjectDefaultLine.ObjectSubDefaultID`. Parent field must be `type: subgrid` with `objectSub:`. |
 | `reopenOnSave` | `ObjectDefaultReopenTypeID` — omit / `none` / `close` = NULL (request **closes** after create save). `open-only-everytime` (1), `open-with-actions` (2), `open-only-assigned` (3). Same slugs on `updateActions[].reopenOnSave` and `workflow.steps[].actions[].reopenOnSave`. Template/update-action values apply on **new** requests; already-saved requests always stay Open only (everytime). Workflow-button value applies after that transition. Catalog: [`ReopenActionType.json`](../data/enums/ReopenActionType.json). |
 
 Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):

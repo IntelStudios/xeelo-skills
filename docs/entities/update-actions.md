@@ -70,7 +70,7 @@ Per-line (and optional subgrid column) flags during **EditableUpdate** mode. Sam
 | `ObjectLineIsEditableUpdate` | 0 | Field editable during update |
 | `ObjectLineIsVisibleUpdate` | 1 | Field visible during update |
 
-Site refresh inserts a row per (action, line) as **visible, not editable**. Spec `updateActions[].access` must list fields that should be editable (or hidden). `editable: true` forces `visible: true`. Extract omits those default-locked rows — when you later make one editable, take the existing `ObjectUpdateAccessID` from the DB transfer (`ids.explicit.objectUpdateAccess`); do not allocate a new Orig. ID (unique `(ObjectUpdateActionID, ObjectLineID)`).
+Site refresh inserts a row per (action, line) as **visible, not editable**. Spec `updateActions[].access` must list fields that should be editable (or hidden). `editable: true` forces `visible: true`. Extract omits those default-locked rows — when you later make one editable, take the existing `ObjectUpdateAccessID` from the DB transfer (`ids.explicit.objectUpdateAccess` keys `{action}/{field}` or `{action}/{field}/sub{sublineId}`). Do not allocate a new Orig. ID for the same (action, `ObjectLineID`, `ObjectSubLineID`). Optional `access[].sublineId` is a subgrid column; `ObjectLineID` stays the parent type-5 line.
 
 Applied via `ProcessEditableUpdateAccess` when the new version is unsaved (`RequestTypeID` 2/3). **ObjectAction** (server automation) has no line-access table.
 

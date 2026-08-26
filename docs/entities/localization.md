@@ -28,7 +28,7 @@ Admin translation modal lists every **active** row. Do not write `en` into `lang
 
 ## Admin UI
 
-- Globe icon on fields marked translatable (object name, line name, on-grid name, template name, role, status, workflow name, step **action** name, object/update action name, company, object type, …).
+- Globe icon on fields marked translatable (object name, line name, on-grid name, template name, role, status, workflow name, step **action** name, object/update action name, company, object type, subgrid tab/section/line/hint, …).
 - Tabs and sections: globe on the tab/section header (same `LanguageTable` mechanism).
 - **Label translation** portlet: bulk grid / Excel / machine translate for the object subtree.
 
@@ -70,6 +70,21 @@ languageTable:
     default:
       ACCOUNT_NUMBER:
         cs: Zadejte IBAN bez mezer
+  subgrids:
+    invoice_lines:
+      tabs:
+        General:
+          cs: Obecné
+      sections:
+        General/Details:
+          cs: Podrobnosti
+      lines:
+        DESC:
+          cs: Popis
+      templateHints:
+        default:
+          DESC:
+            cs: Popis položky
 ```
 
 | Spec key | Maps to |
@@ -92,6 +107,13 @@ languageTable:
 | `objectMessages.<key>` | `ObjectMessageName` |
 | `objectMessages.<key>.html` | HTML body — LanguageTable ColumnName `ObjectMessageFormat` (DB column is `ObjectMessageFromat`) |
 | `templateHints.<templateKey>.<code>` | `ObjectDefaultLineHint` — canonical English stays on `templates.fields.<code>.hint`; RowID is the template-line PK |
+| `subgrids.<key>.tabs.<TabName>` | `ObjectSubLineTabName` |
+| `subgrids.<key>.sections.<TabName>/<SectionName>` | `ObjectSubSectionName` |
+| `subgrids.<key>.lines.<code>` | `ObjectSubLineName` |
+| `subgrids.<key>.lines.<code>.onGrid` | `ObjectSubLineOnGridName` (omit unless the site wants table headers translated) |
+| `subgrids.<key>.templateHints.<tpl>.<code>` | `ObjectSubDefaultLineHint` |
+
+`ObjectSubName` is not in Admin mass-translate. Comments on `ObjectSub*` are **not** in `comments.yaml` yet.
 
 Generator emits `LanguageTable` rows (`IsActive=1`) and ObjectSetup edges `Parent → LanguageTable`. Extract writes the fragment only when translations exist.
 

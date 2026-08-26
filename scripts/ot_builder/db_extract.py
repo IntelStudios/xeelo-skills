@@ -239,45 +239,6 @@ def build_shared(index: TransferIndex) -> dict[str, Any]:
     }
 
 
-def extract_subgrids(index: TransferIndex, object_id: int) -> dict[str, Any] | None:
-    sub_ids: set[int] = set()
-    for row in index.rows_for("ObjectLine", "ObjectID", object_id):
-        if row.get("ObjectSubID") is not None:
-            sub_ids.add(int(row["ObjectSubID"]))
-    if not sub_ids:
-        return None
-
-    subgrids: dict[str, Any] = {}
-    for sub_id in sorted(sub_ids):
-        sub = index.row_by_id("ObjectSub", sub_id)
-        if not sub:
-            continue
-        key = _slug(sub.get("ObjectSubName") or sub.get("ObjectSubCode") or str(sub_id))
-        lines = []
-        for line in sorted(
-            index.rows_for("ObjectSubLine", "ObjectSubID", sub_id),
-            key=lambda r: (r.get("ObjectSubLineOrder") or 0, r.get("ObjectSubLineID") or 0),
-        ):
-            lines.append(
-                {
-                    "id": int(line["ObjectSubLineID"]),
-                    "name": line.get("ObjectSubLineName", ""),
-                    "code": line.get("ObjectSubLineCode"),
-                    "slot": line.get("ObjectSubLineSlot"),
-                    "order": line.get("ObjectSubLineOrder"),
-                    "typeId": line.get("ObjectSubLineTypeID"),
-                }
-            )
-        subgrids[key] = {
-            "id": sub_id,
-            "name": sub.get("ObjectSubName", ""),
-            "code": sub.get("ObjectSubCode"),
-            "width": sub.get("ObjectSubWidth"),
-            "lines": lines,
-        }
-    return subgrids or None
-
-
 def _clear_objects_dir(objects_dir: Path) -> None:
     if not objects_dir.is_dir():
         return
@@ -333,10 +294,6 @@ def extract_env(
         )
         spec["ids"]["byTable"] = collect_object_by_table(index, oid)
         spec["ids"]["base"] = site_base or 9000
-
-        subgrids = extract_subgrids(index, oid)
-        if subgrids:
-            spec["subgrids"] = subgrids
 
         write_spec(spec, out)
         written.append({"id": oid, "slug": slug, "path": str(out.relative_to(env_dir))})

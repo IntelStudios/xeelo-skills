@@ -110,7 +110,7 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML** |
 | `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 — [object-line-types.md](object-line-types.md#client-calculations) |
 | `ObjectDefaultLineClientCalculation` | Math/String expr without `1#`/`2#` prefix — [xeelo-grammar.md](xeelo-grammar.md) |
-| `ObjectDefaultLineHint` | Runtime hint for users (plain or HTML). Spec: `templates.fields.<code>.hint`. All types except empty space (6). Subgrid sibling `ObjectSubDefaultLineHint` is not in spec yet. |
+| `ObjectDefaultLineHint` | Runtime hint for users (plain or HTML). Spec: `templates.fields.<code>.hint`. All types except empty space (6). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue`. Subgrid template hint: `ObjectSubDefaultLineHint` (`subgrids.*.templates[].fields.*.hint`). |
 | `ObjectDefaultLineAutoNumberID` | Bind to a catalog autonumber (sequence) — [Autonumber](#autonumber) |
 
 Which template capabilities apply depends on the line type. Combo / radio / multi always need a **reference** on `ObjectLine`. A **lookup** on the template line may sit on the same field — it fills the value from another line.
@@ -126,7 +126,9 @@ Per-line (optional subline) flags while the request is **created** from this tem
 | `ObjectLineIsVisibleCreate` | `1` | Field visible on create |
 | `ObjectLineIsEditableCreate` | `1` | Field editable on create |
 
-Site refresh inserts a row per (template, line) as **visible and editable**. Spec `templates[].access` lists only exceptions (hide or lock). `editable: true` forces `visible: true`.
+Site refresh inserts a row per (template, line) as **visible and editable**. **Object Transfer does not run that refresh.** A missing `ObjectDefaultAccess` row means the line is **hidden on create**. For a **new** line, emit `templates[].access` with `visible: true` and `editable: true` even though that matches the refresh default. After `/download-db`, extract drops those default rows from spec.
+
+On later loops, list only exceptions (hide or lock). `editable: true` forces `visible: true`. Optional `access[].sublineId` (`ObjectSubLineID`) for a subgrid **column**; `ObjectLineID` is still the parent type-5 line. See [Subgrid](#subgrid).
 
 Spec: `templates[].access` — see [spec-format.md](../transfer/spec-format.md#templates-spectemplatesyaml). Distinct from:
 
@@ -207,7 +209,7 @@ Admin enables autonumber only on **text** (type 3). Input mask / length cannot b
 
 Typical **request identifier**: text field + autonumber bind + Unique (below). Spec: `spec/autonumbers.yaml` + `templates.fields.<code>.autonumber` (or layout `fields[].autonumber` on a single default template). Recipe: [`recipes/add-autonumber-field.md`](../recipes/add-autonumber-field.md).
 
-Subgrid template lines can bind the same catalog (`ObjectSubDefaultLineAutoNumberID`). Spec/generator do not emit subgrid autonumbers yet.
+Subgrid template lines bind the same catalog (`ObjectSubDefaultLineAutoNumberID`). Spec: `subgrids.*.templates[].fields.*.autonumber`.
 
 ## Unique
 
@@ -232,9 +234,75 @@ Admin Unique on types **1, 2, 3, 4, 7, 8, 12, 14, 15**. Number compares parsed n
 
 ## Subgrid
 
-**Table:** `ObjectSub` · **Line type:** 5 (Sub-grid)
+**Tables:** `ObjectSub`, `ObjectSubLineTab`, `ObjectSubLineSection`, `ObjectSubLine` · **Parent line type:** 5 (`subgrid`) · **Templates:** `ObjectSubDefault`, `ObjectSubDefaultLine`
 
-Embedded repeatable table within a parent object line. Has own tabs, sections, lines, templates.
+Embedded repeatable table. Not a child of `Object` — the header has no `ObjectID`. Binding is **`ObjectLine.ObjectSubID`** on a parent line of type 5 (no slot; not allowed on the request inbox grid).
+
+```
+ObjectLine (type 5)
+└── ObjectSub                    # shared catalog; several parent lines may point here
+    ├── ObjectSubLineTab → ObjectSubLineSection → ObjectSubLine
+    ├── ObjectSubDefault → ObjectSubDefaultLine
+    └── ObjectSubPrefill → ObjectSubPrefillData   # not in spec yet
+```
+
+Same type IDs and **same spec extras** as ObjectLine for every type in `ObjectSubLineType` (no 5 / 13 / 18). Spec keys stay `precision`, `reference`, `attachmentStorageId`, … — SQL is `ObjectSubLine*`. Exceptions: unique is a boolean; total types 3 and 12; slot skip is 6/16/17. [object-line-types.md](object-line-types.md#subgrid-columns-objectsubline). Recipe: [`recipes/add-subgrid.md`](../recipes/add-subgrid.md). Spec: [`spec/subgrids.yaml`](../transfer/spec-format.md#subgrids-specsubgridsyaml).
+
+### Bind on the parent object
+
+| Piece | Column | Spec |
+|-------|--------|------|
+| Embedding line | `ObjectLine.ObjectSubID` | `fields[].objectSub` (key in `subgrids:`) or `objectSubId` (existing/shared ID, no tree emit) |
+| Which subgrid template new rows use | `ObjectDefaultLine.ObjectSubDefaultID` | `templates.fields.<code>.subgridTemplate` (requires `objectSub:` key) |
+| Prefill | `ObjectDefaultLine.ObjectSubPrefillID` | not in spec yet |
+
+Admin capability “Subgrid template / prefill” applies only to type 5.
+
+### Sharing
+
+Uncommon but valid: several objects (or several type-5 lines) set `ObjectSubID` to the **same** `ObjectSub`. OT `ObjectLine → ObjectSub` is include-for-transfer, not exclusive ownership. The second object should use `objectSubId:` only — do not emit a second tree with new Orig. IDs.
+
+### Access (ObjectLine + ObjectSubLine)
+
+Create / workflow step / update-action access tables all have required `ObjectLineID` and optional `ObjectSubLineID`:
+
+- `ObjectDefaultAccess`
+- `WorkflowStepAccess`
+- `ObjectUpdateAccess`
+
+`ObjectLineID` is **this object’s** type-5 embedding line. `ObjectSubLineID` is a column of the (possibly shared) `ObjectSub`. Shared tree ≠ shared access: object A and B have different parent lines.
+
+Spec: `access[].field` + optional `access[].sublineId`. Orig. ID keys `{field}` or `{field}/sub{sublineId}`. Row without subline = the subgrid widget; row with subline = that column. Reuse the existing access Orig. ID for the same (template/step/action, line, subline).
+
+**New type-5 line:** emit create access (`templates[].access`, visible+editable) **and** `workflow.steps[].access` on **every** step that should show the widget. Generator copies that parent access onto each `ObjectSubLine` (the add-row modal). Object Transfer does not seed access; a missing **widget** row hides the grid; a missing **column** row leaves the modal empty. Same rule as any new ObjectLine.
+
+### vs request
+
+| | Request (`ObjectLine`) | Subgrid (`ObjectSubLine`) |
+|--|------------------------|---------------------------|
+| Type extras | `precision`, `reference`, … on `ObjectLine*` | **same spec keys** on `ObjectSubLine*` (types 5 / 13 / 18 do not exist) |
+| Unique | `uniqueId` 1–4; each field checked on its own | boolean; several unique columns = **composite AND** in the parent request |
+| Autonumber | `ObjectDefaultLineAutoNumberID` | same catalog; `ObjectSubDefaultLineAutoNumberID` |
+| Inbox on-grid | type 5 **not** allowed | `subgrids.<key>.onGrid` → `ObjectSubLine` flags + `ObjectSubLineOnGrid` (tag 3/4; total types **3 and 12**) |
+| Grid sort | `ObjectGridSort*` | `ObjectSubGridSort*` — not in spec yet |
+| Workflow | object workflow | rows live under the parent request; no own workflow |
+| Prefill | — | `ObjectSubPrefill` — not in spec yet |
+| Width | field 1–100 % | `ObjectSubWidth` = add/edit-row **modal** width; default **80** (Admin 50–100). Grow the form with tabs/sections or stacked fields, not a wider modal |
+| Label | `IsHorizontal` | type-5 label always in the SubGrid header |
+| GraphQL | `ObjectCode` | same `Select_` / `Mutate_` prefixes from **`ObjectSubCode`** |
+| Generate + combo Multiselect | — | subgrid-only (below) |
+
+Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids`. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
+
+### Generate + combo Multiselect
+
+`ObjectSub` can enable **Generate**. A combobox column (`ObjectSubLine` type 1, maybe search) can enable **Multiselect**. That is **not** request type 20 `checkbox_multiselect`.
+
+With Generate on, the user picks several číselník values on that combo; runtime **creates one subgrid row per selected value** (typically filling that combo). Without Generate, Multiselect on the combo does nothing useful — a normal sub-row is single-select. Exact SQL names are not in spec yet (`ObjectSubIsGenerate` / `ObjectSubLineIsMultiSelect` or similar).
+
+### GraphQL and notifications
+
+Sanitize `ObjectSubCode` the same way as `ObjectCode`. Query/mutation names use that code (`Select_{code}`, `Mutate_{code}`), not the parent `ObjectLineCode`. Email tokens: `{RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...}`.
 
 ## Update actions
 

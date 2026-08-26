@@ -47,7 +47,7 @@ Insert stores the format (still with `#`) as a placeholder; refresh generates th
 
 `uniqueId` on types 1, 2, 3, 4, 7, 8, 12, 14, 15. Empty values are not checked; only **submitted** requests.
 
-Several unique **request** lines are each unique on their own (not a composite tuple). For a request identifier use **one** autonumber field. Several unique **subgrid** lines are a composite key — spec does not emit that yet.
+Several unique **request** lines are each unique on their own (not a composite tuple). For a request identifier use **one** autonumber field. Several unique **subgrid** lines are a composite key — spec does not emit that yet. Subgrid text columns can bind the same catalog (`subgrids.*.templates[].fields.*.autonumber`) — [add-subgrid.md](add-subgrid.md).
 
 ## Tables to emit
 
