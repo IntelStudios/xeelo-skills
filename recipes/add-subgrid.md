@@ -155,6 +155,30 @@ Always add this when creating a subgrid. `layout.fields` is the add/edit-row **f
 
 `isTotal` on a subgrid is `ObjectSubLineIsTotal` (types **3 and 12**). `isTag` is `ObjectSubLineOnGridIsTag` (compile types 3 and 4). After deploy, **/publish** so cache SQL is rebuilt.
 
+## Calculation order
+
+The type-5 parent **must** have an **`ObjectDefaultLineCalculationOrder`** row on the template (typical order **0**, then **10**, **20**, …). Without it Admin reports **C.72** (sub-grid without calculation order) and request refresh skips the subgrid.
+
+Spec/generator do **not** emit this table. After generate, patch the OT JSON:
+
+```json
+{
+  "ObjectDefaultLineCalculationOrder": [
+    {
+      "ObjectDefaultLineCalculationOrderID": 40,
+      "ObjectDefaultID": 12,
+      "ObjectLineID": 80,
+      "ObjectDefaultLineCalculationOrder": 0,
+      "IsActive": true
+    }
+  ]
+}
+```
+
+`ObjectDefaultLineCalculationOrderID` is the next Orig. ID (`ids.base.ObjectDefaultLineCalculationOrder` + 1). `ObjectDefaultID` / `ObjectLineID` are the template and type-5 line from env.
+
+**Inbox list of a subgrid combo (or other column):** hidden parent **text** + server calc **Server-SubConcat (52)** `id{type5ObjectLineID},id{ObjectSubLineID}`. Put that line later in the same order list (for example type-5 at 0, concat at 10). Joins formatted values with `,` (no space). Spec does not emit the calc either — patch `ObjectDefaultLine` the same way as Server-String **53**. Details: [object-line-types.md](../docs/entities/object-line-types.md#server-subconcat-52).
+
 ## Unique / autonumber / Generate
 
 Several unique **subgrid** columns are a **composite AND** within that parent request (`ObjectSubLineIsUnique`) — spec does not emit that yet. Request unique is per-field `uniqueId` 1–4. Autonumber on a subgrid **text** column: same `autonumbers:` catalog, bind on `subgrids.*.templates[].fields.*.autonumber`.
@@ -169,7 +193,8 @@ Several unique **subgrid** columns are a **composite AND** within that parent re
 4. **ObjectDefaultLine** — `ObjectSubDefaultID` when `subgridTemplate` is set
 5. **ObjectDefaultAccess** + **WorkflowStepAccess** — parent type-5 line **and** each ObjectSubLine (modal columns). Generator expands parent access onto columns when `objectSub:` is in spec.
 6. **ObjectSubLineOnGrid** — from `subgrids.<key>.onGrid.layouts` (flags on `ObjectSubLine` from `onGrid.fields`)
-7. Edges: `ObjectLine → ObjectSub`, `ObjectSub → ObjectSubLine` / `ObjectSubDefault`, `ObjectSubLine → ObjectSubLineOnGrid`, `ObjectSubDefaultLine → ObjectLineAutoNumber` when `autonumber` is set, `ObjectSubDefaultLine → ObjectLineLookup` when `lookup` is set
+7. **ObjectDefaultLineCalculationOrder** — type-5 parent (and any parent server calc that reads the subgrid). Not generated from spec; patch after generate.
+8. Edges: `ObjectLine → ObjectSub`, `ObjectSub → ObjectSubLine` / `ObjectSubDefault`, `ObjectSubLine → ObjectSubLineOnGrid`, `ObjectSubDefaultLine → ObjectLineAutoNumber` when `autonumber` is set, `ObjectSubDefaultLine → ObjectLineLookup` when `lookup` is set
 
 `objectSubId` without `subgrids:` emits only the parent FK.
 

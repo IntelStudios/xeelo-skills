@@ -34,6 +34,14 @@ One UTF-8 object. Each key is a table name; each value is a non-empty array of r
 
 Change-loop generator emits **one JSON file per touched object** (`output/<slug>-object-transfer.json`), Orig. ID rows.
 
+## Patch after generate
+
+Some tables/columns have **no spec keys** yet. Merge them into the OT JSON before dry-run, for example:
+
+- `ObjectLineLookupRefObject` — [add-lookup-field.md](../../recipes/add-lookup-field.md)
+- `ObjectDefaultLineCalculationTypeID` / `ObjectDefaultLineCalculation` and `ObjectDefaultLineCalculationOrder` — [object-line-types.md](../entities/object-line-types.md#server-calculations)
+- `ObjectSubLineIsUnique` — [object-model.md](../entities/object-model.md#unique)
+
 ## Publish from xeelo-skills
 
 After generate, the loop **automatically** dry-runs (`isTest: true`). `/publish` applies for real (`isTest: false`) then precompiles (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
