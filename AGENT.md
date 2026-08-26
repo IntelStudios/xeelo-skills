@@ -176,7 +176,7 @@ Recipe: [add-update-action.md](recipes/add-update-action.md). Runtime fallback: 
 
 ## Skills
 
-Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, `/precompile`, and `/graphql`.
+Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, `/precompile`, `/graphql`, and `/sync-main`.
 
 | Skill | When | File |
 |-------|------|------|
@@ -185,6 +185,7 @@ Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini;
 | `/publish` | Apply Object Transfer for real and precompile | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
 | `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 | `/graphql` | Live schema + `access_rights` from `POST {xeeloUrl}/graphql` | [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md) |
+| `/sync-main` | Hourly check of `origin/main` and fast-forward pull | [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md) |
 
 After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
