@@ -62,7 +62,7 @@ See [01-entity-hierarchy.md](01-entity-hierarchy.md) for portlet-grouped entity 
 - [transfer/db-transfer-format.md](transfer/db-transfer-format.md) — download/parse DB transfer → env baseline
 - [transfer/spec-format.md](transfer/spec-format.md) — agent input language (v2)
 - [entities/graphql.md](entities/graphql.md) — `Select_` / `Mutate_`, `lines` vs `linesFormatted`
-- [entities/object-line-types.md](entities/object-line-types.md) — 20 ObjectLine types, template capabilities, client calc
+- [entities/object-line-types.md](entities/object-line-types.md) — 20 ObjectLine types, template capabilities, client/server calc, calculation order
 - [entities/xeelo-grammar.md](entities/xeelo-grammar.md) — extended validation (`v#`), Client-Math/String, UserInfo/DeviceInfo
 - [entities/localization.md](entities/localization.md) — `LanguageTable`, `spec/language-table.yaml`
 - [entities/comments.md](entities/comments.md) — `TableComments`, `spec/comments.yaml`

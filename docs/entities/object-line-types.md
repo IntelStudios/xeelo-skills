@@ -160,7 +160,7 @@ blue(dbo.fnRoleName(r.RoleID))+' '+case r.RequestStatusID
 end
 ```
 
-Helpers `blue()` / `yellow()` / `green()` / `red()` / `dark()` write Metronic-style tokens such as `[Info_Requestor] [Warning_Draft]` / `[Success_Completed]` / `[Primary_Planned]`. Add extra `when RoleID` / `when RequestStatusID` branches when the object gains approval roles or pending statuses. Hide the line on the form (`hidden` + `alwaysDisabled`); place it on the inbox with `valueWidth: 100`. Spec/generator do **not** emit server calc — after generate, set those two `ObjectDefaultLine` columns on the OT JSON. Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action.
+Helpers `blue()` / `yellow()` / `green()` / `red()` / `dark()` write Metronic-style tokens such as `[Info_Requestor] [Warning_Draft]` / `[Success_Completed]` / `[Primary_Planned]`. Add extra `when RoleID` / `when RequestStatusID` branches when the object gains approval roles or pending statuses. Hide the line on the form (`hidden` + `alwaysDisabled`); place it on the inbox with `valueWidth: 100`. Spec/generator do **not** emit server calc — after generate, set those two `ObjectDefaultLine` columns **and** an `ObjectDefaultLineCalculationOrder` row on the OT JSON ([server calculations](#server-calculations)). Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action.
 
 **Do not put `[badge:…]` on an `isTag` line** — tag chips show the raw token. Split:
 
@@ -238,3 +238,44 @@ Client-Service requires `ObjectServiceID`. On a **report** line, Admin filters t
 Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix. On a subgrid, `id{CODE}` compiles to `ObjectSubLineID`.
 
 **UserInfo** / **DeviceInfo** require `expr` as a single `{Placeholder}` (without `7#` / `8#`). Catalog: [xeelo-grammar.md](xeelo-grammar.md#client-userinfo--client-deviceinfo).
+
+## Server calculations
+
+Catalog: [`ObjectDefaultLineCalculationType.json`](../data/enums/ObjectDefaultLineCalculationType.json) (IDs **51+**). Stored on **`ObjectDefaultLineCalculationTypeID`** + **`ObjectDefaultLineCalculation`**, not the client dropdown.
+
+Spec/generator do **not** emit those two columns. After generate, patch the `ObjectDefaultLine` row on the OT JSON (same pattern as [on-grid badge](#on-grid-badge) Server-String **53**).
+
+### Calculation order
+
+Server calcs and **type-5** (subgrid) parent lines also need a row in **`ObjectDefaultLineCalculationOrder`**:
+
+| Column | Role |
+|--------|------|
+| `ObjectDefaultID` | Template |
+| `ObjectLineID` | Line that runs (type 5, or a line with a server calc) |
+| `ObjectDefaultLineCalculationOrder` | Sequence. Typical **0, 10, 20, …** |
+
+The calculation view treats a missing row as order **999999999**. Precompile copies into `ObjectDefaultLineCalculationCache` only when:
+
+- the line is **type 5**, or `ObjectDefaultLineCalculationTypeID` is **51–100**, **and**
+- the order is **not** `999999999`
+
+Without an order row the calc never runs. A type-5 line missing from the list is Admin consistency **C.72** (sub-grid without calculation order). Put the type-5 parent **before** any calc that reads its rows (for example Server-SubConcat).
+
+Spec/generator do **not** emit `ObjectDefaultLineCalculationOrder`. Patch the OT JSON after generate. Extract updates `ids.base.ObjectDefaultLineCalculationOrder` (high-water) but does not write the list into spec.
+
+Subgrid analog: **`ObjectSubDefaultLineCalculationOrder`** for `ObjectSubDefaultLine` server calcs (same 999999999 skip).
+
+Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action — [graphql.md](graphql.md).
+
+### Server-SubConcat (52)
+
+Concatenates one **subgrid column** across rows of this request. Formula (after parse) must match `id{digits},id{digits}`:
+
+```text
+id{type5ObjectLineID},id{ObjectSubLineID}
+```
+
+First id = parent type-5 `ObjectLineID`. Second = `ObjectSubLineID` of the column to join. Runtime joins **formatted** cell values with **`,`** (comma, **no space**). A combo/reference column uses the combo display (for example Name (value) → `Škoda Octavia (BA-101AA),Tesla Model 3 (BB-405EE)`).
+
+Typical pattern: hidden parent **text** (`hidden` + `alwaysDisabled`), `allowed` on parent **onGrid**, type-5 at order **0**, concat line at **10**. Recipe: [add-subgrid.md](../../recipes/add-subgrid.md#calculation-order).

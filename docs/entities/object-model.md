@@ -110,10 +110,14 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML** |
 | `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 — [object-line-types.md](object-line-types.md#client-calculations) |
 | `ObjectDefaultLineClientCalculation` | Math/String expr without `1#`/`2#` prefix — [xeelo-grammar.md](xeelo-grammar.md) |
+| `ObjectDefaultLineCalculationTypeID` | Server calc **51+** ([`ObjectDefaultLineCalculationType.json`](../data/enums/ObjectDefaultLineCalculationType.json)). Spec does not emit it — [object-line-types.md](object-line-types.md#server-calculations) |
+| `ObjectDefaultLineCalculation` | Server calc formula (for example Server-SubConcat **52**: `id{type5LineId},id{subLineId}`) |
 | `ObjectDefaultLineHint` | Runtime hint for users (plain or HTML). Spec: `templates.fields.<code>.hint`. All types except empty space (6). Localized via `languageTable.templateHints`. Distinct from `description_memo` `defaultValue`. Subgrid template hint: `ObjectSubDefaultLineHint` (`subgrids.*.templates[].fields.*.hint`). |
 | `ObjectDefaultLineAutoNumberID` | Bind to a catalog autonumber (sequence) — [Autonumber](#autonumber) |
 
 Which template capabilities apply depends on the line type. Combo / radio / multi always need a **reference** on `ObjectLine`. A **lookup** on the template line may sit on the same field — it fills the value from another line.
+
+**`ObjectDefaultLineCalculationOrder`** (child of `ObjectDefault`, not of `ObjectDefaultLine`): which lines run on refresh and in what order. Required for type-5 parents and server calcs **51–100**. Spec/generator do not emit it — [object-line-types.md](object-line-types.md#calculation-order).
 
 ### Create-form access (ObjectDefaultAccess)
 
