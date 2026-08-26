@@ -128,6 +128,19 @@ The chip uses CSS class `.xe-badge-{code}`. `{CustomColorCode}` is a palette cod
 
 Empty value: write `""`, not `[badge:blue_]`. Several badges in one cell: space-separated tokens (`[badge:blue_A] [badge:purple_B]`). The parser is global.
 
+A **Server-String** calc (`ObjectDefaultLineCalculationTypeID` **53**) can fill the chip from role/status. Typical SQL (request alias `r`):
+
+```sql
+blue(dbo.fnRoleName(r.RoleID))+' '+case r.RequestStatusID
+  when 2 then green(dbo.fnRequestStatusName(r.RequestStatusID))
+  when 3 then red(dbo.fnRequestStatusName(r.RequestStatusID))
+  when 6 then dark(dbo.fnRequestStatusName(r.RequestStatusID))
+  else yellow(dbo.fnRequestStatusName(r.RequestStatusID))
+end
+```
+
+Helpers `blue()` / `yellow()` / `green()` / `red()` / `dark()` write Metronic-style tokens such as `[Info_Requestor] [Warning_Draft]` / `[Success_Completed]` / `[Primary_Planned]`. Add extra `when RoleID` / `when RequestStatusID` branches when the object gains approval roles or pending statuses. Hide the line on the form (`hidden` + `alwaysDisabled`); place it on the inbox with `valueWidth: 100`. Spec/generator do **not** emit server calc — after generate, set those two `ObjectDefaultLine` columns on the OT JSON. Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action.
+
 **Do not put `[badge:…]` on an `isTag` line** — tag chips show the raw token. Split:
 
 | Line | `isTag` | `allowed` | Value |

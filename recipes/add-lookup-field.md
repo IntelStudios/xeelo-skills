@@ -80,6 +80,29 @@ Same `lookups:` key → one `ObjectLineLookup` shared by fields.
 
 Inline `lookup.values` on the field still works for a one-off map.
 
+## Copy from another object (`ObjectLineLookupRefObject`)
+
+When the Source field is a **refObject combo**, a lookup can copy a line from the selected request (match the stored combo value to a line on that object, write another line into this field).
+
+```yaml
+# spec/lookups.yaml
+lookups:
+  make_from_vehicle:
+    name: Make from vehicle
+    values: []
+    refObject:
+      name: Vehicle make
+      objectId: 9102          # referenced object Orig. ID
+      onlyCompleted: false
+      lines:
+        source: PLATE         # line code on the other object (combo stored value)
+        return: MAKE          # line code on the other object (copied here)
+```
+
+`source` / `return` resolve like `references.*.refObject.lines` (`ids.explicit.refObjectLines` or numeric IDs).
+
+**Generate does not emit `ObjectLineLookupRefObject` yet.** After generate, add those rows to the Object Transfer JSON (one per lookup that has `refObject`). Extract writes the map with `values: []` and **omits** `refObject` — keep it in the change-loop spec so the next patch can rebuild the rows.
+
 ## Hints
 
 Admin template group **Lookup**: Source (`ObjectDefaultLineLookupID`), Source field, Filter.

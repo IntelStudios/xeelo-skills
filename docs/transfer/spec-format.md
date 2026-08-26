@@ -391,6 +391,8 @@ lookup:
 
 Inline `lookup.values` on the field still works (one-off map). Same key in `lookups:` = one `ObjectLineLookup` shared by fields.
 
+Lookup that **copies a line from another object’s request** (the combo is a refObject picker): `lookups.*.refObject` with `objectId` + `lines.source` / `lines.return`. Generate does **not** emit `ObjectLineLookupRefObject` yet — patch the OT JSON after generate. Extract omits `refObject` and writes `values: []`. Recipe: [`add-lookup-field.md`](../../recipes/add-lookup-field.md#copy-from-another-object-objectlinelookuprefobject).
+
 See [`recipes/add-lookup-field.md`](../../recipes/add-lookup-field.md).
 
 ## IDs and round-trip

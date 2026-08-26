@@ -59,6 +59,53 @@ SELECT RoleID, RoleName FROM dbo.Role WHERE IsActive = 1;
 SELECT RequestStatusID, RequestStatusName FROM dbo.RequestStatus WHERE IsActive = 1;
 ```
 
+## Sequential named-role approval
+
+A three-step approval is a `workflow.mode: full` chain. Unique index on a step is `(WorkflowID, RoleID, RequestStatusID)` — give each level its **own role and status**. Duplicate button names (`Approve` / `Reject` on every step) need `key` so generate and `languageTable.stepActions` stay unique ([spec-format.md](../docs/transfer/spec-format.md#roles-and-statuses)).
+
+```
+[Draft / Requestor] --Submit--> [Pending L1 / Team lead]
+  --Approve--> [Pending L2 / Department head]
+  --Approve--> [Pending L3 / Director]
+  --Approve--> [Completed / Requestor]
+Reject on each approval step returns to Draft / Requestor (styleId 2).
+```
+
+```yaml
+workflow:
+  mode: full
+  steps:
+  - name: Draft
+    role: requestor
+    status: draft
+    actions:
+      - name: Submit
+        role: team_lead
+        status: pending_team_lead
+        styleId: 1
+        order: 10
+  - name: Team lead
+    role: team_lead
+    status: pending_team_lead
+    actions:
+      - key: approve_l1
+        name: Approve
+        role: department_head
+        status: pending_department
+        styleId: 1
+        order: 10
+      - key: reject_l1
+        name: Reject
+        role: requestor
+        status: draft
+        styleId: 2
+        order: 20
+```
+
+Rename an existing footer button (e.g. Complete → Submit) by **keeping** its `ids.explicit.workflowStepActions` Orig. ID. Object Transfer does not delete leftover `WorkflowStepAction` rows.
+
+`UserAccess` is not in Object Transfer — assign the new roles on the object in Admin after publish ([users-and-access.md](../docs/entities/users-and-access.md)).
+
 ## Optional: WorkflowStepAccess
 
 Controls which object lines are visible/editable per step. Site refresh creates a row for every line with **visible yes, editable no**. Add `access` on a full-mode step when a field must be editable after create (typical: a form button on status Open):
