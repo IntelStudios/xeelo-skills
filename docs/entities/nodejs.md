@@ -1,17 +1,14 @@
-# Node.js object action (ESM)
+# Node.js object action
 
 How to write **Run Node.js (Last)** scripts (`CustomJS`) for `ObjectAction`. Entity wiring: [object-actions.md](object-actions.md). GraphQL schema: [graphql.md](graphql.md). Recipes: [add-object-action.md](../../recipes/add-object-action.md), [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 
-Runtime: `POST /execute-esm`. Platform template: `spEndPointRunNodeJSMainDefault`.
+Runtime: `POST /execute`. Platform template: `spEndPointRunNodeJSMainDefault`. Scripts are **always ESM**.
 
-## Defaults (always ESM)
-
-New Node.js object actions in this KB are **ESM**. Do not emit legacy (non-ESM) `CustomJS`.
+## Defaults
 
 | Spec param | Default | Why |
 |------------|---------|-----|
 | `typeCode` | `spEndPointRunNodeJSMainLast` | Runs in the second execute pass (`IsLast=1`) |
-| `EndPointRunESM` | `"1"` | `POST /execute-esm` (not the old evaluate path) |
 | `EndPointRunWait` | `"1"` | `"1"` wait and write `main()` return onto the request. `"0"` fire-and-forget (message broker still runs the ESM; raise `EndPointRunTimeout` for long jobs) |
 | `EndPointRunTimeout` | `"60000"` | Wall-clock ms. Raise for bulk CREATE (import) |
 | `ApplicableEventType` | `"Save,SaveNew"` (or include `WorkflowAction`) | Restricts when the action runs |
@@ -92,6 +89,67 @@ const apiUrl = Context.Variable?.MyApiUrl;
 ### Other globals (no import)
 
 `log` / `console` (`trace`, `debug`, `info`, `warn`, `error`), `fetch`, `FormData`, `File`, `Blob`, `Buffer`, `sleep(ms)`, `Promise`, `AbortSignal`.
+
+YAML, JWT, AWS, Azure, lodash, Puppeteer, and the rest of the libraries below are **not** globals — `import` them from the [built-in allowlist](#built-in-imports) or after [`// install`](#install-directive).
+
+## Built-in imports
+
+You may `import` these specifiers without `// install`. Anything else fails unless declared with `// install`.
+
+| Import specifier | Typical import | Notes |
+|------------------|----------------|-------|
+| `"node-fetch"` | `import fetch from "node-fetch"` | Also exports `FormData`, `File`. `fetch` is a global too; use `AbortSignal.timeout()` for request timeouts |
+| `"js-yaml"` | `import yaml from "js-yaml"` | `yaml.load()` / `yaml.dump()` |
+| `"pdf-lib"` | `import pdfLib from "pdf-lib"` | PDF create / edit |
+| `"exceljs"` | `import ExcelJS from "exceljs"` | Spreadsheet read/write |
+| `"fast-xml-parser"` | `import { XMLParser, XMLBuilder } from "fast-xml-parser"` | XML parse and build |
+| `"jsonwebtoken"` | `import jwt from "jsonwebtoken"` | JWT sign and verify |
+| `"node:crypto"` | `import crypto from "node:crypto"` | Node.js crypto |
+| `"decimal.js"` | `import Decimal from "decimal.js"` | Arbitrary-precision decimals |
+| `"lodash"` | `import _ from "lodash"` | Utilities |
+| `"aws-sdk"` or `"@aws-sdk/client-s3"` | `import * as aws from "@aws-sdk/client-s3"` | Both resolve to the same S3 SDK |
+| `"aws4"` | `import aws4 from "aws4"` | AWS request signing |
+| `"@azure/identity"` | `import * as identity from "@azure/identity"` | Azure auth |
+| `"@azure/storage-blob"` | `import * as storageBlob from "@azure/storage-blob"` | Blob storage |
+| `"@azure/arm-costmanagement"` | `import * as costManagement from "@azure/arm-costmanagement"` | Cost management |
+| `"@azure/arm-cognitiveservices"` | `import * as cognitiveServices from "@azure/arm-cognitiveservices"` | Cognitive services |
+| `"@azure/openai"` | `import * as openai from "@azure/openai"` | Azure OpenAI |
+| `"@azure/arm-maps"` | `import * as maps from "@azure/arm-maps"` | Azure Maps |
+| `"@azure/arm-botservice"` | `import * as botService from "@azure/arm-botservice"` | Bot Service |
+| `"puppeteer"` | `import puppeteer from "puppeteer"` | Headless Chromium. Runtime adds `--no-sandbox`. Headful (`headless: false`) fails. Close the browser (or the runtime will close leftover browsers and warn) |
+| `"@xeelo/graphql-client"` | `import { XeeloGraphQLClient } from "@xeelo/graphql-client"` | Virtual module; reads `Context.GraphQL` |
+
+Prefer the allowlist when the package is already there.
+
+## Install directive
+
+Use `// install("package-name")` in a **comment** to pull an extra npm package before the module runs, then `import` it as usual.
+
+| Form | Example |
+|------|---------|
+| Line comment | `// install("dayjs")` |
+| Block comment | `/* install("uuid@9.0.1") */` |
+| Version pin | `install("openai@4.3.1")` |
+
+Rules:
+
+- The directive must be **inside a comment**. Bare `install("uuid")` in code is ignored and the import fails.
+- Multiple directives are allowed; duplicates are deduplicated.
+- Subpath imports work after the root package is installed (`import "dayjs/locale/cs"` after `// install("dayjs")`).
+- Install is scoped to **this** object action or periodic action (`ScopeID`). Another action does not see those packages even with the same script text. The same action reuses what it already installed; the first run is slower.
+
+```javascript
+// install("dayjs")
+import dayjs from "dayjs";
+
+export async function main() {
+    return dayjs().format("YYYY-MM-DD");
+}
+```
+
+**Native addons do not work.** The Node runtime runs in a Docker image without a compiler. Packages that compile native code (`node-gyp`) and JS wrappers over native dependencies fail at `// install`. Use the allowlist or a pure-JS package.
+
+Import resolution: packages installed for this action → allowlist → `Cannot import module <specifier>`.
 
 ## XeeloGraphQLClient
 

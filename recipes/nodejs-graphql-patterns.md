@@ -1,6 +1,6 @@
 # Node.js GraphQL patterns (object action)
 
-How-to for `CustomJS` in **Run Node.js (Last)**. Schema: [graphql.md](../docs/entities/graphql.md). Runtime / `Context`: [nodejs-esm.md](../docs/entities/nodejs-esm.md). Wiring: [add-object-action.md](add-object-action.md).
+How-to for `CustomJS` in **Run Node.js (Last)**. Schema: [graphql.md](../docs/entities/graphql.md). Runtime / `Context`: [nodejs.md](../docs/entities/nodejs.md). Wiring: [add-object-action.md](add-object-action.md).
 
 Replace `OBJECTCODE`, `FIELD_CODE`, `OTHERCODE`, `TEMPLATE_ID` with **site** codes and IDs from `env/` after `/download-db`.
 
@@ -11,7 +11,7 @@ Replace `OBJECTCODE`, `FIELD_CODE`, `OTHERCODE`, `TEMPLATE_ID` with **site** cod
 - [ ] Select reads `lines` (valueData), not `linesFormatted`
 - [ ] Date picker `lines` are `dd-MM-yyyy` — split the string, do not use `new Date(s)`
 - [ ] ObjectAction self-update: no `createType`, `withRefresh: false`
-- [ ] Periodic GraphQL mutate: **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — [nodejs-esm.md](../docs/entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)
+- [ ] Periodic GraphQL mutate: **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — [nodejs.md](../docs/entities/nodejs.md#periodic--graphql-mutate-must-refresh)
 - [ ] `CREATE` only on a **different** object; `template` = `ObjectDefaultID`
 - [ ] Bulk CREATE: several items per `input` array **and** a small pool of concurrent `client.request` calls; raise `EndPointRunTimeout` — [§6](#6-batch--parallel-create)
 - [ ] Refresh **open** other requests: `withRefresh: true` without `lines`; batch + pool — [§7](#7-refresh-other-requests-in-parallel-no-line-writes)
@@ -295,5 +295,5 @@ await mapPool(batches, UPDATE_CONCURRENCY, async (batch) => {
 });
 ```
 
-Schema: [graphql.md](../docs/entities/graphql.md#mutation-mutate_code). Runtime table: [nodejs-esm.md](../docs/entities/nodejs-esm.md#mutating-the-current-request--no-refresh).
+Schema: [graphql.md](../docs/entities/graphql.md#mutation-mutate_code). Runtime table: [nodejs.md](../docs/entities/nodejs.md#mutating-the-current-request--no-refresh).
 

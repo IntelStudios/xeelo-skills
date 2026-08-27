@@ -69,11 +69,11 @@ Manual run: Admin Periodic **Refresh**, or GraphQL `Execute_Periodic(periodicId)
 
 ### Node.js action
 
-Type code **`spEndPointRunNodeJSMain`** (not `…Last`). Same Node pipeline as ObjectAction: `EventType = Periodic`, `ScopeID = PeriodicAction_{id}`, GraphQL token = service account **0**. Params: `CustomJS`, `EndPointRunWait`, `EndPointRunTimeout`, `ResponseCodeObjectLineID`, `ResponseTextObjectLineID`, `EndPointRunESM`.
+Type code **`spEndPointRunNodeJSMain`** (not `…Last`). Same Node pipeline as ObjectAction: `EventType = Periodic`, `ScopeID = PeriodicAction_{id}`, GraphQL token = service account **0**. Params: `CustomJS`, `EndPointRunWait`, `EndPointRunTimeout`, `ResponseCodeObjectLineID`, `ResponseTextObjectLineID`.
 
-New scripts in this KB are ESM (`EndPointRunESM: "1"`, `export async function main()`). See [nodejs-esm.md](nodejs-esm.md).
+Scripts are ESM (`export async function main()`). Built-in packages and `// install`: [nodejs.md](nodejs.md).
 
-**GraphQL mutate from Periodic must refresh.** Periodic is **not** inside `spRequestRefreshGeneral`. Simple `Mutate_` of lines needs `withRefresh: true`; `CREATE` / `UPDATE` / `UPDATE_EMPTY` already refresh. ObjectAction on the **current** request is the opposite (`withRefresh: false`, no `createType`) — [nodejs-esm.md](nodejs-esm.md#periodic--graphql-mutate-must-refresh).
+**GraphQL mutate from Periodic must refresh.** Periodic is **not** inside `spRequestRefreshGeneral`. Simple `Mutate_` of lines needs `withRefresh: true`; `CREATE` / `UPDATE` / `UPDATE_EMPTY` already refresh. ObjectAction on the **current** request is the opposite (`withRefresh: false`, no `createType`) — [nodejs.md](nodejs.md#periodic--graphql-mutate-must-refresh).
 
 **Per-request cost:** a Node.js periodic on an object with 500 matching entities queues **500** Node runs each tick. Bind the Periodic to the object whose requests you want to process (e.g. **Account** for FIO import), and use conditions to shrink the list. Do not hang a “import payments” periodic on the payment object.
 

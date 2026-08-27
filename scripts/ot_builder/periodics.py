@@ -15,7 +15,6 @@ from ot_builder.update_actions import condition_slug, condition_type_id, slugify
 
 NODEJS_TYPE = "spEndPointRunNodeJSMain"
 NODEJS_PARAM_DEFAULTS = {
-    "EndPointRunESM": "1",
     "EndPointRunWait": "1",
     "EndPointRunTimeout": "60000",
 }

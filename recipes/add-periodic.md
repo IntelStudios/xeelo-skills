@@ -2,7 +2,7 @@
 
 Add a **Periodic** (batch on an object’s last-version requests) and optionally a **Scheduler** CRON that calls `spPeriodicExecute`.
 
-Entity reference: [docs/entities/integrations.md](../docs/entities/integrations.md#periodic). Node.js: [docs/entities/nodejs-esm.md](../docs/entities/nodejs-esm.md). GraphQL update action: [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests).
+Entity reference: [docs/entities/integrations.md](../docs/entities/integrations.md#periodic). Node.js: [docs/entities/nodejs.md](../docs/entities/nodejs.md). GraphQL update action: [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests).
 
 ## Preconditions
 
@@ -69,7 +69,6 @@ periodics:
                 return String(row.requestId ?? "");
             }
           EndPointRunWait: "1"
-          EndPointRunESM: "1"
           EndPointRunTimeout: "300000"
 ```
 
@@ -99,11 +98,11 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 
 - [ ] Periodic `ObjectID` is the batch object (conditions shrink the request list)
 - [ ] `requestType` matches whether those requests are completed (`completed` / `20`)
-- [ ] Node.js type is `spEndPointRunNodeJSMain` (not `…Last`); ESM `EndPointRunESM: "1"`
+- [ ] Node.js type is `spEndPointRunNodeJSMain` (not `…Last`); ESM `export async function main()`; packages / `// install` in [nodejs.md](../docs/entities/nodejs.md)
 - [ ] `EndPointRunWait: "1"` if later requests must not overlap (rate-limited HTTP)
 - [ ] Raise `EndPointRunTimeout` for import / GraphQL UPDATE that runs Last
 - [ ] GraphQL identifiers match **env** `object.code` / `ids.explicit.updateActions`
-- [ ] Periodic GraphQL mutate **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE/UPDATE_EMPTY). ObjectAction on the current request must **not** ([nodejs-esm.md](../docs/entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh))
+- [ ] Periodic GraphQL mutate **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE/UPDATE_EMPTY). ObjectAction on the current request must **not** ([nodejs.md](../docs/entities/nodejs.md#periodic--graphql-mutate-must-refresh))
 - [ ] Periodic JS **may** `createType: UPDATE` on `Context.RequestID`; ObjectAction on the same request must not
 - [ ] Service account 0 has WRITE
 - [ ] `cron` is Quartz **7-field** (`0 0 * ? * * *` = hourly at :00, Europe/Prague)

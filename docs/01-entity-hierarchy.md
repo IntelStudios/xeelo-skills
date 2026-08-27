@@ -123,7 +123,7 @@ Detailed semantics from admin hints:
 | [entities/object-messages.md](entities/object-messages.md) | ObjectMessage HTML modal, styles, update/create/workflow junctions |
 | [entities/notifications.md](entities/notifications.md) | Email templates, recipients, placeholders, workflow / ObjectAction / Periodic bindings |
 | [entities/object-actions.md](entities/object-actions.md) | ObjectAction, params, conditions, Run Node.js |
-| [entities/nodejs-esm.md](entities/nodejs-esm.md) | ESM `CustomJS`, `Context`, no refresh on current request |
+| [entities/nodejs.md](entities/nodejs.md) | ESM `CustomJS`, `Context`, built-in packages / `// install`, no refresh on current request |
 | [entities/graphql.md](entities/graphql.md) | `Select_` / `Mutate_` names, query args, `createType`, `lines` vs `linesFormatted` |
 | [entities/workflow.md](entities/workflow.md) | Workflow, steps, actions |
 | [entities/integrations.md](entities/integrations.md) | Export, import, periodic, scheduler |

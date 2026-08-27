@@ -2,7 +2,7 @@
 
 How Xeelo builds the per-site GraphQL schema from object metadata. Use this when writing `CustomJS` for a Node.js object action, or any `Select_` / `Mutate_` call.
 
-Runtime wiring from Node.js: [nodejs-esm.md](nodejs-esm.md). Patterns: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
+Runtime wiring from Node.js: [nodejs.md](nodejs.md). Patterns: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 
 The schema is generated from the object model (`spGraphQLObjectModel`). After object/layout changes, **`/precompile`** so GraphQL picks up new codes and fields. After an Object Transfer, use **`/publish`** (real transfer + precompile).
 
@@ -152,7 +152,7 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 
 Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks for lines whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique).
 
-From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). From a **Periodic** Node.js action, GraphQL mutate **must refresh** (`withRefresh: true` or `createType` that always refreshes). See [nodejs-esm.md](nodejs-esm.md#mutating-the-current-request--no-refresh) and [nodejs-esm.md](nodejs-esm.md#periodic--graphql-mutate-must-refresh).
+From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). From a **Periodic** Node.js action, GraphQL mutate **must refresh** (`withRefresh: true` or `createType` that always refreshes). See [nodejs.md](nodejs.md#mutating-the-current-request--no-refresh) and [nodejs.md](nodejs.md#periodic--graphql-mutate-must-refresh).
 
 ## Mutation `Delete_request`
 

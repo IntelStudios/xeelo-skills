@@ -114,7 +114,6 @@ class PeriodicGenerateTests(unittest.TestCase):
             row["PeriodicActionTypeParamCode"]: row["PeriodicActionParamValue"]
             for row in result.rows["PeriodicActionParam"]
         }
-        self.assertEqual(params["EndPointRunESM"], "1")
         self.assertEqual(params["EndPointRunWait"], "1")
         self.assertEqual(params["EndPointRunTimeout"], "300000")
         self.assertIn("return \"OK\"", params["CustomJS"])

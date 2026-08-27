@@ -1016,7 +1016,7 @@ Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 
 ## Object actions (`spec/object-actions.yaml`)
 
-Optional fragment for **ObjectAction** (server automation on save/workflow). See [entities/object-actions.md](../entities/object-actions.md). Node.js scripts: [entities/nodejs-esm.md](../entities/nodejs-esm.md) — always ESM (`EndPointRunESM: "1"`); mutations on the current request must not refresh (`withRefresh: false`, no `createType`). GraphQL identifiers in `CustomJS` must match **site** `object.code` / field codes from env after extract ([graphql.md](../entities/graphql.md)). New lines often land as `line_{ObjectLineID}_{slug}` even if the spec used a shorter `code`.
+Optional fragment for **ObjectAction** (server automation on save/workflow). See [entities/object-actions.md](../entities/object-actions.md). Node.js scripts: [entities/nodejs.md](../entities/nodejs.md) — always ESM (`export async function main()`); mutations on the current request must not refresh (`withRefresh: false`, no `createType`). GraphQL identifiers in `CustomJS` must match **site** `object.code` / field codes from env after extract ([graphql.md](../entities/graphql.md)). New lines often land as `line_{ObjectLineID}_{slug}` even if the spec used a shorter `code`.
 
 ```yaml
 objectActions:
@@ -1030,7 +1030,6 @@ objectActions:
         import { XeeloGraphQLClient } from "@xeelo/graphql-client";
         export async function main() { return "OK"; }
       EndPointRunWait: "1"
-      EndPointRunESM: "1"
       ApplicableEventType: "Save,SaveNew"
       ResponseTextObjectLineID: { field: RESULT_MEMO }
     conditions:
@@ -1069,7 +1068,6 @@ periodics:
             import { XeeloGraphQLClient } from "@xeelo/graphql-client";
             export async function main() { return "OK"; }
           EndPointRunWait: "1"
-          EndPointRunESM: "1"
           EndPointRunTimeout: "300000"
         conditions:
           - field: TYPE
@@ -1084,7 +1082,7 @@ includes:
   - spec/periodics.yaml
 ```
 
-Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing ESM/wait/timeout params default to `"1"` / `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. `NotificationID1` / `NotificationID2` may be `{ notification: key }` (single vs summary). GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs-esm.md](../entities/nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
+Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing wait/timeout params default to `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. `NotificationID1` / `NotificationID2` may be `{ notification: key }` (single vs summary). GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs.md](../entities/nodejs.md#periodic--graphql-mutate-must-refresh)).
 
 **IDs:** `periodics`, `periodicConditions` (`periodic/field/type`), `periodicActions` (`periodic/action`), `periodicActionParams` (`periodic/action/paramCode`), `periodicActionConditions` (`periodic/action/field/type`), `schedulers` (periodic key), `schedulerLines` (`periodic/execute`), `schedulerLineParams` (`periodic/execute/PeriodicID`).
 

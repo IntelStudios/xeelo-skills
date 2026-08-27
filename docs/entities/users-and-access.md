@@ -53,7 +53,7 @@ Grant **WRITE** in Admin (`UserAccess`) on **each object** the script mutates â€
 
 GraphQL access tokens have separate **read / write / delete** sets per object. `Delete_request` needs **delete**, not write. Query `access_rights` to see `canRead` / `canWrite` / `canDelete`. See [graphql.md](graphql.md#mutation-delete_request).
 
-See [nodejs-esm.md](nodejs-esm.md) and [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
+See [nodejs.md](nodejs.md) and [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 
 ## Agent guidance
 

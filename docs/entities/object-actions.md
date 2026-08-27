@@ -65,12 +65,11 @@ Object Transfer edges: [`data/object-transfer-map.json`](../data/object-transfer
 
 Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNodeJSMain`.
 
-**Always ESM** for new actions. Scripts, full `Context`, and the no-refresh rule: [nodejs-esm.md](nodejs-esm.md). Schema names, query/mutation variants, `lines` vs `linesFormatted`: [graphql.md](graphql.md).
+**Always ESM.** Scripts, full `Context`, packages / `// install`, and the no-refresh rule: [nodejs.md](nodejs.md). Schema names, query/mutation variants, `lines` vs `linesFormatted`: [graphql.md](graphql.md).
 
 | Param | Default | Meaning |
 |-------|---------|---------|
 | `CustomJS` | `export async function main()` | ESM script; return value becomes the HTTP response body |
-| `EndPointRunESM` | `"1"` | `POST /execute-esm` |
 | `EndPointRunWait` | `"1"` | Wait and write response onto object lines. `"0"` = do not wait (async); timeout still applies to the ESM process |
 | `EndPointRunTimeout` | `"60000"` | Timeout ms. Raise for bulk GraphQL CREATE (import); see [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#6-batch--parallel-create) |
 | `ResponseCodeObjectLineID` | — | Line for HTTP status (types 1, 2, 3, 4, 11, 12) |
@@ -79,7 +78,7 @@ Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNode
 
 With `EndPointRunWait=1`, `spRequestUpdate` writes `EndPointRunResponseText` to `ResponseTextObjectLineID`.
 
-**When mutating the current request from an ObjectAction, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops. Periodic JS is the opposite: GraphQL mutate **must** refresh ([nodejs-esm.md](nodejs-esm.md#periodic--graphql-mutate-must-refresh)).
+**When mutating the current request from an ObjectAction, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops. Periodic JS is the opposite: GraphQL mutate **must** refresh ([nodejs.md](nodejs.md#periodic--graphql-mutate-must-refresh)).
 
 To re-run Last on **another completed** request, `withRefresh` on that id is not an update action — use `createType: UPDATE` + that object’s `updateAction` ([nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests)).
 
@@ -112,7 +111,7 @@ Assigns an `ObjectAction` to a `WorkflowStep` (optional `RequestTypeID`). Withou
 ## Spec / tooling
 
 - Fragment: `spec/object-actions.yaml` — see [spec-format.md](../transfer/spec-format.md)
-- Scripts / Context: [nodejs-esm.md](nodejs-esm.md)
+- Scripts / Context / packages: [nodejs.md](nodejs.md)
 - GraphQL schema: [graphql.md](graphql.md)
 - Generate/extract: `scripts/ot_builder/object_actions.py`, `rows.py`, `extract.py`
 - Recipes: [`add-object-action.md`](../../recipes/add-object-action.md), [`add-notification.md`](../../recipes/add-notification.md), [`nodejs-graphql-patterns.md`](../../recipes/nodejs-graphql-patterns.md)

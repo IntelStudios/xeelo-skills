@@ -183,7 +183,6 @@ def _account_like_spec() -> dict:
                 "params": {
                     "CustomJS": "export async function main() { return \"OK\"; }",
                     "EndPointRunWait": "1",
-                    "EndPointRunESM": "1",
                     "ApplicableEventType": "Save,SaveNew",
                     "ResponseTextObjectLineID": {"field": "RESULT_MEMO"},
                 },
