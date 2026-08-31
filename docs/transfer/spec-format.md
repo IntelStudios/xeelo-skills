@@ -1113,7 +1113,7 @@ Sets **ObjectLine** display flags for inbox grid:
 | `allowed` | `ObjectLineOnGridIsAllowed` |
 | `name` | `ObjectLineOnGridName` |
 | `isTag` | `ObjectLineOnGridIsTag` — **only** `text` / `textarea` (types 3, 4). Field values become request-grid tag filters (AND). See [object-line-types.md](../entities/object-line-types.md#on-grid-tag). |
-| `isSearch` | `ObjectLineOnGridIsSearch` — typed search; types 3, 4, 8, 12 |
+| `isSearch` | `ObjectLineOnGridIsSearch` — typed search; types 1, 2, 3, 4, 8, 11, 12, 14, 15, 19, 20 — [object-line-types.md](../entities/object-line-types.md#admin-canset-objectline) |
 | `isTotal` | `ObjectLineOnGridIsTotal` — **number** (12) only. Inbox Summarization sums the stored slot. See [object-line-types.md](../entities/object-line-types.md#on-grid-total). |
 
 ```yaml

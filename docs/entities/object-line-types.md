@@ -108,7 +108,7 @@ Same extras table as above, on `subgrids.<key>.layout.tabs[].sections[].fields[]
 | Alignment | 1, 2, 3, 4, 8, 12, 14, 15 |
 | Search | 1, 2, 3, 4, 7, 8, 9, 11, 12, 14, 15, 19, 20 |
 | On-grid tag | 3, 4 |
-| On-grid search | 3, 4, 8, 12 |
+| On-grid search | 1, 2, 3, 4, 8, 11, 12, 14, 15, 19, 20 |
 | On-grid total | **12** only (`ObjectLineOnGridIsTotal`) |
 | Color | 18 |
 | On-grid allowed | **not** 5, 6, 13, 16 |
@@ -123,7 +123,7 @@ Tagged field **values** become finer filters on the **request grid** (Inbox / It
 
 Do not put commas in tag values — split is by comma. Prefer short discrete labels (code, category), not long free text. Changing Tag requires **/publish** after OT (or `/precompile` if already deployed) so the cache SQL is rebuilt. Users can hide the tag panel (`UserFilterTabIsShowDataTag`, default on). Site setting `GridFilterShowSearchMinItems` also applies to tag chips.
 
-Not the same as **On-grid search** (`isSearch`): that is typed search on types 3, 4, 8, 12.
+Not the same as **On-grid search** (`isSearch`): that is typed search on types 1, 2, 3, 4, 8, 11, 12, 14, 15, 19, 20.
 
 Subgrid lines have the same boolean (`ObjectSubLineOnGridIsTag`); compile still uses types 3 and 4. Admin does **not** type-gate the subgrid checkbox. Spec: `subgrids.<key>.onGrid.fields.<code>.isTag`.
 

@@ -137,7 +137,7 @@ On **Table**, letters do **not** stack in the User GUI (one line of columns). St
 
 Each column is **`field` xor `systemLine`** on ObjectLineOnGrid. System lines: [`SystemLine.json`](../enums/SystemLine.json) (`role` 40, `status` 50, `requestor` 80, …). Explicit ID `{size}/{type}/{module}/sys:{code}`. Field key `{size}/{type}/{module}/{code}`.
 
-Combo-box (**types 1, 2, 14**) may be `allowed` and placed; inbox shows the numberedník name, not the bind id. Combo **cannot** be `isTag` or on-grid `isSearch`. On-grid allowed is **not** types 5, 6, 13, 16 (subgrid, empty, report, description memo).
+Combo-box (**types 1, 2, 14**) may be `allowed` and placed; inbox shows the numberedník name, not the bind id. Combo **cannot** be `isTag`; combo / radio / multi **may** set on-grid `isSearch` (types 1, 2, 3, 4, 8, 11, 12, 14, 15, 19, 20). On-grid allowed is **not** types 5, 6, 13, 16 (subgrid, empty, report, description memo).
 
 ## Example
 
