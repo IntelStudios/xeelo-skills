@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 venv/
 .venv/
+.DS_Store
 
 # Site working copies — never in the public KB
 /projects/
