@@ -25,7 +25,7 @@ projects/<name>/
     periodics.yaml
     notifications.yaml  # email templates (optional)
     subgrids.yaml       # ObjectSub trees (optional)
-    ids.yaml            # ids (+ source after extract)
+    ids.yaml            # ids
 ```
 
 **Entry** `xeelo-spec.yaml`:
@@ -115,7 +115,6 @@ Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width
 | `ids.base` | no | Per-table max PK for **new** rows (`ObjectLine: 9112` → next is 9113). Omit for greenfield (default 9000 per table). Legacy: a single integer is the default for tables not in the map. |
 | `ids.explicit` | no | Stable IDs from site / transfer (see below) |
 | `ids.byTable` | no | This object's ID inventory from extract |
-| `source` | no | Provenance after extract from transfer |
 | `transferVersion` | no | `OT_Version` — default `1.3.0` |
 
 Generator diffs against the latest DB-transfer snapshot. It **omits** any row whose Orig. ID already exists unchanged, including `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` when this package only references them. Recycled workflow also uses `workflow.reuse: true` so the shared process definition is not generated.
@@ -1085,16 +1084,6 @@ includes:
 Node.js type is **`spEndPointRunNodeJSMain`** (not `…Last`). Missing wait/timeout params default to `"1"` / `"60000"`. Condition slugs match update actions. `params.*.ObjectLineID` may be `{ field: CODE }`. `NotificationID1` / `NotificationID2` may be `{ notification: key }` (single vs summary). GraphQL mutate from Periodic **must refresh** (`withRefresh: true` or `createType`); ObjectAction self-update must not ([nodejs.md](../entities/nodejs.md#periodic--graphql-mutate-must-refresh)).
 
 **IDs:** `periodics`, `periodicConditions` (`periodic/field/type`), `periodicActions` (`periodic/action`), `periodicActionParams` (`periodic/action/paramCode`), `periodicActionConditions` (`periodic/action/field/type`), `schedulers` (periodic key), `schedulerLines` (`periodic/execute`), `schedulerLineParams` (`periodic/execute/PeriodicID`).
-
-### `source`
-
-```yaml
-source:
-  transfer: projects/<name>/output/object-transfer.json
-  objectId: 9002
-  objectCode: ACCOUNT
-  extractedAt: "2026-08-11"
-```
 
 ### Extract from transfer
 

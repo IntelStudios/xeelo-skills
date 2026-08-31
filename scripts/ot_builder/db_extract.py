@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 import shutil
-from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -52,7 +51,7 @@ def _nonempty_str(row: dict[str, Any] | None, column: str) -> str | None:
     return text or None
 
 
-def build_catalog(index: TransferIndex, *, transfer_path: Path) -> dict[str, Any]:
+def build_catalog(index: TransferIndex) -> dict[str, Any]:
     companies = []
     for row in sorted(index.rows.get("Company", []), key=lambda r: int(r.get("CompanyID", 0))):
         entry: dict[str, Any] = {
@@ -111,16 +110,7 @@ def build_catalog(index: TransferIndex, *, transfer_path: Path) -> dict[str, Any
             }
         )
 
-    source: dict[str, Any] = {
-        "transfer": str(transfer_path),
-        "transferType": (index.transfer_info or {}).get("TransferType") or "DB",
-        "extractedAt": date.today().isoformat(),
-    }
-    version = (index.transfer_info or {}).get("Version")
-    if version:
-        source["version"] = version
     return {
-        "source": source,
         "companies": companies,
         "objectTypes": object_types,
         "objects": objects,
@@ -253,7 +243,7 @@ def extract_env(
 ) -> dict[str, Any]:
     parsed = load_db_transfer(transfer_path)
     index = TransferIndex.from_parsed(parsed)
-    catalog = build_catalog(index, transfer_path=transfer_path)
+    catalog = build_catalog(index)
     shared = build_shared(index)
 
     env_dir.mkdir(parents=True, exist_ok=True)
@@ -288,7 +278,6 @@ def extract_env(
         spec = extract_spec_from_index(
             index,
             obj_row,
-            source_path=transfer_path,
             include_subtree_ids=False,
             table_max_ids=site_base,
         )

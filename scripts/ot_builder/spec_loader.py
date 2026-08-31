@@ -30,7 +30,7 @@ OBJECT_MESSAGE_FRAGMENT_KEYS = ("objectMessages",)
 PERIODICS_FRAGMENT_KEYS = ("periodics",)
 NOTIFICATIONS_FRAGMENT_KEYS = ("notifications",)
 SUBGRIDS_FRAGMENT_KEYS = ("subgrids",)
-IDS_FRAGMENT_KEYS = ("ids", "source")
+IDS_FRAGMENT_KEYS = ("ids",)
 MAP_MERGE_KEYS = frozenset({"references", "lookups", "autonumbers", "objectServices", "subgrids"})
 
 
@@ -99,6 +99,7 @@ def normalize_spec(spec: dict) -> dict:
     if refs:
         spec["references"] = refs
     spec.pop("sources", None)
+    spec.pop("source", None)
 
     ids_cfg = spec.get("ids")
     if isinstance(ids_cfg, dict):

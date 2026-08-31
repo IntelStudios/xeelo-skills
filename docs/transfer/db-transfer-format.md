@@ -38,7 +38,7 @@ python scripts/extract-db-transfer-to-env.py \
   -o projects/<name>/env
 ```
 
-Extract writes catalog, shared (`companies`, `object-types`, `roles`, `statuses`, `sources`, and `custom-colors` when the site has `CustomColor` rows), and **full specs for every object** in the transfer (all companies). `catalog.yaml` `source.transferType` is `DB`; there is no package version field.
+Extract writes catalog, shared (`companies`, `object-types`, `roles`, `statuses`, `sources`, and `custom-colors` when the site has `CustomColor` rows), and **full specs for every object** in the transfer (all companies).
 
 Each snapshot folder keeps the UTF-8 JSON file.
 

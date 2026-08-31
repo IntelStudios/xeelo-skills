@@ -237,7 +237,6 @@ class NotificationExtractTests(unittest.TestCase):
         return extract_spec_from_index(
             index,
             find_object_row(parsed),
-            source_path="mini-object-transfer.json",
         )
 
     def test_json_roundtrip_keeps_placeholders_and_bindings(self) -> None:

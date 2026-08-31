@@ -139,7 +139,6 @@ class DuplicateWorkflowStepTests(unittest.TestCase):
             from_index = extract_spec_from_index(
                 TransferIndex.from_parsed(parsed),
                 find_object_row(parsed),
-                source_path=xml_path,
             )
             self.assertEqual(from_index, extracted)
 

@@ -124,13 +124,16 @@ class ExtractEnvTests(unittest.TestCase):
         if line_ids:
             self.assertGreaterEqual(base["ObjectLine"], max(line_ids))
 
-    def test_catalog_omits_version_without_transfer_info(self) -> None:
+    def test_catalog_has_no_source(self) -> None:
         transfer = Path(self._tmpdir.name) / "site.json"
         transfer.write_text(json.dumps(_minimal_db_json()), encoding="utf-8")
         extract_env(transfer, self.env_dir)
         catalog = yaml.safe_load((self.env_dir / "catalog.yaml").read_text(encoding="utf-8"))
-        self.assertEqual(catalog["source"]["transferType"], "DB")
-        self.assertNotIn("version", catalog["source"])
+        self.assertNotIn("source", catalog)
+        ids_path = self.env_dir / "objects/invoice/spec/ids.yaml"
+        ids_data = yaml.safe_load(ids_path.read_text(encoding="utf-8"))
+        self.assertEqual(set(ids_data), {"ids"})
+        self.assertNotIn("source", ids_data)
 
 
 class ExtractEnvParseOnceTests(unittest.TestCase):

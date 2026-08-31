@@ -152,6 +152,23 @@ class ReorderSpecTests(unittest.TestCase):
         self.assertEqual(loaded["layout"]["tabs"][0]["sections"][0]["fields"][0]["slot"], 1)
         self.assertEqual(loaded["object"]["name"], "Account")
 
+    def test_write_spec_drops_source_provenance(self) -> None:
+        spec = _base_spec()
+        spec["ids"] = {"explicit": {"objectId": 9001}}
+        spec["source"] = {
+            "transfer": "/tmp/snap.json",
+            "objectId": 9001,
+            "extractedAt": "2026-08-31",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp) / "obj"
+            write_spec(spec, directory)
+            ids_path = directory / "spec" / "ids.yaml"
+            dumped = yaml.safe_load(ids_path.read_text(encoding="utf-8"))
+            self.assertEqual(set(dumped), {"ids"})
+            loaded = load_spec(directory)
+        self.assertNotIn("source", loaded)
+
 
 if __name__ == "__main__":
     unittest.main()

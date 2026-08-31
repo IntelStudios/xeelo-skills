@@ -106,7 +106,6 @@
     "languageTable": { "$ref": "#/$defs/languageTable" },
     "comments": { "$ref": "#/$defs/comments" },
     "ids": { "$ref": "#/$defs/ids" },
-    "source": { "$ref": "#/$defs/source" },
     "transferVersion": { "type": "string", "default": "1.3.0" },
     "objectDefault": {
       "type": "object",
@@ -1205,16 +1204,6 @@
             "additionalProperties": { "type": "integer", "minimum": 1 }
           }
         }
-      }
-    },
-    "source": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "transfer": { "type": "string" },
-        "objectId": { "type": "integer", "minimum": 1 },
-        "objectCode": { "type": "string" },
-        "extractedAt": { "type": "string" }
       }
     },
     "langMap": {

@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter
-from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -1626,7 +1625,6 @@ def extract_spec_from_index(
     index: TransferIndex,
     obj: dict,
     *,
-    source_path: Path | str,
     merge: dict | None = None,
     include_subtree_ids: bool = True,
     table_max_ids: dict[str, int] | None = None,
@@ -1800,12 +1798,6 @@ def extract_spec_from_index(
             "byTable": by_table,
         },
         "transferVersion": (index.transfer_info or {}).get("Version", "1.3.0"),
-        "source": {
-            "transfer": str(source_path),
-            "objectId": oid,
-            "objectCode": obj.get("ObjectCode"),
-            "extractedAt": date.today().isoformat(),
-        },
     }
 
     obj_icon = _nonempty_str(obj, "ObjectTreeIcon")
@@ -1902,7 +1894,7 @@ def extract_spec(
     parsed = load_transfer(path)
     obj = find_object_row(parsed, object_id=object_id, object_code=object_code, object_name=object_name)
     index = TransferIndex.from_parsed(parsed)
-    return extract_spec_from_index(index, obj, source_path=path, merge=merge)
+    return extract_spec_from_index(index, obj, merge=merge)
 
 
 def _merge_spec(base: dict, extracted: dict) -> dict:
@@ -1932,7 +1924,6 @@ def _merge_spec(base: dict, extracted: dict) -> dict:
         "objectType",
         "company",
         "ids",
-        "source",
     ):
         if key in extracted:
             if key == "ids" and key in merged:

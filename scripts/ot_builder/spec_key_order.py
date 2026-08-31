@@ -41,7 +41,6 @@ SPEC_TOP_KEYS = (
     "notifications",
     "subgrids",
     "ids",
-    "source",
     "includes",
 )
 
@@ -325,8 +324,6 @@ IDS_EXPLICIT_KEYS = (
     "languageTables",
     "tableComments",
 )
-SOURCE_PROVENANCE_KEYS = ("transfer", "objectId", "objectCode", "extractedAt")
-
 LANGUAGE_TABLE_KIND_KEYS = (
     "object",
     "company",
@@ -759,7 +756,4 @@ def reorder_spec(spec: dict[str, Any]) -> dict[str, Any]:
     ids_cfg = spec.get("ids")
     if isinstance(ids_cfg, dict):
         spec["ids"] = reorder_ids(ids_cfg)
-    source = spec.get("source")
-    if isinstance(source, dict):
-        spec["source"] = ordered_mapping(source, SOURCE_PROVENANCE_KEYS)
     return ordered_mapping(spec, SPEC_TOP_KEYS)
