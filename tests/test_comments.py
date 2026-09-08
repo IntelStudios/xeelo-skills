@@ -273,9 +273,10 @@ class CommentGenerateTests(unittest.TestCase):
                             "DESC": [
                                 {
                                     "html": (
-                                        "<p>2026-09-08 (Milan Krejčík): "
+                                        "<p>2026-09-08: "
                                         "Line description helper.</p>"
                                     ),
+                                    "userName": "Milan Krejčík",
                                     "date": "2026-09-08T12:03:00",
                                 }
                             ]
@@ -296,7 +297,9 @@ class CommentGenerateTests(unittest.TestCase):
             for r in result.rows["TableComments"]
             if r["TableName"] == "ObjectSubLine" and r["TableRowID"] == subline_id
         )
-        self.assertIn("Milan Krejčík", row["TableCommentData"])
+        self.assertEqual(row["UserName"], "Milan Krejčík")
+        self.assertIn("Line description helper", row["TableCommentData"])
+        self.assertNotIn("Milan Krejčík", row["TableCommentData"])
         self.assertTrue(
             any(
                 e["ChildTableName"] == "TableComments" and e["TableName"] == "ObjectSubLine"
@@ -311,7 +314,12 @@ class CommentGenerateTests(unittest.TestCase):
             xml_path.write_bytes(xml_bytes)
             extracted = extract_spec(xml_path)
         html = extracted["comments"]["subgrids"]["invoice_lines"]["lines"]["DESC"][0]["html"]
-        self.assertIn("Milan Krejčík", html)
+        self.assertIn("Line description helper", html)
+        self.assertNotIn("Milan Krejčík", html)
+        self.assertEqual(
+            extracted["comments"]["subgrids"]["invoice_lines"]["lines"]["DESC"][0]["userName"],
+            "Milan Krejčík",
+        )
         self.assertTrue(
             any(
                 k.startswith("ObjectSubLine:invoice_lines/DESC:")

@@ -98,7 +98,7 @@ HTML for a **new** entity or a **changelog** item is dated **without** the name 
   userName: Milan Krejčík
 ```
 
-Never given name only. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
+`commentRequestor` is the Admin **display name** (given + family), never given name only. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
 
 ## Related
 
