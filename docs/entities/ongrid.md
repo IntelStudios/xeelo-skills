@@ -11,7 +11,7 @@ SQL columns can store any Size / Type / Module string. **Precompile only builds 
 | Flags | `ObjectLine` (`ObjectLineOnGridIsAllowed`, `Name`, `IsTag`, `IsSearch`, `IsTotal`) | `ObjectSubLine` (`ObjectSubLineOnGridIsAllowed`, `Name`, `IsTag`; search/total are `ObjectSubLineIsSearch` / `ObjectSubLineIsTotal`) |
 | Placement | `ObjectLineOnGrid` | `ObjectSubLineOnGrid` |
 
-Spec: `onGrid.fields.<code>` (flags) and `onGrid.layouts[]` (placements). `allowed: true` without a layout lists the field but does not paint it. A layout without `allowed` is dropped at extract / compile (`ObjectLineOnGridIsAllowed = 1`).
+Spec: `onGrid.fields.<code>` (flags) and `onGrid.layouts[]` (placements). `allowed: true` without a layout lists the field but does not paint it. A layout without `allowed` is dropped at extract / compile (`ObjectLineOnGridIsAllowed = 1`). Form hide (`fields[].alwaysHidden` / `ObjectLineIsHidden` / `ObjectSubLineIsHidden`) does **not** suppress onGrid.
 
 After changing tag / search / total flags, **/publish** (or `/precompile`) so cache SQL is rebuilt.
 
