@@ -89,6 +89,8 @@ Object Transfer **upserts** by Orig. ID; it does not delete site rows. To hide a
 
 Applies to `ObjectUpdateAction`, `ObjectAction`, `Role`, `RequestStatus`, `WorkflowStep`, `WorkflowStepAction`, and other transferred tables with `IsActive`. Extract lists **active** update/object actions only — keep `isActive: false` in the change-loop spec so a later generate cannot turn the row back on. Extract **does** write `isActive: false` on inactive workflow steps and step actions so a later generate keeps them off.
 
+**Exception:** `ObjectLineOnGrid` / `ObjectSubLineOnGrid` — `IsActive: 0` in the JSON is a **delete** (upload inserts only `IsActive = 1`). See [ongrid.md](ongrid.md#removing-a-placement-isactive--0).
+
 ## Related: Update actions
 
 **ObjectUpdateAction** (object-level) is **not** a **WorkflowStepAction**. A workflow button named “Update” is still a transition button, not an update action.

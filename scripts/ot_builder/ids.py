@@ -185,6 +185,18 @@ class IdRegistry:
             return existing
         return self._allocated.get(category, {}).get(key)
 
+    def explicit_values(self, category: str) -> list[int]:
+        """Orig. IDs listed under ``ids.explicit.<category>`` (no allocate)."""
+        group = self._explicit.get(category)
+        if not isinstance(group, dict):
+            return []
+        out: list[int] = []
+        for val in group.values():
+            parsed = _as_int(val)
+            if parsed is not None:
+                out.append(parsed)
+        return out
+
     def get_scalar(self, key: str) -> int | None:
         """Return an already known scalar ID without allocating."""
         table = _table_for_scalar(key)

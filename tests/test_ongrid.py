@@ -324,24 +324,24 @@ class OnGridTotalGenerateTests(unittest.TestCase):
 class OnGridSystemLineTests(unittest.TestCase):
     def test_generate_emits_system_line_id(self) -> None:
         spec = _base_spec()
-        spec["onGrid"]["layouts"][0]["placements"][0]["columns"].append(
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"] = [
+            {"field": "amount", "position": 0, "length": 70},
+            {"field": "invoice", "position": 70, "length": 10},
             {
                 "systemLine": "role",
                 "position": 80,
                 "length": 10,
                 "valueWidth": 100,
                 "labelType": 1,
-            }
-        )
-        spec["onGrid"]["layouts"][0]["placements"][0]["columns"].append(
+            },
             {
                 "systemLine": "status",
                 "position": 90,
                 "length": 10,
                 "valueWidth": 100,
                 "labelType": 1,
-            }
-        )
+            },
+        ]
         spec["ids"] = {
             "base": 9100,
             "explicit": {
@@ -452,6 +452,54 @@ class OnGridSystemLineTests(unittest.TestCase):
         self.assertEqual(cols[1]["systemLine"], "role")
         self.assertEqual(cols[2]["systemLine"], "status")
         self.assertNotIn("field", cols[1])
+
+
+class OnGridOverlapTests(unittest.TestCase):
+    def test_rejects_overlapping_positions(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["layouts"][0]["placements"][0]["columns"] = [
+            {"field": "amount", "position": 0, "length": 80},
+            {"field": "invoice", "position": 70, "length": 30},
+        ]
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("overlaps", str(ctx.exception))
+
+    def test_rejects_duplicate_field_in_layout(self) -> None:
+        spec = _base_spec()
+        spec["onGrid"]["layouts"][0]["placements"].append(
+            {
+                "row": "A",
+                "columns": [{"field": "amount", "position": 0, "length": 100}],
+            }
+        )
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("already placed", str(ctx.exception))
+
+
+class OnGridDeactivateTests(unittest.TestCase):
+    def test_emits_is_active_zero_for_unused_explicit_id(self) -> None:
+        spec = _base_spec()
+        spec["ids"] = {
+            "base": 9100,
+            "explicit": {
+                "objectLineOnGrid": {
+                    "Large/Grid/Items/amount": 9148,
+                    "Large/Grid/Items/invoice": 9149,
+                    "Small/Grid/Items/amount": 9150,
+                    "Large/Grid/Items/dropped": 9151,
+                }
+            },
+        }
+        result = build_rows(spec)
+        rows = result.rows["ObjectLineOnGrid"]
+        by_id = {r["ObjectLineOnGridID"]: r for r in rows}
+        self.assertEqual(by_id[9151]["IsActive"], 0)
+        self.assertEqual(by_id[9151]["ObjectID"], by_id[9148]["ObjectID"])
+        self.assertEqual(by_id[9148]["IsActive"], 1)
+        self.assertEqual(by_id[9149]["IsActive"], 1)
+        self.assertEqual(by_id[9150]["IsActive"], 1)
 
 
 if __name__ == "__main__":

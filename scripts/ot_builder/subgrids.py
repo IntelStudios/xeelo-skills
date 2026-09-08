@@ -9,7 +9,9 @@ from ot_builder.ongrid import (
     DEFAULT_MODULE,
     DEFAULT_SIZE,
     DEFAULT_TYPE,
+    deactivate_unused_ongrid_rows,
     require_subgrid_ongrid_id,
+    validate_layout_placements,
 )
 from ot_builder.parse import TransferIndex
 from ot_builder.spec_loader import spec_references
@@ -432,6 +434,7 @@ def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) 
     default_rows: list[dict] = []
     default_line_rows: list[dict] = []
     ongrid_rows: list[dict] = []
+    used_ongrid_ids: set[int] = set()
 
     for sub_key, sub_def in subgrids.items():
         if not isinstance(sub_def, dict):
@@ -662,6 +665,10 @@ def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) 
             size = og_layout.get("size") or DEFAULT_SIZE
             grid_type = og_layout.get("type") or DEFAULT_TYPE
             module = og_layout.get("module") or DEFAULT_MODULE
+            validate_layout_placements(
+                og_layout.get("placements") or [],
+                context=f"subgrids.{sub_key} onGrid {module} {grid_type} {size}",
+            )
             for placement in og_layout.get("placements") or []:
                 row_letter = placement.get("row", "T")
                 for col in placement.get("columns") or []:
@@ -689,6 +696,7 @@ def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) 
                         field_code=str(field_code),
                         used_legacy=used_legacy_ongrid,
                     )
+                    used_ongrid_ids.add(og_id)
                     ongrid_rows.append(
                         {
                             "ObjectSubLineOnGridID": og_id,
@@ -712,6 +720,15 @@ def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) 
                             "ChildTableRowID": og_id,
                         }
                     )
+
+    ongrid_rows.extend(
+        deactivate_unused_ongrid_rows(
+            registry,
+            "subgridOnGrid",
+            used_ongrid_ids,
+            id_column="ObjectSubLineOnGridID",
+        )
+    )
 
     if sub_rows:
         result.rows["ObjectSub"] = sub_rows

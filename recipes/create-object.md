@@ -53,6 +53,7 @@ Canonical: [ongrid.md](../docs/entities/ongrid.md). YAML: [spec-format.md](../do
 
 - `onGrid.fields.<code>` → ObjectLine display flags
 - `onGrid.layouts[]` → ObjectLineOnGrid placement. For a **new object**, write **seven** layouts: Items Grid Large/Medium/Small, Items Table Large/Medium/Small, Mobile Items Grid Small. **Grid and Table:** Medium ≈ ½ Large, Small ≈ ½ Medium — fewer columns per letter, extra `T`/`A`/`B` rows. Phone: `row: T` then `A` (not `B`).
+- Columns on one letter must **not overlap**. Dropped placements: keep `ids.explicit.objectLineOnGrid` keys so generate emits `IsActive: 0` (upload deletes). [ongrid.md](../docs/entities/ongrid.md#no-overlap)
 - Do not spec Tasks / Relation / Relation Map / Mobile Tasks unless asked.
 - System columns (Role, Status, …) use `columns[].systemLine`, not `field`.
 - Edge: `Object → ObjectLineOnGrid`
@@ -105,4 +106,4 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 - JSON object keyed by table name (same shape as DB-transfer download)
 - Only tables the spec emits; no TransferInfo / ObjectSetup
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`; Client-Service in `spec/object-services.yaml`
-- onGrid `field` codes match layout field codes; new object has seven default layouts ([ongrid.md](../docs/entities/ongrid.md#default-for-a-new-object))
+- onGrid `field` codes match layout field codes; new object has seven default layouts; no overlapping cells; leftover onGrid IDs emit `IsActive: 0` ([ongrid.md](../docs/entities/ongrid.md#default-for-a-new-object))

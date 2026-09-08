@@ -189,6 +189,45 @@ class SubgridGenerateTests(unittest.TestCase):
         self.assertEqual(og_rows[0]["ObjectSubLineOnGridLength"], 100)
         self.assertIn(("ObjectSubLine", "ObjectSubLineOnGrid", og_rows[0]["ObjectSubLineOnGridID"]), edges)
 
+    def test_rejects_overlapping_subgrid_ongrid(self) -> None:
+        spec = _base_spec()
+        spec["subgrids"]["invoice_lines"]["layout"]["tabs"][0]["sections"][0]["fields"].append(
+            {
+                "name": "Qty",
+                "code": "QTY",
+                "type": "number",
+                "slot": 2,
+                "width": 20,
+                "order": 20,
+                "precision": 0,
+            }
+        )
+        spec["subgrids"]["invoice_lines"]["onGrid"]["fields"]["QTY"] = {"allowed": True}
+        spec["subgrids"]["invoice_lines"]["onGrid"]["layouts"][0]["placements"][0]["columns"] = [
+            {"field": "DESC", "position": 0, "length": 80},
+            {"field": "QTY", "position": 70, "length": 30},
+        ]
+        with self.assertRaises(ValueError) as ctx:
+            build_rows(spec)
+        self.assertIn("overlaps", str(ctx.exception))
+
+    def test_emits_is_active_zero_for_unused_subgrid_ongrid(self) -> None:
+        spec = _base_spec()
+        spec["ids"] = {
+            "base": 9100,
+            "explicit": {
+                "subgridOnGrid": {
+                    "invoice_lines/Large/Grid/Items/DESC": 9301,
+                    "invoice_lines/Large/Grid/Items/dropped": 9302,
+                }
+            },
+        }
+        result = build_rows(spec)
+        rows = result.rows["ObjectSubLineOnGrid"]
+        by_id = {r["ObjectSubLineOnGridID"]: r for r in rows}
+        self.assertEqual(by_id[9301]["IsActive"], 1)
+        self.assertEqual(by_id[9302]["IsActive"], 0)
+
     def test_object_sub_id_alias_does_not_emit_tree(self) -> None:
         spec = _base_spec()
         del spec["subgrids"]

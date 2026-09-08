@@ -1158,6 +1158,8 @@ Which triples exist in cache, rows `T`/`A`–`E`, and the **seven layouts to wri
 | `valueWidth` | `ObjectLineOnGridValueWidth` — percent of the cell for the **value**. `0` = auto. **`100` + Horizontal = hide the column label** (Admin ValueWidthLabelHidden). |
 | `labelType` | `ObjectLineOnGridLabelType` — **1 Horizontal** (default), **2 Vertical**. SQL also has `0` None; Admin does not offer it — do not spec `0`. |
 
+Columns on one `row` must not overlap (half-open interval). Generate rejects overlap and the same `field` / `systemLine` twice in one layout. Dropped placements: keep `ids.explicit.objectLineOnGrid` (or `subgridOnGrid`) keys; generate emits **`IsActive: 0`** so upload **deletes** the site row. Omit the row and it stays and can overlap. [ongrid.md](../entities/ongrid.md#removing-a-placement-isactive--0).
+
 To show chips without a column title on **Grid**, set `labelType: 1` and `valueWidth: 100`. Role / Status on the inbox are typically that plus `systemLine: role` / `systemLine: status` on the right of the title row.
 
 ```yaml

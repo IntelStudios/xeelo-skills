@@ -163,6 +163,8 @@ Same two layers as request inbox `onGrid`, on the **subgrid table** (not the par
 
 Always add this when creating a subgrid. `layout.fields` is the add/edit-row **form**; `onGrid` is which columns appear in the **table of rows**. Default `ObjectSubLineOnGridIsAllowed` is false.
 
+Same overlap and delete rules as inbox onGrid: no overlapping cells on a letter; unused `ids.explicit.subgridOnGrid` Orig. IDs go out with **`IsActive: 0`** so upload removes them. [ongrid.md](../docs/entities/ongrid.md#removing-a-placement-isactive--0).
+
 `isTotal` on a subgrid is `ObjectSubLineIsTotal` (types **3 and 12**). `isTag` is `ObjectSubLineOnGridIsTag` (compile types 3 and 4). After deploy, **/publish** so cache SQL is rebuilt.
 
 ## Calculation order

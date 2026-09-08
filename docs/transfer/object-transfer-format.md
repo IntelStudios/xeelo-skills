@@ -131,6 +131,8 @@ Two layers on the **object** (inbox):
 
 Which triples exist, Grid vs Table, and rows `T`/`A`–`E`: [ongrid.md](../entities/ongrid.md). Spec YAML: [`spec-format.md`](spec-format.md#ongrid) (inbox) and [`spec-format.md`](spec-format.md#subgrids-specsubgridsyaml) (subgrid).
 
+Upload of these two tables **deletes** every Orig. ID in the JSON, then inserts only `IsActive = 1`. Dropped placements must appear with **`IsActive: 0`** (generator does this from leftover `ids.explicit.objectLineOnGrid` / `subgridOnGrid`). Omitting them leaves live cells that overlap the new layout. [ongrid.md](../entities/ongrid.md#removing-a-placement-isactive--0).
+
 ## Legacy XML
 
 Older Object Transfers were UTF-16 LE concatenated `<XMLData>` blocks (`ObjectSetup`, `ObjectMap`, `TransferInfo`, `TransferType=OBJECT`, `Version=1.3.0`) inside a ZIP. Admin UI upload/process of that XML still exists separately. xeelo-skills GraphQL **does not** send XML. `extract-object-transfer-to-spec.py` and `validate-object-transfer.py` still read legacy XML.

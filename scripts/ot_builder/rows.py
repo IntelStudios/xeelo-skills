@@ -10,7 +10,11 @@ from typing import Any
 from ot_builder.ids import IdRegistry, build_registry
 from ot_builder.comments import emit_comments
 from ot_builder.language_table import emit_language_table
-from ot_builder.ongrid import require_ongrid_id
+from ot_builder.ongrid import (
+    deactivate_unused_ongrid_rows,
+    require_ongrid_id,
+    validate_layout_placements,
+)
 from ot_builder.system_line import explicit_key_token, id_for_code
 from ot_builder.reopen import reopen_on_save_id
 from ot_builder.object_actions import (
@@ -1773,11 +1777,16 @@ def build_rows(spec: dict) -> BuildResult:
     _build_templates(spec, registry, oid, wf_id, result)
 
     ongrid_rows = []
+    used_ongrid_ids: set[int] = set()
     used_legacy_ongrid: set[str] = set()
     for layout in (spec.get("onGrid") or {}).get("layouts", []):
         size = layout.get("size", "Large")
         grid_type = layout.get("type", "Grid")
         module = layout.get("module", "Items")
+        validate_layout_placements(
+            layout.get("placements") or [],
+            context=f"onGrid {module} {grid_type} {size}",
+        )
         for placement in layout.get("placements", []):
             row_letter = placement.get("row", "T")
             for col in placement.get("columns", []):
@@ -1848,6 +1857,7 @@ def build_rows(spec: dict) -> BuildResult:
                         "ObjectLineOnGridLabelType": col.get("labelType", 1),
                         "IsActive": 1,
                     }
+                used_ongrid_ids.add(og_id)
                 ongrid_rows.append(ongrid_row)
                 result.edges.append(
                     {
@@ -1857,6 +1867,15 @@ def build_rows(spec: dict) -> BuildResult:
                         "ChildTableRowID": og_id,
                     }
                 )
+    ongrid_rows.extend(
+        deactivate_unused_ongrid_rows(
+            registry,
+            "objectLineOnGrid",
+            used_ongrid_ids,
+            id_column="ObjectLineOnGridID",
+            extra={"ObjectID": oid},
+        )
+    )
     if ongrid_rows:
         result.rows["ObjectLineOnGrid"] = ongrid_rows
 

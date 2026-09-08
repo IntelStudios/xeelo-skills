@@ -129,7 +129,6 @@ On **Table**, letters do **not** stack in the User GUI (one line of columns). St
 - `position`: start in percent (**0–99**)
 - `length`: width in percent (**1–100**); lengths on one `row` should sum to **100**
 - Interval is half-open: `position: 0`, `length: 12` occupies 0–11; the next column starts at **12**
-- Overlap: next `position` &lt; previous `position + length`
 
 `labelType`: **1** Horizontal (default), **2** Vertical. Do not spec SQL `0` (None); Admin does not offer it.
 
@@ -138,6 +137,24 @@ On **Table**, letters do **not** stack in the User GUI (one line of columns). St
 Each column is **`field` xor `systemLine`** on ObjectLineOnGrid. System lines: [`SystemLine.json`](../enums/SystemLine.json) (`role` 40, `status` 50, `requestor` 80, …). Explicit ID `{size}/{type}/{module}/sys:{code}`. Field key `{size}/{type}/{module}/{code}`.
 
 Combo-box (**types 1, 2, 14**) may be `allowed` and placed; inbox shows the numberedník name, not the bind id. Combo **cannot** be `isTag`; combo / radio / multi **may** set on-grid `isSearch` (types 1, 2, 3, 4, 8, 11, 12, 14, 15, 19, 20). On-grid allowed is **not** types 5, 6, 13, 16 (subgrid, empty, report, description memo).
+
+## No overlap
+
+On the same letter, next `position` must be **≥** previous `position + length`. Overlap is `next position < previous position + length`. Generate **rejects** overlapping cells and the same `field` / `systemLine` twice in one layout variant.
+
+One field or system line per `size` × `type` × `module` (one OT row). Place it on another letter in the **same** layout only after removing it from the first — otherwise IDs collide.
+
+## Removing a placement (`IsActive = 0`)
+
+Object Transfer upload **deletes** every `ObjectLineOnGrid` / `ObjectSubLineOnGrid` Orig. ID present in the JSON, then **inserts only rows with `IsActive = 1`**. A dropped column that is **omitted** from the JSON stays on the site and paints over the new layout.
+
+When a placement leaves `onGrid.layouts` / `subgrids.<key>.onGrid.layouts`:
+
+1. Keep its key in `ids.explicit.objectLineOnGrid` or `ids.explicit.subgridOnGrid`.
+2. Generate emits that Orig. ID with **`IsActive: 0`** (delete, not a soft-disable).
+3. After `/publish`, `/download-db` so extract drops the unused key.
+
+Do not delete those explicit keys in the same change as the layout edit. Other OT tables still upsert / soft-disable; this delete rule is **only** these two onGrid tables.
 
 ## Example
 
