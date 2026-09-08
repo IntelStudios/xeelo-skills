@@ -346,7 +346,7 @@ LANGUAGE_TABLE_KIND_KEYS = (
     "subgrids",
 )
 COMMENTS_KIND_KEYS = LANGUAGE_TABLE_KIND_KEYS
-COMMENT_ITEM_KEYS = ("html",)
+COMMENT_ITEM_KEYS = ("html", "userName", "date")
 
 
 def ordered_mapping(data: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:

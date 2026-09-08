@@ -1520,7 +1520,7 @@ def _build_object_actions(spec: dict, registry: IdRegistry, oid: int, result: Bu
         result.rows["WorkflowStepObjectAction"] = step_link_rows
 
 
-def build_rows(spec: dict) -> BuildResult:
+def build_rows(spec: dict, *, default_comment_user_name: str | None = None) -> BuildResult:
     spec = normalize_spec(spec)
     validate_spec(spec)
     mapping = load_field_mapping()
@@ -1885,6 +1885,8 @@ def build_rows(spec: dict) -> BuildResult:
     _build_object_actions(spec, registry, oid, result)
     build_periodics(spec, registry, oid, result)
     emit_language_table(spec, registry, result)
-    emit_comments(spec, registry, result)
+    emit_comments(
+        spec, registry, result, default_user_name=default_comment_user_name
+    )
 
     return result

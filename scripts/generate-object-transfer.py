@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from ot_builder.delta import find_project_root, latest_snapshot_json, load_baseline_json
+from ot_builder.graphql_client import read_comment_requestor
 from ot_builder.jsonout import build_object_transfer_json, write_json
 from ot_builder.rows import build_rows
 from ot_builder.spec_loader import load_spec
@@ -50,7 +51,13 @@ def main() -> None:
             print(f"Baseline: {snap}")
 
     spec = load_spec(args.spec)
-    result = build_rows(spec)
+    project = find_project_root(args.spec)
+    default_comment_user_name = (
+        read_comment_requestor(project / ".xeelo-connection.json") if project else ""
+    )
+    result = build_rows(
+        spec, default_comment_user_name=default_comment_user_name or None
+    )
     text, omitted = build_object_transfer_json(result.rows, baseline=baseline)
     write_json(text, args.output)
     extra = f", {omitted} unchanged omitted" if omitted else ""

@@ -321,7 +321,7 @@ Spec: `access[].field` + optional `access[].sublineId`. Orig. ID keys `{field}` 
 | GraphQL | `ObjectCode` | same `Select_` / `Mutate_` prefixes from **`ObjectSubCode`** |
 | Generate + combo Multiselect | — | subgrid-only (below) |
 
-Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids`. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
+Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids` + `comments.subgrids.<key>.lines` (`ObjectSubLine` TableComments). Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on other `ObjectSub*` tables.
 
 ### Generate + combo Multiselect
 

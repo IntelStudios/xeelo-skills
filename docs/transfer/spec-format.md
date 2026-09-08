@@ -461,14 +461,20 @@ comments:
   lines:
     TYPE:
       - html: "<p>Payment source. Hourly periodic matches FIO.</p>"
+  subgrids:
+    invoice_lines:
+      lines:
+        DESC:
+          - html: "<p>2026-09-08: Line description on the subgrid.</p>"
+            userName: Milan Krejčík
   periodics:
     load_fio_hourly:
       - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
 ```
 
-Generator emits `TableComments` rows (`UserID=0`, default `userName` `xeelo-skills`) and parent→`TableComments` ObjectSetup edges. Extract writes this fragment only when comments exist. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Object Transfer upserts by Orig. ID — omitted comments stay on the site.
+Generator emits `TableComments` rows (`UserID=0`; `UserName` from spec `userName`, else `commentRequestor`, else `xeelo-skills`) and parent→`TableComments` ObjectSetup edges. Extract writes this fragment only when comments exist. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Object Transfer upserts by Orig. ID — omitted comments stay on the site.
 
-Whether the agent **writes** these comments is **Generate table comments** in `projects/<name>/conventions.md` (`ask` | `auto`). HTML language is **Comment language** in that file (missing = `en`). New entity → one description; change → append a dated item; unchanged → skip.
+Whether the agent **writes** these comments is **Generate table comments** in `projects/<name>/conventions.md` (`ask` | `auto`). HTML language is **Comment language** in that file (missing = `en`). New entity → one description; change → append a dated item; unchanged → skip. Dated HTML is `YYYY-MM-DD: …`; author footer is **`commentRequestor`**. Prefer `comments.lines` / `comments.subgrids.*.lines` over object-level when the change is a field.
 
 **IDs:** `ids.explicit.tableComments` (`TableName:entityKey:index`, e.g. `ObjectLine:TYPE:0`).
 

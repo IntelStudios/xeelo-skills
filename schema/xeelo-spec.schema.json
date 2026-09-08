@@ -1336,7 +1336,11 @@
       "description": "Admin TableComments HTML body. Simple tags: p, ul/ol/li, strong/em, br, a.",
       "properties": {
         "html": { "type": "string", "minLength": 1 },
-        "userName": { "type": "string", "minLength": 1 },
+        "userName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "TableComments.UserName (Admin display name). Default: commentRequestor, then xeelo-skills."
+        },
         "date": { "type": "string", "minLength": 1 }
       }
     },

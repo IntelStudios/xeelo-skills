@@ -128,6 +128,18 @@ class CommentGenerateTests(unittest.TestCase):
         self.assertEqual(len(payload["TableComments"]), 3)
         self.assertNotIn("AttachmentID", payload["TableComments"][0])
 
+    def test_default_comment_user_name_fills_missing_user_name(self) -> None:
+        spec = _spec()
+        spec["comments"]["lines"]["TYPE"][0].pop("userName", None)
+        result = build_rows(spec, default_comment_user_name="  Milan Krejčík  ")
+        type_id = next(
+            r["ObjectLineID"] for r in result.rows["ObjectLine"] if r["ObjectLineCode"] == "TYPE"
+        )
+        by_parent = {(r["TableName"], r["TableRowID"]): r for r in result.rows["TableComments"]}
+        self.assertEqual(by_parent[("ObjectLine", type_id)]["UserName"], "Milan Krejčík")
+        object_id = result.rows["Object"][0]["ObjectID"]
+        self.assertEqual(by_parent[("Object", object_id)]["UserName"], "xeelo-skills")
+
     def test_unknown_line_raises(self) -> None:
         spec = _spec()
         spec["comments"]["lines"]["MISSING"] = [{"html": "<p>nope</p>"}]
@@ -170,6 +182,150 @@ class CommentGenerateTests(unittest.TestCase):
         explicit = extracted["ids"]["explicit"]
         self.assertIn("tableComments", explicit)
         self.assertTrue(any(k.startswith("ObjectLine:TYPE:") for k in explicit["tableComments"]))
+
+    def test_subgrid_line_comments_roundtrip(self) -> None:
+        spec = {
+            "version": 2,
+            "kind": "create_object",
+            "object": {"name": "Invoice", "code": "INVOICE", "objectType": "Finance"},
+            "company": {"name": "KB"},
+            "subgrids": {
+                "invoice_lines": {
+                    "name": "Invoice lines",
+                    "code": "invoice_lines",
+                    "layout": {
+                        "tabs": [
+                            {
+                                "name": "General",
+                                "placement": 0,
+                                "order": 1,
+                                "sections": [
+                                    {
+                                        "name": "Details",
+                                        "order": 1,
+                                        "width": 100,
+                                        "fields": [
+                                            {
+                                                "name": "Description",
+                                                "code": "DESC",
+                                                "type": "text",
+                                                "slot": 1,
+                                                "width": 100,
+                                                "order": 10,
+                                            }
+                                        ],
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                    "templates": [
+                        {
+                            "key": "default",
+                            "name": "Default",
+                            "isDefault": True,
+                            "fields": {"DESC": {"mandatory": True}},
+                        }
+                    ],
+                    "onGrid": {
+                        "fields": {"DESC": {"allowed": True}},
+                    },
+                }
+            },
+            "layout": {
+                "tabs": [
+                    {
+                        "name": "General",
+                        "placement": 0,
+                        "order": 10,
+                        "sections": [
+                            {
+                                "name": "Main",
+                                "order": 10,
+                                "width": 100,
+                                "fields": [
+                                    {
+                                        "name": "Lines",
+                                        "code": "LINES",
+                                        "type": "subgrid",
+                                        "objectSub": "invoice_lines",
+                                        "width": 100,
+                                        "order": 10,
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            },
+            "templates": [
+                {
+                    "key": "default",
+                    "name": "Default",
+                    "isDefault": True,
+                    "fields": {"LINES": {"subgridTemplate": "default"}},
+                }
+            ],
+            "comments": {
+                "subgrids": {
+                    "invoice_lines": {
+                        "lines": {
+                            "DESC": [
+                                {
+                                    "html": (
+                                        "<p>2026-09-08: "
+                                        "Line description helper.</p>"
+                                    ),
+                                    "userName": "Milan Krejčík",
+                                    "date": "2026-09-08T12:03:00",
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "ids": {"base": 9100},
+        }
+        result = build_rows(spec)
+        subline_id = next(
+            r["ObjectSubLineID"]
+            for r in result.rows["ObjectSubLine"]
+            if r.get("ObjectSubLineCode") == "DESC"
+        )
+        row = next(
+            r
+            for r in result.rows["TableComments"]
+            if r["TableName"] == "ObjectSubLine" and r["TableRowID"] == subline_id
+        )
+        self.assertEqual(row["UserName"], "Milan Krejčík")
+        self.assertIn("Line description helper", row["TableCommentData"])
+        self.assertNotIn("Milan Krejčík", row["TableCommentData"])
+        self.assertTrue(
+            any(
+                e["ChildTableName"] == "TableComments" and e["TableName"] == "ObjectSubLine"
+                for e in result.edges
+            )
+        )
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        html = extracted["comments"]["subgrids"]["invoice_lines"]["lines"]["DESC"][0]["html"]
+        self.assertIn("Line description helper", html)
+        self.assertNotIn("Milan Krejčík", html)
+        self.assertEqual(
+            extracted["comments"]["subgrids"]["invoice_lines"]["lines"]["DESC"][0]["userName"],
+            "Milan Krejčík",
+        )
+        self.assertTrue(
+            any(
+                k.startswith("ObjectSubLine:invoice_lines/DESC:")
+                for k in extracted["ids"]["explicit"]["tableComments"]
+            )
+        )
 
 
 if __name__ == "__main__":
