@@ -171,6 +171,142 @@ class CommentGenerateTests(unittest.TestCase):
         self.assertIn("tableComments", explicit)
         self.assertTrue(any(k.startswith("ObjectLine:TYPE:") for k in explicit["tableComments"]))
 
+    def test_subgrid_line_comments_roundtrip(self) -> None:
+        spec = {
+            "version": 2,
+            "kind": "create_object",
+            "object": {"name": "Invoice", "code": "INVOICE", "objectType": "Finance"},
+            "company": {"name": "KB"},
+            "subgrids": {
+                "invoice_lines": {
+                    "name": "Invoice lines",
+                    "code": "invoice_lines",
+                    "layout": {
+                        "tabs": [
+                            {
+                                "name": "General",
+                                "placement": 0,
+                                "order": 1,
+                                "sections": [
+                                    {
+                                        "name": "Details",
+                                        "order": 1,
+                                        "width": 100,
+                                        "fields": [
+                                            {
+                                                "name": "Description",
+                                                "code": "DESC",
+                                                "type": "text",
+                                                "slot": 1,
+                                                "width": 100,
+                                                "order": 10,
+                                            }
+                                        ],
+                                    }
+                                ],
+                            }
+                        ]
+                    },
+                    "templates": [
+                        {
+                            "key": "default",
+                            "name": "Default",
+                            "isDefault": True,
+                            "fields": {"DESC": {"mandatory": True}},
+                        }
+                    ],
+                    "onGrid": {
+                        "fields": {"DESC": {"allowed": True}},
+                    },
+                }
+            },
+            "layout": {
+                "tabs": [
+                    {
+                        "name": "General",
+                        "placement": 0,
+                        "order": 10,
+                        "sections": [
+                            {
+                                "name": "Main",
+                                "order": 10,
+                                "width": 100,
+                                "fields": [
+                                    {
+                                        "name": "Lines",
+                                        "code": "LINES",
+                                        "type": "subgrid",
+                                        "objectSub": "invoice_lines",
+                                        "width": 100,
+                                        "order": 10,
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            },
+            "templates": [
+                {
+                    "key": "default",
+                    "name": "Default",
+                    "isDefault": True,
+                    "fields": {"LINES": {"subgridTemplate": "default"}},
+                }
+            ],
+            "comments": {
+                "subgrids": {
+                    "invoice_lines": {
+                        "lines": {
+                            "DESC": [
+                                {
+                                    "html": (
+                                        "<p>2026-09-08 (Milan Krejčík): "
+                                        "Line description helper.</p>"
+                                    ),
+                                    "date": "2026-09-08T12:03:00",
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "ids": {"base": 9100},
+        }
+        result = build_rows(spec)
+        subline_id = next(
+            r["ObjectSubLineID"]
+            for r in result.rows["ObjectSubLine"]
+            if r.get("ObjectSubLineCode") == "DESC"
+        )
+        row = next(
+            r
+            for r in result.rows["TableComments"]
+            if r["TableName"] == "ObjectSubLine" and r["TableRowID"] == subline_id
+        )
+        self.assertIn("Milan Krejčík", row["TableCommentData"])
+        self.assertTrue(
+            any(
+                e["ChildTableName"] == "TableComments" and e["TableName"] == "ObjectSubLine"
+                for e in result.edges
+            )
+        )
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        html = extracted["comments"]["subgrids"]["invoice_lines"]["lines"]["DESC"][0]["html"]
+        self.assertIn("Milan Krejčík", html)
+        self.assertTrue(
+            any(
+                k.startswith("ObjectSubLine:invoice_lines/DESC:")
+                for k in extracted["ids"]["explicit"]["tableComments"]
+            )
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

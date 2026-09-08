@@ -113,7 +113,7 @@ languageTable:
 | `subgrids.<key>.lines.<code>.onGrid` | `ObjectSubLineOnGridName` (omit unless the site wants table headers translated) |
 | `subgrids.<key>.templateHints.<tpl>.<code>` | `ObjectSubDefaultLineHint` |
 
-`ObjectSubName` is not in Admin mass-translate. Comments on `ObjectSub*` are **not** in `comments.yaml` yet.
+`ObjectSubName` is not in Admin mass-translate. Comments on `ObjectSubLine` use `comments.subgrids.<key>.lines.<code>`; other `ObjectSub*` parents are not in `comments.yaml` yet.
 
 Generator emits `LanguageTable` rows (`IsActive=1`) and ObjectSetup edges `Parent → LanguageTable`. Extract writes the fragment only when translations exist.
 
