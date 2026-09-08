@@ -61,7 +61,7 @@ export async function main() {
 
 ## 2. CREATE another object
 
-`createType: CREATE` + `template` is fine because refresh runs on the **new** request.
+`createType: CREATE` + `template` is fine because refresh runs on the **new** request. Optional `requestId` is `@CreateRequestID`: copy slots from that request (same object), then apply `lines`. Which slots copy: [object-model.md](../docs/entities/object-model.md#create-copy-create-from-request). Refresh on the starting step can overwrite copied values — `Select_` the new id.
 
 ```javascript
 const created = await client.request(

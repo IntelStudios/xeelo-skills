@@ -2,7 +2,7 @@
 
 Process definition for requests on an object.
 
-Schemas: [`Workflow.json`](../data/schemas/Workflow.json), [`WorkflowStep.json`](../data/schemas/WorkflowStep.json), [`WorkflowStepAction.json`](../data/schemas/WorkflowStepAction.json), [`WorkflowStepAccess.json`](../data/schemas/WorkflowStepAccess.json), [`WorkflowStepNotification.json`](../data/schemas/WorkflowStepNotification.json)
+Schemas: [`Workflow.json`](../data/schemas/Workflow.json), [`WorkflowStep.json`](../data/schemas/WorkflowStep.json), [`WorkflowStepAction.json`](../data/schemas/WorkflowStepAction.json), [`WorkflowStepAccess.json`](../data/schemas/WorkflowStepAccess.json), [`WorkflowStepNotification.json`](../data/schemas/WorkflowStepNotification.json). `WorkflowStepCalculation` is in transfer ([`data/transfer-tables.json`](../data/transfer-tables.json)); no column schema file yet.
 
 Email templates: [notifications.md](notifications.md). Spec keys: `workflow.notification` / `exportFailNotification` / `recallNotification` / `failNotification`, `steps[].actions[].notification`, `steps[].notifications`.
 
@@ -15,7 +15,7 @@ Header for a process. Linked to object via `ObjectDefault.WorkflowID` (not direc
 | Column | Semantics |
 |--------|-----------|
 | `WorkflowName` | Process name |
-| `RoleID`, `RequestStatusID` | Initial state when request is **created** |
+| `RoleID`, `RequestStatusID` | Initial state for **CREATE** and for an **UPDATE** version that uses this workflow ([update-actions.md](update-actions.md#workflow-linkage)) |
 | `NotificationID` | Email on create (`SaveNew`). Spec: `workflow.notification` |
 | `ExportFailNotificationID` | Email on export fail. Spec: `workflow.exportFailNotification` |
 | `RecallNotificationID` | Email on recall. Spec: `workflow.recallNotification` |
@@ -73,6 +73,14 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 | `NotificationID` | Email for this transition (`WorkflowAction`). Spec: `actions[].notification` |
 | `IsActive` | Soft-disable the footer button. Spec: `steps[].actions[].isActive: false`. Omit the action from spec and the site row stays active. |
 
+## WorkflowStepCalculation
+
+**UI:** Workflow Step → Calculations.
+
+Child of `WorkflowStep` (Object Transfer edge `WorkflowStep → WorkflowStepCalculation`). On `spRequestRefresh` while the request is on that step, these rows run **before** Last object actions. Calculation type IDs match template **server** calcs (`ObjectDefaultLineCalculationType` **51+**, e.g. Server-String **53** with a quoted literal). Use this to set a line the following object action reads (for example an action-code field).
+
+Spec/generator do **not** emit `WorkflowStepCalculation`. Admin or a DB-transfer snapshot.
+
 ## WorkflowStepNotification
 
 Junction: extra templates on a **target** step (`WorkflowAction` / `SaveNew` / `WorkflowUpdate` / `ExportFail` / recall / fail — not `ExportFailNoUpdate`). Spec: `workflow.steps[].notifications: [key]`. Runtime: current role + status, `RequestIsNotified = 0`, optional `RequestTypeID` (null = Create and Update). Spec/generate do not emit `RequestTypeID`. Object Transfer edges: `WorkflowStep → WorkflowStepNotification → Notification`. After a workflow send, `RequestIsNotified` is set to 1. Details: [notifications.md](notifications.md#runtime).
@@ -95,7 +103,7 @@ Applies to `ObjectUpdateAction`, `ObjectAction`, `Role`, `RequestStatus`, `Workf
 
 **ObjectUpdateAction** (object-level) is **not** a **WorkflowStepAction**. A workflow button named “Update” is still a transition button, not an update action.
 
-Update actions appear on **completed** requests and create a **new request version** (`RequestCode` unchanged). Optional `WorkflowID` on the action sets the workflow for that new version.
+Update actions appear on **completed** requests and create a **new request version** (`RequestCode` unchanged). Optional `WorkflowID` on the action sets the workflow for that new version; the version **starts** at that workflow’s header role/status (may already be Completed).
 
 See [update-actions.md](update-actions.md).
 
@@ -107,4 +115,4 @@ When creating a **new object** or **update action**, always ask whether to creat
 
 ## DB transfer
 
-`Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepNotification`, `Role`, `RequestStatus`, `WorkflowStepActionStyle` — all in transfer scope. Email templates: [notifications.md](notifications.md).
+`Workflow`, `WorkflowStep`, `WorkflowStepAction`, `WorkflowStepCalculation`, `WorkflowStepNotification`, `Role`, `RequestStatus`, `WorkflowStepActionStyle` — all in transfer scope. Email templates: [notifications.md](notifications.md).

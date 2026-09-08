@@ -116,7 +116,7 @@ Detailed semantics from admin hints:
 
 | Doc | Entities |
 |-----|----------|
-| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, lookups, autonumber, unique, **subgrid** |
+| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, **create copy**, lookups, autonumber, unique, **subgrid** |
 | [entities/object-line-types.md](entities/object-line-types.md) | ObjectLine types 1–20, extras, template capabilities |
 | [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String/Service expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |
@@ -124,8 +124,8 @@ Detailed semantics from admin hints:
 | [entities/notifications.md](entities/notifications.md) | Email templates, recipients, placeholders, workflow / ObjectAction / Periodic bindings |
 | [entities/object-actions.md](entities/object-actions.md) | ObjectAction, params, conditions, Run Node.js |
 | [entities/nodejs.md](entities/nodejs.md) | ESM `CustomJS`, `Context`, built-in packages / `// install`, no refresh on current request |
-| [entities/graphql.md](entities/graphql.md) | `Select_` / `Mutate_` names, query args, `createType`, `lines` vs `linesFormatted` |
-| [entities/workflow.md](entities/workflow.md) | Workflow, steps, actions |
+| [entities/graphql.md](entities/graphql.md) | `Select_` / `Mutate_` names, query args, `createType`, CREATE-from-request, `lines` vs `linesFormatted` |
+| [entities/workflow.md](entities/workflow.md) | Workflow, steps, actions, step calculations |
 | [entities/integrations.md](entities/integrations.md) | Export, import, periodic, scheduler |
 | [entities/object-services.md](entities/object-services.md) | ObjectService catalog, Client-Service, External service contract, ARES/VIES/Vatpayer |
 | [entities/outputs.md](entities/outputs.md) | Printout, report |

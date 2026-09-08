@@ -113,6 +113,7 @@ GraphQL: `createType: UPDATE | UPDATE_EMPTY`, `updateAction: Int` (`ObjectUpdate
 ## Workflow linkage
 
 - **`ObjectUpdateAction.WorkflowID`** — workflow assigned to the **new request version** (not the completed version’s current step).
+- The new row **starts** at that workflow’s header `RoleID` / `RequestStatusID` (same columns as a CREATE on that workflow). The pair can already be a **Completed** step — then GraphQL `UPDATE` refresh runs Last object actions and [WorkflowStepCalculation](workflow.md#workflowstepcalculation) immediately. It is not always Approver/Submitted.
 - **`RefreshWorkflowToObjectView`** unions workflows from `ObjectDefault` and `ObjectUpdateAction`.
 - Template workflow (`ObjectDefault.WorkflowID`) is fallback when action has no workflow. When adding an update action, **ask** which workflow to use; the default choice is that template workflow (omit `updateActions[].workflow`). See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow) and [add-update-action.md](../recipes/add-update-action.md).
 
