@@ -18,7 +18,7 @@ Determine from the user message or ask once:
 
 - **`<name>`** — project slug under `projects/`. Must be a valid directory name.
 - **`xeeloUrl`** — optional. Infer `https://<name>.xeelo.online/` only when the slug clearly matches the site hostname; otherwise leave empty for the user to fill.
-- **`commentRequestor`** — full name (given name **and** family name) for Admin table comments. Ask once if missing; do not invent from Cursor first-name-only user info. Never copy from another project’s connection file together with `token`.
+- **`commentRequestor`** — Admin **display name** (given name **and** family name), as shown in the comments portlet (`Milan Krejčík@…`). Not UserID, not login. Ask once if missing; do not invent from Cursor first-name-only user info. Never copy from another project’s connection file together with `token`.
 
 ## Steps
 
@@ -74,6 +74,6 @@ Determine from the user message or ask once:
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
 | `token` | GraphQL access token with **`isAdmin`** (from site GraphQL access tokens). Fixed; no refresh. |
-| `commentRequestor` | Full name for dated Admin comments (`Given Family`). Per developer — gitignored. Other people on this site keep their own value. |
+| `commentRequestor` | Admin display name for `TableComments.UserName` (`Given Family`). Per developer — gitignored. Other people on this site keep their own value. |
 
 Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling connection: `/download-db`.

@@ -77,7 +77,7 @@ The keys are independent. Template: [`templates/project/conventions.md`](templat
 
 **Download-db after publish** (`ask`): **Refresh env now** (`/download-db`) / **Refresh now and remember** / **Don't download**. Offer this only after a successful `/publish`.
 
-**Generate table comments** (`ask`): after spec edits, **before** generate — **Generate comments now** / **Generate now and remember for this site** / **Skip comments**. `auto` → write HTML into `spec/comments.yaml` on **new and changed** entities (description for new, append changelog for edits), announce. Language: **Comment language** in that file (`en` | `cs` | …; missing = `en`). Dated HTML uses **`commentRequestor`** from gitignored `.xeelo-connection.json` (`YYYY-MM-DD (Given Family): …`). Empty → ask once (full name) and write that key; do not guess from Cursor first-name-only user info; do not put the name in `conventions.md`. Prefer `comments.lines` / `comments.subgrids.*.lines` when the change is a field. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Details: [comments.md](docs/entities/comments.md), [add-table-comment.md](recipes/add-table-comment.md).
+**Generate table comments** (`ask`): after spec edits, **before** generate — **Generate comments now** / **Generate now and remember for this site** / **Skip comments**. `auto` → write HTML into `spec/comments.yaml` on **new and changed** entities (description for new, append changelog for edits), announce. Language: **Comment language** in that file (`en` | `cs` | …; missing = `en`). Dated HTML is **`YYYY-MM-DD: …`** (no name in the body). Author footer is `TableComments.UserName` from **`commentRequestor`** in gitignored `.xeelo-connection.json` (Admin display name: given + family). Write `userName` on the spec item; generate uses that, or the connection value, else `xeelo-skills`. Empty `commentRequestor` → ask once (full name) and write that key; do not guess from Cursor first-name-only user info; do not put the name in `conventions.md`. If this change was requested by someone else, ask and set **`userName`** on that item only. Prefer `comments.lines` / `comments.subgrids.*.lines` when the change is a field. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Details: [comments.md](docs/entities/comments.md), [add-table-comment.md](recipes/add-table-comment.md).
 
 **Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). User says stop doing it yourself → set that key back to `ask`. A one-loop exception (“don’t publish this time”) does **not** change conventions.
 
@@ -146,7 +146,7 @@ Template (empty values for user to complete):
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
 | `token` | GraphQL access token with **`isAdmin`**. Fixed; no refresh |
-| `commentRequestor` | Full name for Admin table comments (given + family). Per developer; gitignored |
+| `commentRequestor` | Admin comment **display name** (`TableComments.UserName`, e.g. `Milan Krejčík`). Not login, not UserID. Per developer; gitignored |
 
 File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in xeelo-skills. Do not download DB transfer until the user has filled connection details.
 
@@ -404,7 +404,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
-- [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions. Dated HTML uses `commentRequestor` from `.xeelo-connection.json`. Prefer `lines` / `subgrids.*.lines` for field changes ([comments.md](docs/entities/comments.md))
+- [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions. Dated HTML is `YYYY-MM-DD: …`; `userName` from `commentRequestor`. Prefer `lines` / `subgrids.*.lines` for field changes ([comments.md](docs/entities/comments.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] New object onGrid: Items Grid + Table at Large/Medium/Small and Mobile Items Grid Small ([ongrid.md](docs/entities/ongrid.md#default-for-a-new-object))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))

@@ -37,7 +37,8 @@ comments:
     invoice_lines:
       lines:
         DESC:
-          - html: "<p>2026-09-08 (Milan Krejčík): Line description on the subgrid.</p>"
+          - html: "<p>2026-09-08: Line description on the subgrid.</p>"
+            userName: Milan Krejčík
   periodics:
     load_fio_hourly:
       - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
@@ -52,7 +53,7 @@ includes:
   - spec/ids.yaml
 ```
 
-Simple HTML only: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Default `userName` is `xeelo-skills`. New comments get a new `TableCommentID` (`ids.explicit.tableComments`, key `TableName:entityKey:index`).
+Simple HTML only: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Default `userName` is **`commentRequestor`**, then `xeelo-skills`. New comments get a new `TableCommentID` (`ids.explicit.tableComments`, key `TableName:entityKey:index`).
 
 Content:
 
@@ -60,7 +61,7 @@ Content:
 - **Change** — append a dated changelog item; do not edit older items
 - **Unchanged** — do not add a comment
 
-Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`). Dated HTML uses **`commentRequestor`** from gitignored `.xeelo-connection.json` (`YYYY-MM-DD (Given Family): …`). Empty → ask once and write that key. Prefer `comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>` when the change is a field.
+Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`). Dated HTML is **`YYYY-MM-DD: …`**. Author is **`commentRequestor`** (`userName` on the item). Empty → ask once and write that key. Prefer `comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>` when the change is a field.
 
 Generate:
 

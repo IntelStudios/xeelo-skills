@@ -35,7 +35,7 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Labels:** canonical `name` in English; translations in `spec/language-table.yaml`. Read `projects/<name>/conventions.md` when present. See [AGENT.md](AGENT.md) and [docs/entities/localization.md](docs/entities/localization.md).
 
-**Admin comments:** `spec/comments.yaml` (`TableComments` HTML). Follow **Generate table comments** in conventions (`ask` default). Dated changelog uses **`commentRequestor`** in gitignored `.xeelo-connection.json`. Line comments: `comments.lines` / `comments.subgrids.*.lines`. See [docs/entities/comments.md](docs/entities/comments.md).
+**Admin comments:** `spec/comments.yaml` (`TableComments` HTML). Follow **Generate table comments** in conventions (`ask` default). Dated HTML is `YYYY-MM-DD: …`; `UserName` from **`commentRequestor`** in gitignored `.xeelo-connection.json`. Line comments: `comments.lines` / `comments.subgrids.*.lines`. See [docs/entities/comments.md](docs/entities/comments.md).
 
 **Tree icon / color:** Font Awesome **6.5.1** class string on `object.icon` / `objectType.icon` / `company.icon` (search `python scripts/search-fa-icons.py --query bank`; local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)). Color = existing `CustomColorCode` on `object.color` / `objectType.color` (not HEX). Do not spec obsolete `CompanyTreeColor` or `ObjectTypeTreeColorFont`. See [AGENT.md](AGENT.md) and [spec-format.md](docs/transfer/spec-format.md#tree-icons-and-colors).
 

@@ -121,6 +121,16 @@ def _template_hint_parent_id(
     return parent_id
 
 
+def resolve_comment_user_name(
+    item_user_name: Any, default_user_name: str | None
+) -> str:
+    for candidate in (item_user_name, default_user_name, DEFAULT_USER_NAME):
+        text = str(candidate or "").strip()
+        if text:
+            return text
+    return DEFAULT_USER_NAME
+
+
 def _emit_items(
     result: Any,
     registry: IdRegistry,
@@ -130,11 +140,12 @@ def _emit_items(
     entity_key: str,
     items: list[dict[str, Any]],
     stamp: str,
+    default_user_name: str | None,
 ) -> None:
     for index, item in enumerate(items):
         composite = table_comment_id_key(parent_table, entity_key, index)
         comment_id = registry.require("tableComments", composite)
-        user_name = str(item.get("userName") or DEFAULT_USER_NAME)
+        user_name = resolve_comment_user_name(item.get("userName"), default_user_name)
         date = _comment_date(item.get("date"), fallback=stamp)
         result.rows.setdefault("TableComments", []).append(
             {
@@ -157,7 +168,13 @@ def _emit_items(
         )
 
 
-def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
+def emit_comments(
+    spec: dict,
+    registry: IdRegistry,
+    result: Any,
+    *,
+    default_user_name: str | None = None,
+) -> None:
     payload = spec.get("comments") or {}
     if not payload:
         return
@@ -165,6 +182,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
         raise ValueError("comments must be a mapping")
 
     stamp = _now_stamp()
+    fallback_user_name = str(default_user_name or "").strip() or None
     skip_kinds = REUSED_WORKFLOW_SKIP_KINDS if _workflow_reused(spec) else frozenset()
     for kind, body in payload.items():
         if kind not in KNOWN_TYPES:
@@ -185,6 +203,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                 entity_key=kind,
                 items=items,
                 stamp=stamp,
+                default_user_name=fallback_user_name,
             )
             continue
         if kind == "lines":
@@ -203,6 +222,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                     entity_key=str(code),
                     items=items,
                     stamp=stamp,
+                    default_user_name=fallback_user_name,
                 )
             continue
         if kind == "subgrids":
@@ -240,6 +260,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                         entity_key=f"{sub_key}/{code}",
                         items=items,
                         stamp=stamp,
+                        default_user_name=fallback_user_name,
                     )
             continue
         if kind == "templateHints":
@@ -267,6 +288,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                         entity_key=f"{template_key}/{field_code}",
                         items=items,
                         stamp=stamp,
+                        default_user_name=fallback_user_name,
                     )
             continue
         if kind == "objectMessages":
@@ -287,6 +309,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                     entity_key=str(key),
                     items=items,
                     stamp=stamp,
+                    default_user_name=fallback_user_name,
                 )
             continue
         if kind == "stepActions":
@@ -305,6 +328,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                     entity_key=str(key),
                     items=items,
                     stamp=stamp,
+                    default_user_name=fallback_user_name,
                 )
             continue
         table, _column, category = CATEGORY_TARGETS[kind]
@@ -323,6 +347,7 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                 entity_key=str(key),
                 items=items,
                 stamp=stamp,
+                default_user_name=fallback_user_name,
             )
 
 
