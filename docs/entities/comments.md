@@ -90,13 +90,13 @@ Whether the agent **writes** HTML into `spec/comments.yaml` is a site convention
 
 Language: **Comment language** in `projects/<name>/conventions.md` (`en` | `cs` | …; missing = `en`).
 
-HTML for a **new** entity or a **changelog** item includes the **requestor’s full name** (given name and family name) after the date:
+HTML for a **new** entity or a **changelog** item includes the **requestor’s full name** after the date. The name comes from gitignored `projects/<site>/.xeelo-connection.json` → **`commentRequestor`** (per developer; several people can share one site). Empty → ask once and write it there. Do not use Cursor first-name-only user info. Do not put the person’s name in `conventions.md`. If this change was requested by someone else, ask and use that name in the HTML for this item only.
 
 ```html
 <p>2026-09-08 (Milan Krejčík): List of Assets on-grid shows Asset status as colored badges.</p>
 ```
 
-Never given name only. Prefer the name the user uses professionally; if only an email is known, ask for the family name rather than truncating. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
+Never given name only. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
 
 ## Related
 

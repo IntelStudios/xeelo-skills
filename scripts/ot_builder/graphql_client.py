@@ -242,6 +242,7 @@ class ConnectionConfig:
     user_login: str | None = None
     user_pwd: str | None = None
     permission: str = PERMISSION_READ_ONLY
+    comment_requestor: str = ""
 
     @classmethod
     def load(cls, path: Path) -> "ConnectionConfig":
@@ -255,6 +256,7 @@ class ConnectionConfig:
             raise ValueError(f"{path}: missing xeeloUrl. {CONNECTION_HELP}")
         if not token or not str(token).strip():
             raise ValueError(f"{path}: missing token. {CONNECTION_HELP}")
+        requestor = str(data.get("commentRequestor") or "").strip()
         return cls(
             xeelo_url=str(xeelo).rstrip("/"),
             token=str(token).strip(),
@@ -262,6 +264,7 @@ class ConnectionConfig:
             user_login=_optional_str(data.get("userLogin")),
             user_pwd=_optional_str(data.get("userPwd")),
             permission=_parse_permission(data.get("permission"), path),
+            comment_requestor=requestor,
         )
 
     def __repr__(self) -> str:
@@ -270,7 +273,7 @@ class ConnectionConfig:
             "ConnectionConfig("
             f"xeelo_url={self.xeelo_url!r}, token='***', path={self.path!r}, "
             f"user_login={self.user_login!r}, user_pwd={pwd}, "
-            f"permission={self.permission!r})"
+            f"permission={self.permission!r}, comment_requestor={self.comment_requestor!r})"
         )
 
     @property

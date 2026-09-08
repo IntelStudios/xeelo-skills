@@ -96,7 +96,7 @@ The keys are independent. Template: [`templates/project/conventions.md`](templat
 
 **Download-db after publish** (`ask`): **Refresh env now** (`/download-db`) / **Refresh now and remember** / **Don't download**. Offer this only after a successful `/publish`.
 
-**Generate table comments** (`ask`): after spec edits, **before** generate — **Generate comments now** / **Generate now and remember for this site** / **Skip comments**. `auto` → write HTML into `spec/comments.yaml` on **new and changed** entities (description for new, append changelog for edits), announce. Language: **Comment language** in that file (`en` | `cs` | …; missing = `en`). Dated HTML includes the requestor **full name**: `YYYY-MM-DD (Given Family): …` (never given name only). Prefer `comments.lines` / `comments.subgrids.*.lines` when the change is a field. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Details: [comments.md](docs/entities/comments.md), [add-table-comment.md](recipes/add-table-comment.md).
+**Generate table comments** (`ask`): after spec edits, **before** generate — **Generate comments now** / **Generate now and remember for this site** / **Skip comments**. `auto` → write HTML into `spec/comments.yaml` on **new and changed** entities (description for new, append changelog for edits), announce. Language: **Comment language** in that file (`en` | `cs` | …; missing = `en`). Dated HTML uses **`commentRequestor`** from gitignored `.xeelo-connection.json` (`YYYY-MM-DD (Given Family): …`). Empty → ask once (full name) and write that key; do not guess from Cursor first-name-only user info; do not put the name in `conventions.md`. Prefer `comments.lines` / `comments.subgrids.*.lines` when the change is a field. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Details: [comments.md](docs/entities/comments.md), [add-table-comment.md](recipes/add-table-comment.md).
 
 **Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). For backup, remember writes `yes` or `no`. User says stop doing it yourself / ask again → set that key back to `ask`. A one-loop exception (“don’t publish this time”, “backup this once”) does **not** change conventions.
 
@@ -158,7 +158,8 @@ Template (empty values for user to complete):
   "token": "",
   "permission": "read-only",
   "userLogin": "",
-  "userPwd": ""
+  "userPwd": "",
+  "commentRequestor": ""
 }
 ```
 
@@ -173,6 +174,7 @@ Template (empty values for user to complete):
 | `permission` | `read-only` (default) / `read-write` (edit + publish OT, no precompile) / `full` (also `/precompile`). Missing = `read-only` |
 | `userLogin` | User UI local username. Optional until `/ui-test` |
 | `userPwd` | User UI local password. Optional until `/ui-test`; never copy from other projects |
+| `commentRequestor` | Full name for Admin table comments (given + family). Per developer; gitignored |
 
 File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in xeelo-skills. Do not download DB transfer until the user has filled connection details.
 
@@ -270,7 +272,7 @@ Claude Code CLI does not scan `.agents/skills/` or `ui_testing/`; [CLAUDE.md](CL
 ```text
 projects/<name>/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
-  .xeelo-connection.json          # gitignored — xeeloUrl, GraphQL token, permission; optional userLogin/userPwd for /ui-test
+  .xeelo-connection.json          # gitignored — xeeloUrl, GraphQL token, permission, commentRequestor; optional userLogin/userPwd for /ui-test
   graphql/{schema,access_rights}.json  # live introspection — gitignored; refresh with /graphql
   snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
@@ -459,7 +461,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
-- [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions (`ask` → offer now / remember / skip; `auto` → write HTML on new/changed entities). Dated HTML includes requestor full name. Prefer `lines` / `subgrids.*.lines` for field changes ([comments.md](docs/entities/comments.md))
+- [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions. Dated HTML uses `commentRequestor` from `.xeelo-connection.json`. Prefer `lines` / `subgrids.*.lines` for field changes ([comments.md](docs/entities/comments.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] New object: **`object.directCreate: true`** unless the user asked otherwise ([create-object.md](recipes/create-object.md))
 - [ ] New workflow: asked existing vs new **roles** and existing vs new **statuses** (lists from `env/shared/roles.yaml` / `statuses.yaml`: name — id); reuse skips both; existing catalog rows copied verbatim ([add-workflow.md](recipes/add-workflow.md))
