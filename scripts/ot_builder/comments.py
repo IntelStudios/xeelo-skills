@@ -23,6 +23,7 @@ KNOWN_TYPES = frozenset(
         *SCALAR_TARGETS,
         *CATEGORY_TARGETS,
         "lines",
+        "subgrids",
         "stepActions",
         "templateHints",
         "objectMessages",
@@ -203,6 +204,43 @@ def emit_comments(spec: dict, registry: IdRegistry, result: Any) -> None:
                     items=items,
                     stamp=stamp,
                 )
+            continue
+        if kind == "subgrids":
+            if not isinstance(body, dict):
+                raise ValueError("comments.subgrids must be a mapping")
+            for sub_key, entry in body.items():
+                if not isinstance(entry, dict):
+                    raise ValueError(f"comments.subgrids.{sub_key}: expected mapping")
+                lines_map = entry.get("lines") or {}
+                if lines_map and not isinstance(lines_map, dict):
+                    raise ValueError(f"comments.subgrids.{sub_key}.lines must be a mapping")
+                extra = set(entry) - {"lines"}
+                if extra:
+                    raise ValueError(
+                        f"comments.subgrids.{sub_key}: unknown key {sorted(extra)[0]!r} "
+                        "(only lines.<code> is supported)"
+                    )
+                for code, line_entry in lines_map.items():
+                    items = _comment_items(
+                        line_entry, kind=f"subgrids.{sub_key}.lines.{code}"
+                    )
+                    if not items:
+                        continue
+                    parent_id = _require_parent(
+                        registry,
+                        "subgridFields",
+                        f"{sub_key}/{code}",
+                        kind="subgrids",
+                    )
+                    _emit_items(
+                        result,
+                        registry,
+                        parent_table="ObjectSubLine",
+                        parent_id=parent_id,
+                        entity_key=f"{sub_key}/{code}",
+                        items=items,
+                        stamp=stamp,
+                    )
             continue
         if kind == "templateHints":
             if not isinstance(body, dict):
@@ -412,6 +450,20 @@ def extract_comments(
             lines_bucket[code] = items
     if lines_bucket:
         comments["lines"] = lines_bucket
+
+    sub_bucket: dict[str, Any] = {}
+    for row_id, key in _rev(explicit.get("subgridFields")).items():
+        if "/" not in str(key):
+            continue
+        found = _comments_for(by_parent, "ObjectSubLine", row_id)
+        if not found:
+            continue
+        sub_key, code = str(key).split("/", 1)
+        items = record("ObjectSubLine", str(key), row_id, found)
+        if items:
+            sub_bucket.setdefault(sub_key, {}).setdefault("lines", {})[code] = items
+    if sub_bucket:
+        comments["subgrids"] = sub_bucket
 
     step_rev = _rev(explicit.get("workflowStepActions"))
     step_key_by_id = _rev(explicit.get("workflowSteps"))

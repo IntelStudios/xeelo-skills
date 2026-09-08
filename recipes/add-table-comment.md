@@ -33,6 +33,11 @@ comments:
   lines:
     TYPE:
       - html: "<p>Payment source. Hourly periodic matches FIO.</p>"
+  subgrids:
+    invoice_lines:
+      lines:
+        DESC:
+          - html: "<p>2026-09-08 (Milan Krejčík): Line description on the subgrid.</p>"
   periodics:
     load_fio_hourly:
       - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
@@ -55,7 +60,7 @@ Content:
 - **Change** — append a dated changelog item; do not edit older items
 - **Unchanged** — do not add a comment
 
-Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`).
+Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`). Dated HTML includes the requestor **full name**: `YYYY-MM-DD (Given Family): …` (never given name only). Prefer `comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>` when the change is a field.
 
 Generate:
 
@@ -67,7 +72,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 
 ## Checklist
 
-- [ ] Parent keys match `languageTable` / spec keys (`lines.<code>`, `periodics.<key>`, …)
+- [ ] Parent keys match `languageTable` / spec keys (`lines.<code>`, `subgrids.<key>.lines.<code>`, `periodics.<key>`, …)
 - [ ] HTML is a short description or a dated changelog append
 - [ ] No `script` / `iframe` / inline styles beyond simple tags
 - [ ] Recycled workflow: do not comment shared `workflow` / `roles` / `statuses` / `stepActions`

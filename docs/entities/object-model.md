@@ -344,7 +344,7 @@ Spec: `access[].field` + optional `access[].sublineId`. Orig. ID keys `{field}` 
 | GraphQL | `ObjectCode` | `Select_` / `Mutate_` from **`ObjectSubCode`**; `objectLineId` = type-5 widget. `Delete_subgrid` (WRITE). [graphql.md](graphql.md#subgrid-objectsubcode) |
 | Generate + combo Multiselect | — | subgrid-only (below) |
 
-Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids` + `allowPaging` / `defaultPaging` when the GUI pager is on. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
+Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids` + `allowPaging` / `defaultPaging` when the GUI pager is on + `comments.subgrids.<key>.lines` (`ObjectSubLine` TableComments). Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on other `ObjectSub*` tables.
 
 ### Generate + combo Multiselect
 

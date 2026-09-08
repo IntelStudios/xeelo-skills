@@ -42,6 +42,11 @@ comments:
   lines:
     TYPE:
       - html: "<p>Payment source. Hourly periodic matches FIO.</p>"
+  subgrids:
+    invoice_lines:
+      lines:
+        DESC:
+          - html: "<p>2026-09-08 (Milan Krejčík): Line description on the subgrid.</p>"
   periodics:
     load_fio_hourly:
       - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
@@ -56,6 +61,7 @@ comments:
 | `tabs.<TabName>` | `ObjectLineTab` |
 | `sections.<TabName>/<SectionName>` | `ObjectLineSection` |
 | `lines.<code>` | `ObjectLine` |
+| `subgrids.<key>.lines.<code>` | `ObjectSubLine` |
 | `templates.<key>` | `ObjectDefault` |
 | `roles.<key>` / `statuses.<key>` | `Role` / `RequestStatus` |
 | `stepActions.<stepName>/<actionName>` | `WorkflowStepAction` |
@@ -66,7 +72,7 @@ comments:
 | `objectMessages.<key>` | `ObjectMessage` |
 | `templateHints.<templateKey>.<code>` | `ObjectDefaultLine` |
 
-`ObjectSub*` parents are **not** in `comments.yaml` yet.
+`ObjectSub*` parents other than **`ObjectSubLine`** (`comments.subgrids.<key>.lines.<code>`) are not in `comments.yaml` yet.
 
 `userName` defaults to **`xeelo-skills`**. `date` on generate defaults to generate time; extract keeps `TableCommentDate`. Recycled workflow (`workflow.reuse: true`) skips `workflow` / `roles` / `statuses` / `stepActions` comments (same as LanguageTable).
 
@@ -83,6 +89,14 @@ Whether the agent **writes** HTML into `spec/comments.yaml` is a site convention
 - Unchanged entity → skip
 
 Language: **Comment language** in `projects/<name>/conventions.md` (`en` | `cs` | …; missing = `en`).
+
+HTML for a **new** entity or a **changelog** item includes the **requestor’s full name** (given name and family name) after the date:
+
+```html
+<p>2026-09-08 (Milan Krejčík): List of Assets on-grid shows Asset status as colored badges.</p>
+```
+
+Never given name only. Prefer the name the user uses professionally; if only an email is known, ask for the family name rather than truncating. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
 
 ## Related
 
