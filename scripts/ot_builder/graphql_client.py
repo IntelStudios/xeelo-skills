@@ -191,6 +191,7 @@ class ConnectionConfig:
     xeelo_url: str
     token: str
     path: Path | None = None
+    comment_requestor: str = ""
 
     @classmethod
     def load(cls, path: Path) -> "ConnectionConfig":
@@ -204,10 +205,12 @@ class ConnectionConfig:
             raise ValueError(f"{path}: missing xeeloUrl. {CONNECTION_HELP}")
         if not token or not str(token).strip():
             raise ValueError(f"{path}: missing token. {CONNECTION_HELP}")
+        requestor = str(data.get("commentRequestor") or "").strip()
         return cls(
             xeelo_url=str(xeelo).rstrip("/"),
             token=str(token).strip(),
             path=path,
+            comment_requestor=requestor,
         )
 
     @property

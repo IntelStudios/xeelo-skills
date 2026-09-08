@@ -75,6 +75,18 @@ class ConnectionConfigTests(unittest.TestCase):
         self.assertEqual(config.token, "secret-admin")
         self.assertEqual(config.graphql_url, "https://example.xeelo.online/graphql")
         self.assertEqual(config.health_url, "https://example.xeelo.online/graphql-api/health")
+        self.assertEqual(config.comment_requestor, "")
+
+    def test_loads_optional_comment_requestor(self) -> None:
+        path = self._write(
+            {
+                "xeeloUrl": "https://example.xeelo.online/",
+                "token": "secret-admin",
+                "commentRequestor": "  Milan Krejčík  ",
+            }
+        )
+        config = ConnectionConfig.load(path)
+        self.assertEqual(config.comment_requestor, "Milan Krejčík")
 
     def test_rejects_url_alias(self) -> None:
         path = self._write({"url": "https://demo.xeelo.online", "token": "t"})

@@ -28,7 +28,7 @@ Values: `ask` (default) or `auto`. Missing key = `ask`.
 
 - **Comment language:** en
 - New entity → one description; change → append a dated changelog item; unchanged → skip.
-- Dated HTML includes the requestor **full name** (given name and family name): `2026-09-08 (Milan Krejčík): …`. Never given name only.
+- Dated HTML includes the requestor **full name** from this developer’s gitignored `.xeelo-connection.json` → `commentRequestor` (`YYYY-MM-DD (Given Family): …`). Never given name only. Empty → ask once and write it there (not into this file). If this change was requested by someone else, ask and use that name in HTML only.
 - Prefer a comment on the changed **line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`); object-level only when the change is object-wide.
 - Simple tags only: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`.
 

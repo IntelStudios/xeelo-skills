@@ -13,7 +13,7 @@ Full workflow lives in the parent xeelo-skills clone: `docs/projects.md`. Typica
 ```text
 <name>/
   conventions.md           # site rules (language, naming); agent reads before object work
-  .xeelo-connection.json   # gitignored — xeeloUrl + GraphQL token
+  .xeelo-connection.json   # gitignored — xeeloUrl + token + commentRequestor
   snapshots/               # DB transfer JSON — gitignored; refresh with /download-db
   env/                     # extracted specs (versioned)
   changes/<loop-slug>/     # change loops + generated Object Transfer (versioned)

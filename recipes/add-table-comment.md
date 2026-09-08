@@ -60,7 +60,7 @@ Content:
 - **Change** — append a dated changelog item; do not edit older items
 - **Unchanged** — do not add a comment
 
-Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`). Dated HTML includes the requestor **full name**: `YYYY-MM-DD (Given Family): …` (never given name only). Prefer `comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>` when the change is a field.
+Language: **Comment language** in conventions (`en` | `cs` | …; missing = `en`). Dated HTML uses **`commentRequestor`** from gitignored `.xeelo-connection.json` (`YYYY-MM-DD (Given Family): …`). Empty → ask once and write that key. Prefer `comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>` when the change is a field.
 
 Generate:
 

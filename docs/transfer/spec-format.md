@@ -473,7 +473,7 @@ comments:
 
 Generator emits `TableComments` rows (`UserID=0`, default `userName` `xeelo-skills`) and parent→`TableComments` ObjectSetup edges. Extract writes this fragment only when comments exist. Simple tags: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`. Object Transfer upserts by Orig. ID — omitted comments stay on the site.
 
-Whether the agent **writes** these comments is **Generate table comments** in `projects/<name>/conventions.md` (`ask` | `auto`). HTML language is **Comment language** in that file (missing = `en`). New entity → one description; change → append a dated item; unchanged → skip. Dated HTML includes the requestor **full name**: `YYYY-MM-DD (Given Family): …`. Prefer `comments.lines` / `comments.subgrids.*.lines` over object-level when the change is a field.
+Whether the agent **writes** these comments is **Generate table comments** in `projects/<name>/conventions.md` (`ask` | `auto`). HTML language is **Comment language** in that file (missing = `en`). New entity → one description; change → append a dated item; unchanged → skip. Dated HTML uses **`commentRequestor`** from gitignored `.xeelo-connection.json`. Prefer `comments.lines` / `comments.subgrids.*.lines` over object-level when the change is a field.
 
 **IDs:** `ids.explicit.tableComments` (`TableName:entityKey:index`, e.g. `ObjectLine:TYPE:0`).
 
