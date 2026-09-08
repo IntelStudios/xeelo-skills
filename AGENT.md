@@ -247,23 +247,23 @@ python scripts/extract-db-transfer-to-env.py \
 # 2) Start a change loop
 python scripts/init-change-loop.py \
   --project projects/<name> \
-  --slug 20260811-loop-01-short-name \
+  --slug 20260811_103045-loop-01-short-name \
   --objects <object-slug>
 
 # 3) Edit changes/<slug>/objects/... then generate OT packages
 python scripts/generate-change-loop.py \
-  projects/<name>/changes/20260811-loop-01-short-name
+  projects/<name>/changes/20260811_103045-loop-01-short-name
 
 # 4) Dry-run OT (isTest) — run automatically after generate
 python scripts/push-object-transfer.py \
   --connection projects/<name>/.xeelo-connection.json \
-  --loop projects/<name>/changes/20260811-loop-01-short-name \
+  --loop projects/<name>/changes/20260811_103045-loop-01-short-name \
   --only-test
 
 # 5) Publish: apply JSON (isTest false) + precompile (only if the user says yes)
 python scripts/publish-object-transfer.py \
   --connection projects/<name>/.xeelo-connection.json \
-  --loop projects/<name>/changes/20260811-loop-01-short-name
+  --loop projects/<name>/changes/20260811_103045-loop-01-short-name
 
 # 6) Precompile only (no Object Transfer)
 python scripts/precompile-settings.py \
