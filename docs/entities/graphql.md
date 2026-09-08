@@ -280,7 +280,7 @@ To remove the whole request (and its sub rows), use `Delete_request` on the pare
 
 ## Admin transfer, backup, and precompile
 
-Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token, commentRequestor? }` — `POST {xeeloUrl}/graphql`. `commentRequestor` is for Admin comment HTML only (not sent to GraphQL). SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token, permission, commentRequestor? }` — `POST {xeeloUrl}/graphql`. `commentRequestor` is the Admin comment **display name** (`TableComments.UserName`; not sent to GraphQL). SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
 
 | Operation | Skill | Role |
 |-----------|-------|------|

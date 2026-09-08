@@ -128,6 +128,18 @@ class CommentGenerateTests(unittest.TestCase):
         self.assertEqual(len(payload["TableComments"]), 3)
         self.assertNotIn("AttachmentID", payload["TableComments"][0])
 
+    def test_default_comment_user_name_fills_missing_user_name(self) -> None:
+        spec = _spec()
+        spec["comments"]["lines"]["TYPE"][0].pop("userName", None)
+        result = build_rows(spec, default_comment_user_name="  Milan Krejčík  ")
+        type_id = next(
+            r["ObjectLineID"] for r in result.rows["ObjectLine"] if r["ObjectLineCode"] == "TYPE"
+        )
+        by_parent = {(r["TableName"], r["TableRowID"]): r for r in result.rows["TableComments"]}
+        self.assertEqual(by_parent[("ObjectLine", type_id)]["UserName"], "Milan Krejčík")
+        object_id = result.rows["Object"][0]["ObjectID"]
+        self.assertEqual(by_parent[("Object", object_id)]["UserName"], "xeelo-skills")
+
     def test_unknown_line_raises(self) -> None:
         spec = _spec()
         spec["comments"]["lines"]["MISSING"] = [{"html": "<p>nope</p>"}]

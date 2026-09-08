@@ -10,7 +10,7 @@ Schema: [`data/schemas/TableComments.json`](../data/schemas/TableComments.json) 
 |-------|--------|
 | Parent | `TableName` (SQL table, e.g. `ObjectLine`) + `TableRowID` (parent PK as int) |
 | Body | `TableCommentData` (HTML, `nvarchar(max)`) |
-| Author | `UserName` (Admin login, or `xeelo-skills` from generate). `UserID` is `0` |
+| Author | `UserName` (Admin **display name**, e.g. `Milan Krejčík`). `UserID` is always `0` — Admin insert does not store a user PK |
 | When | `TableCommentDate` (required) |
 | Attachment | `AttachmentID` (optional; omit in OT, site default `-1`) |
 | Identity | `TableCommentID` (Orig. ID) |
@@ -19,7 +19,7 @@ Several comments per parent. Admin grid is newest first. Spec lists are **oldest
 
 ## Admin UI
 
-Most site editors show a comments portlet (`enableComments` default **true**). SuperAdmin lists and some log screens turn it off. Editor is Froala HTML. REST is `GET/POST/PUT` on the site Admin Comment API. Insert sets `UserID=0` and `UserName` from the logged-in admin. Edit sanitizes HTML strictly. Object Transfer JSON upload writes rows directly (no sanitizer) — still emit **simple tags only**: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`.
+Most site editors show a comments portlet (`enableComments` default **true**). SuperAdmin lists and some log screens turn it off. Editor is Froala HTML. REST is `GET/POST/PUT` on the site Admin Comment API. Insert sets `UserID=0` and `UserName` to the logged-in admin’s **display name** (not login). The portlet footer is `{UserName}@{TableCommentDate}`. Edit sanitizes HTML strictly. Object Transfer JSON upload writes rows directly (no sanitizer) — still emit **simple tags only**: `p`, `ul`/`ol`/`li`, `strong`/`em`, `br`, `a`.
 
 ## Object Transfer
 
@@ -46,7 +46,8 @@ comments:
     invoice_lines:
       lines:
         DESC:
-          - html: "<p>2026-09-08 (Milan Krejčík): Line description on the subgrid.</p>"
+          - html: "<p>2026-09-08: Line description on the subgrid.</p>"
+            userName: Milan Krejčík
   periodics:
     load_fio_hourly:
       - html: "<p>2026-08-24: hourly scheduler → load_transactions 9016.</p>"
@@ -74,7 +75,7 @@ comments:
 
 `ObjectSub*` parents other than **`ObjectSubLine`** (`comments.subgrids.<key>.lines.<code>`) are not in `comments.yaml` yet.
 
-`userName` defaults to **`xeelo-skills`**. `date` on generate defaults to generate time; extract keeps `TableCommentDate`. Recycled workflow (`workflow.reuse: true`) skips `workflow` / `roles` / `statuses` / `stepActions` comments (same as LanguageTable).
+`userName` on the item wins. Else generate uses **`commentRequestor`** from gitignored `.xeelo-connection.json`. Else **`xeelo-skills`**. `date` on generate defaults to generate time; extract keeps `TableCommentDate`. Recycled workflow (`workflow.reuse: true`) skips `workflow` / `roles` / `statuses` / `stepActions` comments (same as LanguageTable).
 
 **IDs:** `ids.explicit.tableComments` keyed `TableName:entityKey:index` (e.g. `ObjectLine:TYPE:0`).
 
@@ -90,10 +91,11 @@ Whether the agent **writes** HTML into `spec/comments.yaml` is a site convention
 
 Language: **Comment language** in `projects/<name>/conventions.md` (`en` | `cs` | …; missing = `en`).
 
-HTML for a **new** entity or a **changelog** item includes the **requestor’s full name** after the date. The name comes from gitignored `projects/<site>/.xeelo-connection.json` → **`commentRequestor`** (per developer; several people can share one site). Empty → ask once and write it there. Do not use Cursor first-name-only user info. Do not put the person’s name in `conventions.md`. If this change was requested by someone else, ask and use that name in the HTML for this item only.
+HTML for a **new** entity or a **changelog** item is dated **without** the name in the body. The Admin footer author is `TableComments.UserName` from gitignored `projects/<site>/.xeelo-connection.json` → **`commentRequestor`** (per developer; several people can share one site). Empty → ask once and write that key. Do not use Cursor first-name-only user info. Do not put the person’s name in `conventions.md`. If this change was requested by someone else, ask and set **`userName`** on that item only.
 
-```html
-<p>2026-09-08 (Milan Krejčík): List of Assets on-grid shows Asset status as colored badges.</p>
+```yaml
+- html: "<p>2026-09-08: List of Assets on-grid shows Asset status as colored badges.</p>"
+  userName: Milan Krejčík
 ```
 
 Never given name only. Put the comment on the **changed line** (`comments.lines.<code>` or `comments.subgrids.<key>.lines.<code>`) when the change is a field; use `comments.object` only when the change is object-wide.
