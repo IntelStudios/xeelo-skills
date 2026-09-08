@@ -126,7 +126,7 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 
 | Field | Role |
 |-------|------|
-| `requestId` | Optional for `CREATE`; required for simple update and `UPDATE` / `UPDATE_EMPTY` |
+| `requestId` | Optional for `CREATE` — when set, SQL `@CreateRequestID` (copy slots from that request; same `ObjectID`). Required for simple update and `UPDATE` / `UPDATE_EMPTY` |
 | `userLogin` / `userId` | Resolve `@UserID`. If both omitted, **`0`** (service account) |
 | `createType` | `CREATE` \| `UPDATE` \| `UPDATE_EMPTY` — omit for simple update |
 | `template` | `ObjectDefaultID`; **required** when `createType: CREATE` |
@@ -146,11 +146,13 @@ Each array element is processed separately (`processSingleMutate`). There is **n
 | `UPDATE_EMPTY` | `updateAction` + `requestId` | **Always** (on the **new** version; header only — no copied lines) |
 | Simple update + `withRefresh: true` | `requestId` (lines optional) | **Yes** on **that** request — does **not** start an update action. Not enough when the request is **Completed** and Last actions need a new version |
 
-`createType: UPDATE` is GraphQL for the UI update action: `spRequestInsert` `@RequestTypeID = 2` with `@UpdateRequestID` + `@ObjectUpdateActionID`. It copies line data onto a **new** request (same `RequestCode`) and then refreshes that new row, so Last object actions run there. Omit `lines` unless you must override copied values. Use `UPDATE_EMPTY` (`RequestTypeID` 3) only when Last does not need the copied lines.
+`createType: CREATE` with `requestId` is **copy-from-request**, not an update version: `spRequestInsert` `@RequestTypeID = 1` + `@CreateRequestID`. Which slots copy depends on `Object.ObjectCreateCopyType` and (type 3) `ObjectDefaultCreateCopy` — [object-model.md](object-model.md#create-copy-create-from-request). `template` is still required. Put overrides in the same mutation `lines` (unique or identity lines). After insert, refresh **always** runs on the **new** request (starting `RoleID` / `RequestStatusID` of the template workflow). Step calculations and object actions there can overwrite copied combos — `Select_` the new `requestId` and, if needed, simple-update + `withRefresh: true`.
+
+`createType: UPDATE` is GraphQL for the UI update action: `spRequestInsert` `@RequestTypeID = 2` with `@UpdateRequestID` + `@ObjectUpdateActionID`. It copies line data onto a **new** request (same `RequestCode`) and then refreshes that new row, so Last object actions run there. The new version **starts** at the update action’s workflow header (`Workflow.RoleID` / `RequestStatusID`) — that pair can already be **Completed**, so Last object actions on that step run in the same HTTP call. Omit `lines` unless you must override copied values. Use `UPDATE_EMPTY` (`RequestTypeID` 3) only when Last does not need the copied lines.
 
 `withRefresh: true` without `createType` calls `spRequestRefresh` on the **existing** `requestId`. Completed requests typically do not re-enter the same Last path as an update action.
 
-Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks for lines whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique).
+Pipeline: optional `spRequestInsert` (`createType`) → uniqueness checks **only for keys present in `input.lines`** whose `ObjectLineUniqueID` is set (GraphQL model `unique: 1`) → `spRequestUpdate` per line → headers (priority, owner/watcher, workflow) → refresh if `createType` or `withRefresh` → optional cache refresh. Unique levels and autonumber identifiers: [object-model.md](object-model.md#unique). Copied-but-not-sent unique lines are not checked in this mutation; they can still collide until refresh or a later write.
 
 From a Node.js **object action on the current request**, use **simple update** only (`withRefresh: false`, no `createType`). From a **Periodic** Node.js action, GraphQL mutate **must refresh** (`withRefresh: true` or `createType` that always refreshes). See [nodejs.md](nodejs.md#mutating-the-current-request--no-refresh) and [nodejs.md](nodejs.md#periodic--graphql-mutate-must-refresh).
 

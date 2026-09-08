@@ -21,6 +21,7 @@ Root form definition. Belongs to Company + ObjectType.
 | `RequestTitleObjectLineID` | ObjectLine whose value is the **request title** in GUI (inbox, header, links). Spec: `object.requestTitleField` |
 | `ObjectGridSortObjectLineID` | Default inbox sort line. Spec: `object.gridSort.field` (field **code**) |
 | `ObjectGridSortType` | `ASC` or `DESC`. Spec: `object.gridSort.type`. Admin also offers `None` (no line sort). After precompile, date (type 8) is parsed as `date`; tie-break is always `RequestID DESC`. A user filter can override. Subgrid analog: `ObjectSubGridSortObjectSubLineID` / `ObjectSubGridSortType` (not in spec yet). |
+| `ObjectCreateCopyType` | Which slots copy when GraphQL/UI **CREATE** sends a source `requestId` (`@CreateRequestID`). See [Create copy](#create-copy-create-from-request). Not in spec yet. |
 | `IsActive` | Inactive = hidden from Admin, Inbox, Browser |
 
 ## Company and ObjectType (tree)
@@ -147,6 +148,23 @@ Spec: `templates[].access` — see [spec-format.md](../transfer/spec-format.md#t
 | `templates.fields.*.hidden` / `extended.hidden` | ObjectDefaultLine | Extended validation (expression) |
 | `templates.fields.*.alwaysDisabled` | ObjectDefaultLine | Always disabled on the template line |
 | `fields[].alwaysHidden` | ObjectLine | Definition-level hide |
+
+## Create copy (CREATE from request)
+
+GraphQL `createType: CREATE` with `requestId` (and UI / import “copy this request”) calls `spRequestInsert` `@CreateRequestID`. That inserts a **new** request (`RequestTypeID` 1, new `RequestCode`) and copies selected **slots** from the source when `ObjectID` matches. It is not an update version. GraphQL still requires `template` (`ObjectDefaultID`); type **3** uses that template’s copy list.
+
+`Object.ObjectCreateCopyType` (int, default `0`):
+
+| Value | Slots copied from the source |
+|-------|------------------------------|
+| `0` | None — new request is template-empty, then mutation `lines` |
+| `1` | Lines that are **create-editable** on that template (`ObjectDefaultAccess`) |
+| `2` | Lines that are **create-visible** on that template |
+| `3` | Lines flagged on **`ObjectDefaultCreateCopy`** (`ObjectLineIsCreateCopy = 1`, active) |
+
+**`ObjectDefaultCreateCopy`** is a child of `ObjectDefault` (Object Transfer edge). Admin “create copy” checkboxes per template line. Spec/generator do not emit it — read the DB transfer / env snapshot when you need the list.
+
+Autonumber and other non-copied slots stay empty until refresh. After insert, GraphQL writes `lines` from the mutation, then **always** refreshes the new request. Step calculations and object actions on the **starting** workflow state can overwrite copied values — [graphql.md](graphql.md#mutation-mutate_code).
 
 ## Reference (ObjectLineSource)
 
