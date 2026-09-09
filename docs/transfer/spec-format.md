@@ -206,7 +206,7 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `isReferenceLink` | `ObjectLineIsReferenceLink` (combo types) |
 | `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
 | `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
-| `alwaysHidden` | `ObjectLineIsHidden` — line never shown in GUI (definition). Distinct from template `hidden: true` / `extended.hidden`. |
+| `alwaysHidden` | `ObjectLineIsHidden` — hide the **form** control (definition). **Does not** hide onGrid: inbox/subgrid cards still follow `onGrid.fields` + layouts. Distinct from template `hidden: true` / `extended.hidden`. Subgrid analog: same key on `subgrids.*.layout` fields → `ObjectSubLineIsHidden` (extract/generate do not emit it yet). |
 | `isActive` | `ObjectLine.IsActive`. `false` soft-disables the line (OT does not delete). Omit the field from spec and the site row stays **active**. |
 | `mandatory` | `ObjectDefaultLineValidationID = 1` (default template unless overridden in `templates`). Omit `mandatory`/`extended` → still emit **`ValidationID = 2`** (Optional); do not leave the column unset |
 | `reference` | `ObjectLineSource` on **ObjectLine** (číselník) — combo, radio, multi |
