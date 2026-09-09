@@ -900,6 +900,7 @@ def _build_workflow_minimal(spec: dict, registry: IdRegistry, oid: int, result: 
             "RoleID": owner_id,
             "RequestStatusID": active_id,
             "WorkflowStepActionStyleID": 1,
+            "WorkflowStepActionReopenTypeID": 3,
             "IsActive": 1,
         },
         {
@@ -910,6 +911,7 @@ def _build_workflow_minimal(spec: dict, registry: IdRegistry, oid: int, result: 
             "RoleID": requestor_id,
             "RequestStatusID": completed_id,
             "WorkflowStepActionStyleID": 1,
+            "WorkflowStepActionReopenTypeID": 3,
             "IsActive": 1,
         },
     ]

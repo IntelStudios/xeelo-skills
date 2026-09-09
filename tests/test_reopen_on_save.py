@@ -135,3 +135,13 @@ class UpdateActionReopenOnSaveTests(unittest.TestCase):
         self.assertNotIn(
             "ObjectUpdateActionReopenTypeID", result.rows["ObjectUpdateAction"][0]
         )
+
+
+class MinimalWorkflowActionReopenTests(unittest.TestCase):
+    def test_minimal_actions_default_open_only_assigned(self) -> None:
+        result = build_rows(_base_spec())
+        self.assertEqual(len(result.rows["WorkflowStepAction"]), 2)
+        for row in result.rows["WorkflowStepAction"]:
+            self.assertEqual(row["WorkflowStepActionReopenTypeID"], 3)
+        extracted = _roundtrip(_base_spec())
+        self.assertEqual(extracted["workflow"]["mode"], "minimal")

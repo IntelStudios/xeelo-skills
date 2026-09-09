@@ -167,6 +167,8 @@ Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
 
 Never create an object with a silent new minimal workflow.
 
+**New workflow action:** set **`reopenOnSave: open-only-assigned`** on each new `workflow.steps[].actions[]` (Admin **Reopen on Action** = Open only (assigned)) unless the user asks otherwise. Omit/`none`/`close` closes the request after the button. Do not flip an existing action unless asked. Recipe: [add-workflow.md](recipes/add-workflow.md).
+
 ### New workflow: ask which roles and statuses
 
 When they chose **new workflow** (new object or new update-action workflow), **always ask both** before writing `roles:` / `statuses:` / `ids.explicit`. Do not silent-default to new catalog rows or to site Requestor/Owner / Draft/Active/Completed. Skip a side only if they already chose it in the same request. `workflow.reuse: true` skips both.
@@ -428,6 +430,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New object: **`object.directCreate: true`** unless the user asked otherwise ([create-object.md](recipes/create-object.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] New workflow: asked existing vs new **roles** and existing vs new **statuses** (lists from `env/shared/roles.yaml` / `statuses.yaml`: name — id); reuse skips both; existing catalog rows copied verbatim ([add-workflow.md](recipes/add-workflow.md))
+- [ ] New workflow action: **`reopenOnSave: open-only-assigned`** unless the user asked otherwise ([add-workflow.md](recipes/add-workflow.md))
 - [ ] New object onGrid: Items Grid + Table at Large/Medium/Small and Mobile Items Grid Small; no overlapping cells on a letter; dropped inbox/subgrid placements keep their `ids.explicit` keys so generate emits `IsActive: 0` ([ongrid.md](docs/entities/ongrid.md#no-overlap))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
 - [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs.md](docs/entities/nodejs.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))

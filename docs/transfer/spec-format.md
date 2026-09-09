@@ -718,7 +718,7 @@ workflow:
           role: owner
           status: active
           styleId: 1
-          # reopenOnSave: open-only-assigned  # WorkflowStepActionReopenTypeID; omit = close after this button
+          reopenOnSave: open-only-assigned  # new WF actions; omit/none/close = close after this button
 ```
 
 Keys are required when two statuses share the same `name` (e.g. two `Saved` rows on site). Optional `isActive: false` preserves site inactive rows on refactor.
@@ -774,6 +774,7 @@ workflow:
           role: owner
           status: active
           styleId: 1
+          reopenOnSave: open-only-assigned
       access:
         - field: LOAD_TX
           editable: true
@@ -783,7 +784,7 @@ workflow:
 
 `steps[].suppressSave: true` → `WorkflowStepIsSuppressSave`. Hides the request **Save** control (`showSaveBtn`). ObjectLine **Button** lines still save. Extract writes the flag only when true.
 
-`steps[].actions[].reopenOnSave` → `WorkflowStepActionReopenTypeID`. Same slugs as template `reopenOnSave`. Applies after that **workflow button**; omit/`none` = close.
+`steps[].actions[].reopenOnSave` → `WorkflowStepActionReopenTypeID` (Admin **Reopen on Action**). Same slugs as template `reopenOnSave`. Applies after that **workflow button**. **New actions: `open-only-assigned`** unless the user asks otherwise. Omit/`none`/`close` = request closes. Do not flip an existing action unless asked. `workflow.mode: minimal` writes ID 3 on the generated Submit / Complete buttons.
 
 Bind email templates by **key** (not Orig. ID). See [notifications](#notifications-specnotificationsyaml).
 
@@ -1013,7 +1014,7 @@ templates:
 | `hint` | `ObjectDefaultLineHint` — runtime field hint (plain or HTML). All types except `empty_space`. Canonical English; translations in `languageTable.templateHints.<templateKey>.<code>`. Not `defaultValue` on description memo. |
 | `autonumber` | Catalog key from `spec/autonumbers.yaml` → `ObjectDefaultLineAutoNumberID`. Text (3) only. Mutually exclusive with input mask. |
 | `subgridTemplate` | Key of `subgrids.<key>.templates[]` → `ObjectDefaultLine.ObjectSubDefaultID`. Parent field must be `type: subgrid` with `objectSub:`. |
-| `reopenOnSave` | `ObjectDefaultReopenTypeID` — omit / `none` / `close` = NULL (request **closes** after create save). `open-only-everytime` (1), `open-with-actions` (2), `open-only-assigned` (3). Same slugs on `updateActions[].reopenOnSave` and `workflow.steps[].actions[].reopenOnSave`. Template/update-action values apply on **new** requests; already-saved requests always stay Open only (everytime). Workflow-button value applies after that transition. Catalog: [`ReopenActionType.json`](../data/enums/ReopenActionType.json). |
+| `reopenOnSave` | `ObjectDefaultReopenTypeID` — omit / `none` / `close` = NULL (request **closes** after create save). `open-only-everytime` (1), `open-with-actions` (2), `open-only-assigned` (3). Same slugs on `updateActions[].reopenOnSave` and `workflow.steps[].actions[].reopenOnSave`. Template/update-action values apply on **new** requests; already-saved requests always stay Open only (everytime). Workflow-button value applies after that transition. **New `WorkflowStepAction` rows: `open-only-assigned`.** Catalog: [`ReopenActionType.json`](../data/enums/ReopenActionType.json). |
 
 Placeholders compiled at generate time (`id{FIELD}` and `{source.value}`):
 

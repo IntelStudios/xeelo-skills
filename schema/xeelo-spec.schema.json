@@ -864,7 +864,7 @@
         "open-with-actions",
         "open-only-assigned"
       ],
-      "description": "ObjectDefaultReopenTypeID / ObjectUpdateActionReopenTypeID / WorkflowStepActionReopenTypeID. Omit or none/close = NULL (request closes after save). open-only-assigned stays open only if the user still has the request in Inbox."
+      "description": "ObjectDefaultReopenTypeID / ObjectUpdateActionReopenTypeID / WorkflowStepActionReopenTypeID. New workflow actions: open-only-assigned (Admin Reopen on Action). Omit or none/close = NULL (request closes after save). open-only-assigned stays open only if the user still has the request in Inbox."
     },
     "template": {
       "type": "object",

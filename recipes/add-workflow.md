@@ -50,6 +50,7 @@ From [`data/schemas/Workflow.json`](../data/schemas/Workflow.json):
 - `WorkflowStepActionOrder` — sort order (use 10, 20, 30…)
 - `RoleID`, `RequestStatusID` — **target** state after action
 - `WorkflowStepActionStyleID` — 1 = Positive green (see [`data/enums/WorkflowStepActionStyle.json`](../data/enums/WorkflowStepActionStyle.json))
+- `WorkflowStepActionReopenTypeID` — Admin **Reopen on Action**. Spec: `actions[].reopenOnSave`. **New actions: `open-only-assigned`** unless the user asks otherwise. Omit/`none`/`close` = request closes after the button.
 
 ## Referencing existing roles/statuses
 
@@ -106,6 +107,7 @@ workflow:
         status: pending_team_lead
         styleId: 1
         order: 10
+        reopenOnSave: open-only-assigned
   - name: Team lead
     role: team_lead
     status: pending_team_lead
@@ -116,12 +118,14 @@ workflow:
         status: pending_department
         styleId: 1
         order: 10
+        reopenOnSave: open-only-assigned
       - key: reject_l1
         name: Reject
         role: requestor
         status: draft
         styleId: 2
         order: 20
+        reopenOnSave: open-only-assigned
 ```
 
 Rename an existing footer button (e.g. Complete → Submit) by **keeping** its `ids.explicit.workflowStepActions` Orig. ID. Object Transfer does not delete leftover `WorkflowStepAction` rows.

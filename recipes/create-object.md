@@ -103,6 +103,7 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 ## Validate
 
 - New object has `object.directCreate: true` unless the user asked otherwise
+- New workflow actions have `reopenOnSave: open-only-assigned` unless the user asked otherwise
 - User chose new vs existing workflow (not a silent minimal default)
 - New workflow: user chose existing vs new **roles** and existing vs new **statuses** (not silent defaults); existing catalog rows not rewritten
 - JSON object keyed by table name (same shape as DB-transfer download)

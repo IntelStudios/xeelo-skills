@@ -38,6 +38,8 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **New object workflow:** always ask whether to create a **new** workflow or **reuse** an existing one (list from site `env/`: object — name — id). Reuse = `workflow.reuse: true`. OT JSON is a delta vs download: unchanged entity rows are omitted even when FKs still reference them. Do not silent-default `workflow.mode: minimal`. **New workflow roles and statuses:** always ask existing vs new for **both** (`env/shared/roles.yaml` and `statuses.yaml`: name — id, Recommended = existing; choices independent); reuse skips both. Existing catalog rows: copy `env/shared` verbatim — do not change name/flags/order. See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow).
 
+**New workflow action:** set **`reopenOnSave: open-only-assigned`** (Admin Reopen on Action = Open only (assigned)) unless the user asks otherwise. Do not flip an existing action unless asked. See [add-workflow.md](../../recipes/add-workflow.md).
+
 **Update action workflow:** always ask which workflow the new request version should use. **Default (Recommended)** = default `ObjectDefault` workflow — omit `updateActions[].workflow`. See [AGENT.md](../../AGENT.md) and [recipes/add-update-action.md](../../recipes/add-update-action.md).
 
 **Read** DB transfers (download + parse into env). **Generate** Object Transfer only (partial deploy). Do not generate DB transfer ZIPs.

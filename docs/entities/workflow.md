@@ -69,7 +69,7 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 | `WorkflowStepActionStyleID` | Button style — [`data/enums/WorkflowStepActionStyle.json`](../data/enums/WorkflowStepActionStyle.json) |
 | `WorkflowStepActionIsCommented` | Comment required |
 | `WorkflowStepActionConfirmMethod` | QR / Push / TOTP confirmation |
-| `WorkflowStepActionReopenTypeID` | Reopen after this **workflow button**. Spec: `workflow.steps[].actions[].reopenOnSave`. Same catalog as template — [`ReopenActionType.json`](../data/enums/ReopenActionType.json). Omit/`none` = close. |
+| `WorkflowStepActionReopenTypeID` | Reopen after this **workflow button** (Admin **Reopen on Action**). Spec: `workflow.steps[].actions[].reopenOnSave`. Same catalog as template — [`ReopenActionType.json`](../data/enums/ReopenActionType.json). **New actions: `open-only-assigned`** (Open only (assigned)) unless the user asks otherwise. Omit/`none`/`close` = request closes after the button. Do not flip an existing action unless asked. |
 | `NotificationID` | Email for this transition (`WorkflowAction`). Spec: `actions[].notification` |
 | `IsActive` | Soft-disable the footer button. Spec: `steps[].actions[].isActive: false`. Omit the action from spec and the site row stays active. |
 
