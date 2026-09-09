@@ -70,9 +70,9 @@ Two type codes. Same ESM / `Context` / GraphQL rules: [nodejs.md](nodejs.md).
 | Type code | Pass | Use for |
 |-----------|------|---------|
 | **`spEndPointRunNodeJSMain`** | Regular (`IsLast=0`), **before** assigned-user recalc | Owners, lookups, flags, subgrids, imports |
-| **`spEndPointRunNodeJSMainLast`** | Last (`IsLast=1`), **after** status/role and assigned users | Primarily **role / status display** (badge) after a workflow button |
+| **`spEndPointRunNodeJSMainLast`** | Last (`IsLast=1`), **after** status/role and assigned users | Primarily **role / status / assignee display** (badge) after a workflow button |
 
-Do **not** default every script to Last. Last is the second pass — owner writes there miss `spRequestWorkflowUserCondition` on that same refresh. Template Server-String **53** also skips `WorkflowAction`; write the chip in Last from `Context.Role` / `Context.RequestStatus`.
+Do **not** default every script to Last. Last is the second pass — owner writes there miss `spRequestWorkflowUserCondition` on that same refresh. Template Server-String **53** also skips `WorkflowAction`; write the chip in Last from `Context.Role` / `Context.RequestStatus`. After the user-condition pass, `Select_{code} { assigned { name } owner { name } }` can append assignee chips (`assigned` is inbox `RequestUserList`; `owner` is the owner header — use both when the action token is service account 0).
 
 ## Run Node.js (Last)
 

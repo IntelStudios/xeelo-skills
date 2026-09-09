@@ -60,7 +60,7 @@ Select_OBJECTCODE(
 Return type `{code}`:
 
 - `requestId: Int!`
-- dynamic **headers** (typed by header `type.id`: `1` Id, `2` IdName, `3` DateUser, `4` UserList, `5` JSON, `6` String)
+- dynamic **headers** (typed by header `type.id`: `1` Id, `2` IdName, `3` DateUser, `4` UserList, `5` JSON, `6` String). UserList headers: `owner` / `watcher` (full lists) and `assigned` (`RequestUserList` inbox assignees; names go through `UserDelegationCache`)
 - `lines: {code}Lines`
 - `linesFormatted: {code}LinesFormatted`
 
