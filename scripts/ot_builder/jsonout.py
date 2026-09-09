@@ -60,8 +60,9 @@ def build_object_transfer_json(
     """UTF-8 JSON object: table name → row arrays.
 
     When ``baseline`` is a DB-transfer download, rows whose Orig. ID already
-    exists with the same generated cells are omitted. FK references to those
-    IDs stay on changing rows. Returns ``(json_text, omitted_count)``.
+    exists with the same generated cells are omitted. ``Role`` / ``RequestStatus``
+    with an existing Orig. ID are omitted even when spec cells differ. FK
+    references to those IDs stay on changing rows. Returns ``(json_text, omitted_count)``.
     """
     omitted = 0
     if baseline:

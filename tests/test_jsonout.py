@@ -118,6 +118,64 @@ class BuildObjectTransferJsonTests(unittest.TestCase):
         self.assertEqual(omitted, 0)
         self.assertEqual(payload["Company"][0]["CompanyName"], "Renamed")
 
+    def test_omits_existing_role_and_status_even_when_spec_differs(self) -> None:
+        text, omitted = build_object_transfer_json(
+            {
+                "Role": [
+                    {
+                        "RoleID": 30101,
+                        "RoleName": "Requestor rewritten",
+                        "IsRequestor": 0,
+                        "IsOwner": 1,
+                        "IsActive": 1,
+                    },
+                    {
+                        "RoleID": 99001,
+                        "RoleName": "Team lead",
+                        "IsRequestor": 0,
+                        "IsOwner": 0,
+                        "IsActive": 1,
+                    },
+                ],
+                "RequestStatus": [
+                    {
+                        "RequestStatusID": 30101,
+                        "RequestStatusName": "Draft rewritten",
+                        "RequestStatusIsCompleted": 1,
+                        "RequestStatusIsCanceled": 0,
+                        "RequestStatusOrder": 99,
+                        "IsActive": 1,
+                    }
+                ],
+            },
+            baseline={
+                "Role": [
+                    {
+                        "RoleID": 30101,
+                        "RoleName": "Requestor",
+                        "IsRequestor": True,
+                        "IsOwner": False,
+                        "IsActive": True,
+                    }
+                ],
+                "RequestStatus": [
+                    {
+                        "RequestStatusID": 30101,
+                        "RequestStatusName": "Draft",
+                        "RequestStatusIsCompleted": False,
+                        "RequestStatusIsCanceled": False,
+                        "RequestStatusOrder": 10,
+                        "IsActive": True,
+                    }
+                ],
+            },
+        )
+        payload = json.loads(text)
+        self.assertEqual(omitted, 2)
+        self.assertNotIn("RequestStatus", payload)
+        self.assertEqual(payload["Role"][0]["RoleID"], 99001)
+        self.assertEqual(payload["Role"][0]["RoleName"], "Team lead")
+
 
 class ParseObjectTransferJsonTests(unittest.TestCase):
     def test_rejects_empty_table_array(self) -> None:

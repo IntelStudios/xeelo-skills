@@ -4,10 +4,10 @@ Minimal path to a usable Xeelo object — outputs **Object Transfer** JSON (not 
 
 ## Prerequisites
 
-- Define **roles** and **statuses** in spec (or rely on minimal defaults); set `ids.explicit.roles` / `statuses` after site sync
+- Define **roles** and **statuses** after asking (existing from `env/shared/` vs new rows); set `ids.explicit.roles` / `statuses` after site sync
 - **WorkflowStepActionStyle** ID 1 must exist on target site (referenced by ID, not emitted)
 
-Transfer JSON is a **delta vs download**: omit any entity row that already exists unchanged, even when FKs still point at it. **New** `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` rows are emitted; recycled ones are not. `workflow.reuse: true` skips generating the shared workflow definition.
+Transfer JSON is a **delta vs download**: omit any entity row that already exists unchanged, even when FKs still point at it. **New** `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` rows are emitted; recycled ones are not. Existing `Role` / `RequestStatus` Orig. IDs are never rewritten (insert-only vs download). `workflow.reuse: true` skips generating the shared workflow definition.
 
 ## Steps
 
@@ -63,7 +63,7 @@ Canonical: [ongrid.md](../docs/entities/ongrid.md). YAML: [spec-format.md](../do
 
 **Always ask** before writing `spec/workflow.yaml` (do not silent-default `workflow.mode: minimal`). Skip only if the user already chose in the same request.
 
-1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless they described steps).
+1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless they described steps). Then **ask which roles and statuses**: existing from `env/shared/roles.yaml` / `statuses.yaml` (**name — id**, Recommended) vs **new** `Role` / `RequestStatus` rows. Choices are independent. Existing catalog rows: copy `env/shared` verbatim — do not change name/flags/order. Do not silent-default. Reuse skips both questions.
 2. **Existing workflow** — pick from site `env/` (`catalog.yaml` `workflowIds`, `spec/workflow.yaml` name, `ids.explicit.workflowId`). Each option: **object — workflow name — id**.
 
 **Use existing** = share the same `Workflow` Orig. ID on `ObjectDefault.WorkflowID` (copy that object’s `spec/workflow.yaml` + workflow `ids.explicit`, set `workflow.reuse: true`). Unchanged rows stay out of the JSON. Playbook: [AGENT.md § Ask which workflow](../AGENT.md#ask-which-workflow).
@@ -103,6 +103,7 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 ## Validate
 
 - User chose new vs existing workflow (not a silent minimal default)
+- New workflow: user chose existing vs new **roles** and existing vs new **statuses** (not silent defaults); existing catalog rows not rewritten
 - JSON object keyed by table name (same shape as DB-transfer download)
 - Only tables the spec emits; no TransferInfo / ObjectSetup
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`; Client-Service in `spec/object-services.yaml`

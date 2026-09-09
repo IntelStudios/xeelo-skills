@@ -90,13 +90,21 @@ def index_baseline(baseline: dict[str, Any]) -> dict[str, dict[Any, dict[str, An
     return indexed
 
 
+# Site-wide catalog: bind by Orig. ID; never upsert existing rows from an object OT.
+CATALOG_INSERT_ONLY_TABLES = frozenset({"Role", "RequestStatus"})
+
+
 def omit_unchanged_rows(
     rows: dict[str, list[dict]],
     baseline: dict[str, Any],
     *,
     clean_row,
 ) -> tuple[dict[str, list[dict]], int]:
-    """Keep new rows and rows whose generated cells differ from the download."""
+    """Keep new rows and rows whose generated cells differ from the download.
+
+    ``Role`` / ``RequestStatus`` are insert-only vs download: an existing Orig. ID
+    is omitted even when spec cells differ (do not rewrite shared catalog).
+    """
     indexed = index_baseline(baseline)
     omitted = 0
     kept: dict[str, list[dict]] = {}
@@ -114,7 +122,9 @@ def omit_unchanged_rows(
                 out.append(row)
                 continue
             found = existing.get(_pk_key(cleaned[pk_col]))
-            if found is not None and row_unchanged(cleaned, found):
+            if found is not None and (
+                table in CATALOG_INSERT_ONLY_TABLES or row_unchanged(cleaned, found)
+            ):
                 omitted += 1
                 continue
             out.append(row)

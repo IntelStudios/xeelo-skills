@@ -160,10 +160,28 @@ List existing workflows from `projects/<site>/env/`: `catalog.yaml` (`objects[].
 
 Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
 
-1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless the user described steps).
-2. **Existing workflow** — pick from the env list. Set `workflow.reuse: true` and bind `ObjectDefault.WorkflowID` to that Orig. ID.
+1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless the user described steps). Then **ask which roles and statuses** (below).
+2. **Existing workflow** — pick from the env list. Set `workflow.reuse: true` and bind `ObjectDefault.WorkflowID` to that Orig. ID. Roles and statuses come with the shared workflow — do not ask.
 
 Never create an object with a silent new minimal workflow. Recipe: [create-object.md](recipes/create-object.md).
+
+### New workflow: ask which roles and statuses
+
+When they chose **new workflow** (new object or new update-action workflow), **always ask both** before writing `roles:` / `statuses:` / `ids.explicit`. Do not silent-default to new catalog rows or to site Requestor/Owner / Draft/Active/Completed. Skip a side only if they already chose it in the same request. `workflow.reuse: true` skips both.
+
+The two choices are **independent** (existing roles + new statuses is allowed).
+
+**Roles** — list from `projects/<site>/env/shared/roles.yaml` (`name`, `id`, optional `isRequestor` / `isOwner`). Each option: **name — id**. Empty or stale env → `/download-db` first, or only “new roles”.
+
+1. **Existing roles** (Recommended) — bind `ids.explicit.roles`. Copy `roles:` **verbatim** from `env/shared/roles.yaml` (`name`, `isRequestor`, `isOwner`, `isActive`). **Do not** rename or flip flags. Generate **omits** existing `Role` Orig. IDs even if spec cells differ. Omit `languageTable.roles` and comments for those keys.
+2. **New roles** — define **new** `roles:` keys only (new `Role` rows). `UserAccess` is not in Object Transfer — assign users on the object in Admin after publish ([users-and-access.md](docs/entities/users-and-access.md)).
+
+**Statuses** — list from `projects/<site>/env/shared/statuses.yaml` (`name`, `id`, optional `order`, `isCompleted`, `isCanceled`). Each option: **name — id**. Empty or stale env → `/download-db` first, or only “new statuses”.
+
+1. **Existing statuses** (Recommended) — bind `ids.explicit.statuses`. Copy `statuses:` **verbatim** from `env/shared/statuses.yaml` (`name`, `order`, `isCompleted`, `isCanceled`, `isActive`). **Do not** rename, flip completed/canceled, or change `order`. Generate **omits** existing `RequestStatus` Orig. IDs even if spec cells differ. Omit `languageTable.statuses` and comments for those keys.
+2. **New statuses** — define **new** `statuses:` keys only (new `RequestStatus` rows).
+
+Typical minimal flow: site Requestor + Owner and site Draft / Active / Completed. Recipe: [add-workflow.md](recipes/add-workflow.md).
 
 ### Adding an update action
 
@@ -171,7 +189,7 @@ Before `spec/update-actions.yaml`, ask which workflow the **new request version*
 
 1. **Default template workflow** — `ObjectDefault` with `isDefault: true` (or the only template). **Omit** `updateActions[].workflow` (`WorkflowID` NULL; runtime uses the template). Source: `spec/templates.yaml` + the object’s `ids.explicit.workflowId` / `spec/workflow.yaml`.
 2. **Another existing workflow** — from the env list; set `updateActions[].workflow` to that shared Orig. ID.
-3. **New workflow** — new `Workflow` row for this update version.
+3. **New workflow** — new `Workflow` row for this update version. Then **ask which roles and statuses** (same as above).
 
 Recipe: [add-update-action.md](recipes/add-update-action.md). Runtime fallback: [update-actions.md](docs/entities/update-actions.md).
 
@@ -406,6 +424,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
 - [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions (`ask` → offer now / remember / skip; `auto` → write HTML on new/changed entities) ([comments.md](docs/entities/comments.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
+- [ ] New workflow: asked existing vs new **roles** and existing vs new **statuses** (lists from `env/shared/roles.yaml` / `statuses.yaml`: name — id); reuse skips both; existing catalog rows copied verbatim ([add-workflow.md](recipes/add-workflow.md))
 - [ ] New object onGrid: Items Grid + Table at Large/Medium/Small and Mobile Items Grid Small; no overlapping cells on a letter; dropped inbox/subgrid placements keep their `ids.explicit` keys so generate emits `IsActive: 0` ([ongrid.md](docs/entities/ongrid.md#no-overlap))
 - [ ] Update actions: asked which workflow (default = default ObjectDefault WF; omit `workflow` unless they picked another); `spec/update-actions.yaml` + `access` for fields that must be editable on the update form (refresh default is visible, not editable) ([add-update-action.md](recipes/add-update-action.md))
 - [ ] Object actions: `spec/object-actions.yaml` + workflow step link if used ([add-object-action.md](recipes/add-object-action.md)); Node.js = ESM + no GraphQL refresh on the current request ([nodejs.md](docs/entities/nodejs.md)); GraphQL names from env after extract (`line_{id}_{slug}` is common on new lines), read `lines` not `linesFormatted` for calculations ([graphql.md](docs/entities/graphql.md)); service account **0** WRITE on every mutated object; **completed** other requests that need Last → `createType: UPDATE` + `updateAction`, not `withRefresh` ([nodejs-graphql-patterns.md](recipes/nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests))
@@ -443,4 +462,4 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 
 `User`, `UserAccess` — configure separately per environment.
 
-Object Transfer JSON is a **delta vs the latest download**: omit any entity row that already exists and is unchanged, even when other rows still reference its Orig. ID (`CompanyID`, `WorkflowID`, …). Emit the row when it is new or any generated cell differs. `workflow.reuse: true` additionally skips generating the shared workflow definition. Workflow steps in spec still use role/status **keys**.
+Object Transfer JSON is a **delta vs the latest download**: omit any entity row that already exists and is unchanged, even when other rows still reference its Orig. ID (`CompanyID`, `WorkflowID`, …). Emit the row when it is new or any generated cell differs. **`Role` / `RequestStatus` are insert-only vs download**: an existing Orig. ID is omitted even when spec cells differ (shared catalog — do not rewrite name/flags/order). `workflow.reuse: true` additionally skips generating the shared workflow definition. Workflow steps in spec still use role/status **keys**.

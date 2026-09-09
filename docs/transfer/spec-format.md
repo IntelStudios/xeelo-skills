@@ -117,7 +117,7 @@ Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width
 | `ids.byTable` | no | This object's ID inventory from extract |
 | `transferVersion` | no | `OT_Version` — default `1.3.0` |
 
-Generator diffs against the latest DB-transfer snapshot. It **omits** any row whose Orig. ID already exists unchanged, including `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` when this package only references them. Recycled workflow also uses `workflow.reuse: true` so the shared process definition is not generated.
+Generator diffs against the latest DB-transfer snapshot. It **omits** any row whose Orig. ID already exists unchanged, including `Company` / `ObjectType` / `Role` / `RequestStatus` / `Workflow` when this package only references them. **`Role` / `RequestStatus` are insert-only**: an existing Orig. ID is omitted even when spec cells would change the catalog. Recycled workflow also uses `workflow.reuse: true` so the shared process definition is not generated.
 
 ## Tree icons and colors
 
@@ -675,7 +675,7 @@ Generator uses `explicit` for existing row IDs. `byTable` seeds per-table used-s
 
 ## Roles and statuses
 
-Define in `spec/workflow.yaml` (or top-level in monolithic spec). Workflow steps and actions reference **keys**, not numeric IDs:
+Define in `spec/workflow.yaml` (or top-level in monolithic spec). When creating a **new** workflow, ask existing vs new **roles** and existing vs new **statuses** first ([AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow)). **Existing** catalog rows: copy `env/shared/roles.yaml` / `statuses.yaml` verbatim — do not change name, flags, or `order`. Workflow steps and actions reference **keys**, not numeric IDs:
 
 ```yaml
 roles:

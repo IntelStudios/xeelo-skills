@@ -89,7 +89,7 @@ Junction: extra templates on a **target** step (`WorkflowAction` / `SaveNew` / `
 
 **UI:** Role · Request Status
 
-Reference data defined in spec. Emitted in Object Transfer only when the row is **new or changed** vs the latest download — same delta rule as every other table. Recycled workflow (`workflow.reuse: true`) skips generating the shared process; bind `ObjectDefault.WorkflowID` to the existing Orig. ID. Workflow steps in spec still reference role/status **keys**.
+Reference data defined in spec so steps can use **keys**. On a **new** workflow, ask existing vs new **roles** and existing vs new **statuses** independently. Bind existing site rows by Orig. ID (`ids.explicit.roles` / `statuses`) and copy `env/shared` **verbatim** — do not change name, requestor/owner flags, completed/canceled flags, `order`, or `isActive`. Generate emits `Role` / `RequestStatus` **only for new Orig. IDs**; an ID already in the download is omitted even if spec cells differ. Recycled workflow (`workflow.reuse: true`) skips generating the shared process; bind `ObjectDefault.WorkflowID` to the existing Orig. ID. Workflow steps in spec still reference role/status **keys**.
 
 ## Soft-delete (`IsActive`)
 
@@ -107,7 +107,7 @@ Update actions appear on **completed** requests and create a **new request versi
 
 See [update-actions.md](update-actions.md).
 
-When creating a **new object** or **update action**, always ask whether to create a new workflow or reuse an existing one (list from site `env/`). See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow).
+When creating a **new object** or **update action**, always ask whether to create a new workflow or reuse an existing one (list from site `env/`). When they choose a **new** workflow, always ask **roles** and **statuses** separately: bind existing site rows (`env/shared/roles.yaml` / `statuses.yaml`) or create new ones. Existing catalog rows: do not change their settings. See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow).
 
 ## Recipe
 

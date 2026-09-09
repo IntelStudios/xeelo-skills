@@ -2,6 +2,22 @@
 
 Extend or replace workflow on an existing object.
 
+## Ask which roles and statuses (new workflow)
+
+When creating a **new** workflow (not `workflow.reuse: true`), **always ask both** before writing `roles:` / `statuses:` / `ids.explicit`. Do not silent-default. Skip a side only if the user already chose it in the same request. The two choices are **independent**. Playbook: [AGENT.md § Ask which workflow](../AGENT.md#ask-which-workflow).
+
+**Roles** — list from `env/shared/roles.yaml`: **name — id** (optional `isRequestor` / `isOwner`). Empty or stale env → `/download-db` first, or only “new roles”.
+
+1. **Existing roles** (Recommended) — bind `ids.explicit.roles`. Copy `roles:` **verbatim** from that file (`name`, flags, `isActive`). **Do not** rename or flip `isRequestor` / `isOwner`. Generate omits existing `Role` Orig. IDs even if spec cells differ. Omit `languageTable.roles` and comments for those keys.
+2. **New roles** — define **new** `roles:` keys only. `UserAccess` is not in Object Transfer — assign users on the object in Admin after publish ([users-and-access.md](../docs/entities/users-and-access.md)).
+
+**Statuses** — list from `env/shared/statuses.yaml`: **name — id** (optional `order`, `isCompleted`, `isCanceled`). Empty or stale env → `/download-db` first, or only “new statuses”.
+
+1. **Existing statuses** (Recommended) — bind `ids.explicit.statuses`. Copy `statuses:` **verbatim** from that file (`name`, `order`, `isCompleted`, `isCanceled`, `isActive`). **Do not** rename, flip completed/canceled, or change `order`. Generate omits existing `RequestStatus` Orig. IDs even if spec cells differ. Omit `languageTable.statuses` and comments for those keys.
+2. **New statuses** — define **new** `statuses:` keys only.
+
+Reuse of an existing workflow skips both — roles and statuses come with the shared process.
+
 ## Minimal workflow (default)
 
 Generated automatically by `workflow.mode: minimal` in spec:
@@ -37,22 +53,28 @@ From [`data/schemas/Workflow.json`](../data/schemas/Workflow.json):
 
 ## Referencing existing roles/statuses
 
-Do **not** recreate `Role` / `RequestStatus` unless building a greenfield site.
-
-Reference by ID in spec:
+After the user picks **existing** catalog rows, copy the site definition **verbatim** and bind Orig. IDs. Do **not** emit an upsert that would change `RoleName` / `RequestStatusName`, requestor/owner flags, completed/canceled flags, `order`, or `isActive`:
 
 ```yaml
-workflow:
-  roles:
-    requestorId: 1
-    ownerId: 2
-  statuses:
-    draftId: 1
-    activeId: 2
-    completedId: 3
+# Copy from env/shared/roles.yaml + statuses.yaml (flags as on the site — not defaults)
+roles:
+  requestor:
+    name: Requestor
+    isRequestor: true
+    isOwner: false
+  owner:
+    name: Owner
+    isRequestor: false
+    isOwner: true
+statuses:
+  draft:
+    name: Draft
+    order: 10
+    isCompleted: false
+    isCanceled: false
 ```
 
-Query target DB if IDs differ:
+`ids.explicit.roles` / `statuses` must be the live Orig. IDs from those shared files. Generate omits those `Role` / `RequestStatus` rows vs download even if a spec cell would differ. Query the site only if env is empty:
 
 ```sql
 SELECT RoleID, RoleName FROM dbo.Role WHERE IsActive = 1;
@@ -61,7 +83,7 @@ SELECT RequestStatusID, RequestStatusName FROM dbo.RequestStatus WHERE IsActive 
 
 ## Sequential named-role approval
 
-A three-step approval is a `workflow.mode: full` chain. Unique index on a step is `(WorkflowID, RoleID, RequestStatusID)` — give each level its **own role and status**. Duplicate button names (`Approve` / `Reject` on every step) need `key` so generate and `languageTable.stepActions` stay unique ([spec-format.md](../docs/transfer/spec-format.md#roles-and-statuses)).
+A three-step approval is a `workflow.mode: full` chain. Unique index on a step is `(WorkflowID, RoleID, RequestStatusID)` — give each level its **own role and status**. If those roles or statuses are not on the site, that is the **new roles** / **new statuses** path from the ask above. Duplicate button names (`Approve` / `Reject` on every step) need `key` so generate and `languageTable.stepActions` stay unique ([spec-format.md](../docs/transfer/spec-format.md#roles-and-statuses)).
 
 ```
 [Draft / Requestor] --Submit--> [Pending L1 / Team lead]

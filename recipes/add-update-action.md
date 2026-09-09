@@ -16,7 +16,7 @@ Entity reference: [docs/entities/update-actions.md](../docs/entities/update-acti
 
 First option is **Recommended** — the default template’s workflow (`ObjectDefault` with `isDefault: true`, or the only template). **Omit** `updateActions[].workflow` so `WorkflowID` is NULL; runtime falls back to the template. Label the option **object — workflow name — id** from `spec/workflow.yaml` + `ids.explicit.workflowId`.
 
-Then offer other existing workflows from site `env/` (same listing as a new object). If they pick one, set `updateActions[].workflow` to that shared Orig. ID. Third option: **new workflow** for this update version.
+Then offer other existing workflows from site `env/` (same listing as a new object). If they pick one, set `updateActions[].workflow` to that shared Orig. ID. Third option: **new workflow** for this update version — then **ask which roles and statuses** (existing from `env/shared/roles.yaml` / `statuses.yaml` vs new rows; Recommended = existing; choices independent). Existing catalog rows: copy verbatim, do not change settings. Reuse / template workflow skips both questions.
 
 ## Admin UI path
 

@@ -104,7 +104,7 @@ Generator emits Orig. ID rows (replace existing). Cloning as new IDs is an Admin
 
 ## Reference data
 
-`Role` and `RequestStatus` live in spec (`roles` / `statuses`) so steps can use keys. Generate emits those tables only when the row is new or changed vs download — same rule as `Company`, `ObjectType`, `Workflow`, and every other table.
+`Role` and `RequestStatus` live in spec (`roles` / `statuses`) so steps can use keys. Generate emits those tables **only for new Orig. IDs**. An ID already in the download is omitted even when spec cells differ (do not rewrite shared catalog). `Company` / `ObjectType` / `Workflow` still follow the usual delta (omit if unchanged, emit if any generated cell differs).
 
 `LanguageTable` (translated labels) is a child of the owning entity. Spec: [`spec/language-table.yaml`](spec-format.md#localization-speclanguage-tableyaml). After apply, **/publish** (or `/precompile` if the OT is already applied).
 

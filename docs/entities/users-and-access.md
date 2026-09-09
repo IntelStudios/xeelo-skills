@@ -13,7 +13,7 @@ User management vs DB transfer scope.
 | `RequestStatus` | Yes | **Yes** |
 | `UserOrgChartGroup` | Yes | **Yes** |
 
-When generating transfers, **reference existing roles/statuses by ID** — do not assume users migrate with configuration.
+When generating transfers, **ask** whether to bind existing roles/statuses or create new ones ([AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow)). Existing `Role` / `RequestStatus`: copy from `env/shared` verbatim — do not change name, flags, or order. Bind by ID; do not assume users migrate with configuration.
 
 ## User
 
