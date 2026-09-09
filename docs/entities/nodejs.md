@@ -8,7 +8,7 @@ Runtime: `POST /execute`. Platform template: `spEndPointRunNodeJSMainDefault`. S
 
 | Spec param | Default | Why |
 |------------|---------|-----|
-| `typeCode` | `spEndPointRunNodeJSMain` | Regular pass (`IsLast=0`). Use **`…MainLast`** only for role/status (badge) after a workflow button |
+| `typeCode` | `spEndPointRunNodeJSMain` | Regular (`IsLast=0`) — **write** owner / OrgChart / assignment inputs here. **`…MainLast`** only to **display** role / status / assigned users after inbox assignment ([request-refresh.md](request-refresh.md#design-objectaction-last-vs-assignment)) |
 | `EndPointRunWait` | `"1"` | `"1"` wait and write `main()` return onto the request. `"0"` fire-and-forget (message broker still runs the ESM; raise `EndPointRunTimeout` for long jobs) |
 | `EndPointRunTimeout` | `"60000"` | Wall-clock ms. Raise for bulk CREATE (import) |
 | `ApplicableEventType` | `"Save,SaveNew"` (or include `WorkflowAction`) | Restricts when the action runs |

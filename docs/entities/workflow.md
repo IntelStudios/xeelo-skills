@@ -78,7 +78,7 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 
 **UI:** Workflow Step → Calculations.
 
-Child of `WorkflowStep` (Object Transfer edge `WorkflowStep → WorkflowStepCalculation`). On `spRequestRefresh` while the request is on that step, these rows run **before** Last object actions. Calculation type IDs match template **server** calcs (`ObjectDefaultLineCalculationType` **51+**, e.g. Server-String **53** with a quoted literal). Use this to set a line the following object action reads (for example an action-code field).
+Child of `WorkflowStep` (Object Transfer edge `WorkflowStep → WorkflowStepCalculation`). On `SaveNew` and workflow-like refresh events they run **before** regular ObjectAction. They do **not** run on `Save`. Type **54** (Server-RequestInfo) also runs again after assigned users, before Last. Calculation type IDs match template **server** calcs (`ObjectDefaultLineCalculationType` **51+**, e.g. Server-String **53** with a quoted literal). Use this to set a line the following regular object action reads (for example an action-code field). Order: [request-refresh.md](request-refresh.md).
 
 Spec/generator do **not** emit `WorkflowStepCalculation`. Admin or a DB-transfer snapshot.
 

@@ -22,12 +22,15 @@ For **Run Node.js (Last)** that talks to GraphQL: button condition → Last acti
 
 ## Runtime
 
+**Design first: Last vs assignment.** Inbox assignment (`spRequestWorkflowUserCondition`) runs **after** regular ObjectAction and **before** Last. If the script **writes** owner / OrgChart / fields that decide who gets the request, use **regular**. If it only **displays** role, status, or assigned users (badge), use **Last**. Owner writes in Last miss assignment on the **same** refresh. Full order: [request-refresh.md](request-refresh.md#design-objectaction-last-vs-assignment).
+
 ```text
 Save / SaveNew / WorkflowAction / …
-  → spRequestRefreshGeneral
-      → spObjectActionExecute (IsLast=0)
-      → calculations / exports / …
-      → spObjectActionExecute (IsLast=1)   # e.g. Run Node.js (Last)
+  → template / workflow calcs (not on WorkflowAction for template)
+  → ObjectAction regular (IsLast=0)     # write assignment inputs here
+  → relations / OrgChart / assigned users
+  → Server-RequestInfo 54
+  → ObjectAction Last (IsLast=1)        # read assignment / badge here
 ```
 
 Actions are resolved from the current request’s workflow step (`WorkflowStepObjectAction`), then filtered by `ObjectActionCondition` (`fnRequestLineDataCondition`).
@@ -69,10 +72,10 @@ Two type codes. Same ESM / `Context` / GraphQL rules: [nodejs.md](nodejs.md).
 
 | Type code | Pass | Use for |
 |-----------|------|---------|
-| **`spEndPointRunNodeJSMain`** | Regular (`IsLast=0`), **before** assigned-user recalc | Owners, lookups, flags, subgrids, imports |
-| **`spEndPointRunNodeJSMainLast`** | Last (`IsLast=1`), **after** status/role and assigned users | Primarily **role / status / assignee display** (badge) after a workflow button |
+| **`spEndPointRunNodeJSMain`** | Regular (`IsLast=0`), **before** assigned-user recalc | **Write** owners, OrgChart, lookups, flags, subgrids, imports — anything assignment must see |
+| **`spEndPointRunNodeJSMainLast`** | Last (`IsLast=1`), **after** assigned users | **Read** role / status / assignees to **display** (inbox badge) after a workflow button |
 
-Do **not** default every script to Last. Last is the second pass — owner writes there miss `spRequestWorkflowUserCondition` on that same refresh. Template Server-String **53** also skips `WorkflowAction`; write the chip in Last from `Context.Role` / `Context.RequestStatus`. After the user-condition pass, `Select_{code} { assigned { name } owner { name } }` can append assignee chips (`assigned` is inbox `RequestUserList`; `owner` is the owner header — use both when the action token is service account 0).
+Do **not** default every script to Last. Last is the second pass — owner / assignment-input writes there miss `spRequestWorkflowUserCondition` on that same refresh. Template Server-String **53** also skips `WorkflowAction`; write the chip in Last from `Context.Role` / `Context.RequestStatus`. After the user-condition pass, `Select_{code} { assigned { name } owner { name } }` can append assignee chips (`assigned` is inbox `RequestUserList`; `owner` is the owner header — use both when the action token is service account 0).
 
 ## Run Node.js (Last)
 

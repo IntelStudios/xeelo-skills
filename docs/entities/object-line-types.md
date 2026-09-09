@@ -300,7 +300,9 @@ Spec/generator do **not** emit `ObjectDefaultLineCalculationOrder`. Patch the OT
 
 Subgrid analog: **`ObjectSubDefaultLineCalculationOrder`** for `ObjectSubDefaultLine` server calcs (same 999999999 skip).
 
-Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action — [graphql.md](graphql.md).
+Open requests: GraphQL `withRefresh: true`. Completed rows: write `lines` (`withRefresh: false`) or an update action — [graphql.md](graphql.md). Which events run template vs workflow calcs, and when ObjectAction regular / Last fire: [request-refresh.md](request-refresh.md).
+
+**Server-RequestInfo (54)** is the special type that runs in the first calc pass **and** again after assigned-user recalc (before Last), so placeholders that depend on inbox assignment stay current.
 
 ### Server-SubConcat (52)
 
