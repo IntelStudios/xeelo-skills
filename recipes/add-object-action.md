@@ -4,7 +4,7 @@ Add an **ObjectAction** so the server runs automation after **Save** or a workfl
 
 Entity reference: [docs/entities/object-actions.md](../docs/entities/object-actions.md). Scripts / `Context`: [docs/entities/nodejs.md](../docs/entities/nodejs.md). GraphQL: [docs/entities/graphql.md](../docs/entities/graphql.md). CustomJS patterns: [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md).
 
-**Defaults for Run Node.js:** `typeCode: spEndPointRunNodeJSMainLast`, `EndPointRunWait: "1"`, `export async function main()`. Packages and `// install`: [nodejs.md](../docs/entities/nodejs.md). When the script mutates **this** request, omit `createType` and set `withRefresh: false`.
+**Defaults for Run Node.js:** `typeCode: spEndPointRunNodeJSMain` (regular pass), `EndPointRunWait: "1"`, `export async function main()`. Use **`spEndPointRunNodeJSMainLast`** only when the script must run **after** the new role/status (typically the inbox badge). Packages and `// install`: [nodejs.md](../docs/entities/nodejs.md). When the script mutates **this** request, omit `createType` and set `withRefresh: false`.
 
 ## Preconditions
 
@@ -65,9 +65,9 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 
 ## Checklist
 
-- [ ] Action type code matches site catalog (`spEndPointRunNodeJSMainLast` for Run Node.js Last)
+- [ ] Action type code: `spEndPointRunNodeJSMain` unless the script must run Last (role/status badge after workflow)
 - [ ] ESM: `export async function main()`; allowlist / `// install` in [nodejs.md](../docs/entities/nodejs.md)
-- [ ] `workflowSteps` names match `workflow.steps[].name`
+- [ ] `workflowSteps` names match `workflow.steps[].name`. For `WorkflowAction`, that is the **target** step after the button; gate `CustomJS` with `Context.LastWorkflowAction` when several buttons land on the same step
 - [ ] Button (if used) is type `button`; condition equals `1`
 - [ ] Change role and status: `spRequestWorkflowUpdate` (this request) unless you need all versions or keep exclusion; params `{ role }` / `{ status }`; not a `WorkflowStepAction`
 - [ ] `ResponseTextObjectLineID` points at a memo/text/number line

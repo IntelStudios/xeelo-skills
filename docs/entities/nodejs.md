@@ -8,7 +8,7 @@ Runtime: `POST /execute`. Platform template: `spEndPointRunNodeJSMainDefault`. S
 
 | Spec param | Default | Why |
 |------------|---------|-----|
-| `typeCode` | `spEndPointRunNodeJSMainLast` | Runs in the second execute pass (`IsLast=1`) |
+| `typeCode` | `spEndPointRunNodeJSMain` | Regular pass (`IsLast=0`). Use **`…MainLast`** only for role/status (badge) after a workflow button |
 | `EndPointRunWait` | `"1"` | `"1"` wait and write `main()` return onto the request. `"0"` fire-and-forget (message broker still runs the ESM; raise `EndPointRunTimeout` for long jobs) |
 | `EndPointRunTimeout` | `"60000"` | Wall-clock ms. Raise for bulk CREATE (import) |
 | `ApplicableEventType` | `"Save,SaveNew"` (or include `WorkflowAction`) | Restricts when the action runs |

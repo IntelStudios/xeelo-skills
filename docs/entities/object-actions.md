@@ -32,6 +32,8 @@ Save / SaveNew / WorkflowAction / …
 
 Actions are resolved from the current request’s workflow step (`WorkflowStepObjectAction`), then filtered by `ObjectActionCondition` (`fnRequestLineDataCondition`).
 
+A **WorkflowAction** refresh runs **after** the transition commits (new `RoleID` / `RequestStatusID`). Last actions therefore bind to the **target** step, not the button’s source step. `Context.Role` / `Context.RequestStatus` in that Last script are already the **new** pair. Template Server-String (**53**) does **not** run on `WorkflowAction` (only `Save` / `SaveNew`) — write the role/status badge in Last (or a [WorkflowStepCalculation](workflow.md#workflowstepcalculation)) or the inbox chip stays stale until the next Save. Gate with `Context.LastWorkflowAction.ID` / `.Name` when two buttons share a target step.
+
 **Last** types have `ObjectActionType.ObjectActionTypeIsLast = 1` (UI suffix “(Last)”). They run in the second execute pass.
 
 ## Data model
@@ -60,6 +62,17 @@ Object Transfer edges: [`data/object-transfer-map.json`](../data/object-transfer
 | `ObjectActionTypeCode` | Type from `ObjectActionType` (e.g. `spEndPointRunNodeJSMainLast`) |
 | `ObjectActionOrder` | Sort / run order (10, 20, 30…) |
 | `IsActive` | Soft disable |
+
+## Run Node.js
+
+Two type codes. Same ESM / `Context` / GraphQL rules: [nodejs.md](nodejs.md).
+
+| Type code | Pass | Use for |
+|-----------|------|---------|
+| **`spEndPointRunNodeJSMain`** | Regular (`IsLast=0`), **before** assigned-user recalc | Owners, lookups, flags, subgrids, imports |
+| **`spEndPointRunNodeJSMainLast`** | Last (`IsLast=1`), **after** status/role and assigned users | Primarily **role / status display** (badge) after a workflow button |
+
+Do **not** default every script to Last. Last is the second pass — owner writes there miss `spRequestWorkflowUserCondition` on that same refresh. Template Server-String **53** also skips `WorkflowAction`; write the chip in Last from `Context.Role` / `Context.RequestStatus`.
 
 ## Run Node.js (Last)
 

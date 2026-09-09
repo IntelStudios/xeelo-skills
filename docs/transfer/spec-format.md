@@ -1031,7 +1031,7 @@ Optional fragment for **ObjectAction** (server automation on save/workflow). See
 objectActions:
   - key: load-transactions
     name: Load transactions
-    typeCode: spEndPointRunNodeJSMainLast
+    typeCode: spEndPointRunNodeJSMain
     order: 10
     workflowSteps: [Draft]
     params:
@@ -1046,6 +1046,8 @@ objectActions:
         type: equals_text
         param1: "1"
 ```
+
+Default Node.js type is **`spEndPointRunNodeJSMain`**. Use **`spEndPointRunNodeJSMainLast`** only for role/status (badge) after a workflow button — [object-actions.md](../entities/object-actions.md#run-nodejs).
 
 `params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. `NotificationID1` / `NotificationID2` may be `{ notification: assigned }` ([notifications](#notifications-specnotificationsyaml)). Condition `type` slugs match update actions. Do not gate on **memo** `is_not_empty` — that tests the memo record ID, not HTML ([object-actions.md](../entities/object-actions.md#objectactioncondition)).
 
