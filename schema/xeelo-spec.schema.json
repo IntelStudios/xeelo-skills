@@ -688,6 +688,10 @@
         "styleId": { "type": "integer", "minimum": 1 },
         "order": { "type": "integer", "minimum": 1 },
         "reopenOnSave": { "$ref": "#/$defs/reopenOnSave" },
+        "isOnGrid": {
+          "type": "boolean",
+          "description": "WorkflowStepActionIsOnGrid — true shows the button under the inbox option wheel (mass / on-grid). Omit or false = form footer only."
+        },
         "isActive": {
           "type": "boolean",
           "description": "WorkflowStepAction.IsActive — false soft-disables the footer button (OT does not delete)"

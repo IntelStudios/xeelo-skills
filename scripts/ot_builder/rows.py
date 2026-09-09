@@ -797,6 +797,8 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
             reopen_id = reopen_on_save_id(action.get("reopenOnSave"))
             if reopen_id is not None:
                 action_row["WorkflowStepActionReopenTypeID"] = reopen_id
+            if action.get("isOnGrid"):
+                action_row["WorkflowStepActionIsOnGrid"] = 1
             if action.get("notification"):
                 nid = require_notification_id(registry, spec, str(action["notification"]))
                 action_row["NotificationID"] = nid

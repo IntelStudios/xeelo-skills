@@ -167,7 +167,7 @@ Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
 
 Never create an object with a silent new minimal workflow.
 
-**New workflow action:** set **`reopenOnSave: open-only-assigned`** on each new `workflow.steps[].actions[]` (Admin **Reopen on Action** = Open only (assigned)) unless the user asks otherwise. Omit/`none`/`close` closes the request after the button. Do not flip an existing action unless asked. Recipe: [add-workflow.md](recipes/add-workflow.md).
+**New workflow action:** set **`reopenOnSave: open-only-assigned`** on each new `workflow.steps[].actions[]` (Admin **Reopen on Action** = Open only (assigned)) unless the user asks otherwise. Omit/`none`/`close` closes the request after the button. Do not flip an existing action unless asked. Set **`isOnGrid: true`** only when the user wants the button under the inbox option wheel (`WorkflowStepActionIsOnGrid`). Recipe: [add-workflow.md](recipes/add-workflow.md).
 
 ### New workflow: ask which roles and statuses
 

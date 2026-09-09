@@ -786,6 +786,8 @@ workflow:
 
 `steps[].actions[].reopenOnSave` → `WorkflowStepActionReopenTypeID` (Admin **Reopen on Action**). Same slugs as template `reopenOnSave`. Applies after that **workflow button**. **New actions: `open-only-assigned`** unless the user asks otherwise. Omit/`none`/`close` = request closes. Do not flip an existing action unless asked. `workflow.mode: minimal` writes ID 3 on the generated Submit / Complete buttons.
 
+`steps[].actions[].isOnGrid: true` → `WorkflowStepActionIsOnGrid`. Inbox **option wheel** (mass / on-grid). Omit or false = form footer only. Extract writes the key only when true.
+
 Bind email templates by **key** (not Orig. ID). See [notifications](#notifications-specnotificationsyaml).
 
 - `workflow.notification` / `exportFailNotification` / `recallNotification` / `failNotification`

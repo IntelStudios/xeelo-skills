@@ -236,6 +236,24 @@ class StepActionReopenOnSaveTests(unittest.TestCase):
             self.assertNotIn("WorkflowStepActionReopenTypeID", row)
 
 
+class StepActionOnGridTests(unittest.TestCase):
+    def test_generate_and_extract_is_on_grid(self) -> None:
+        spec = _dup_step_spec()
+        spec["workflow"]["steps"][0]["actions"][0]["isOnGrid"] = True
+        result = build_rows(spec)
+        self.assertEqual(result.rows["WorkflowStepAction"][0]["WorkflowStepActionIsOnGrid"], 1)
+        self.assertNotIn("WorkflowStepActionIsOnGrid", result.rows["WorkflowStepAction"][1])
+        xml_bytes = build_object_transfer_xml(
+            result.rows, dedupe_edges(result.edges), build_object_map(dedupe_edges(result.edges))
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            xml_path = Path(tmp) / "ot.xml"
+            xml_path.write_bytes(xml_bytes)
+            extracted = extract_spec(xml_path)
+        self.assertTrue(extracted["workflow"]["steps"][0]["actions"][0]["isOnGrid"])
+        self.assertNotIn("isOnGrid", extracted["workflow"]["steps"][1]["actions"][0])
+
+
 class WorkflowIsActiveTests(unittest.TestCase):
     def test_generate_and_extract_inactive_step_and_action(self) -> None:
         spec = _dup_step_spec()

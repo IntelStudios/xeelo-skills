@@ -932,6 +932,8 @@ def _build_workflow(
             reopen = reopen_on_save_spec(action.get("WorkflowStepActionReopenTypeID"))
             if reopen:
                 action_spec["reopenOnSave"] = reopen
+            if _boolish(action.get("WorkflowStepActionIsOnGrid")):
+                action_spec["isOnGrid"] = True
             if not _boolish(action.get("IsActive", 1)):
                 action_spec["isActive"] = False
             nid = _nid(action.get("NotificationID"))

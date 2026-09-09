@@ -51,6 +51,7 @@ From [`data/schemas/Workflow.json`](../data/schemas/Workflow.json):
 - `RoleID`, `RequestStatusID` — **target** state after action
 - `WorkflowStepActionStyleID` — 1 = Positive green (see [`data/enums/WorkflowStepActionStyle.json`](../data/enums/WorkflowStepActionStyle.json))
 - `WorkflowStepActionReopenTypeID` — Admin **Reopen on Action**. Spec: `actions[].reopenOnSave`. **New actions: `open-only-assigned`** unless the user asks otherwise. Omit/`none`/`close` = request closes after the button.
+- `WorkflowStepActionIsOnGrid` — Admin **On grid**. Spec: `actions[].isOnGrid: true` so the button appears under the inbox option wheel. Omit or false = form footer only.
 
 ## Referencing existing roles/statuses
 

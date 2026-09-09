@@ -166,6 +166,7 @@ WORKFLOW_STEP_ACTION_KEYS = (
     "order",
     "key",
     "reopenOnSave",
+    "isOnGrid",
     "isActive",
     "notification",
 )

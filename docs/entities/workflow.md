@@ -70,6 +70,7 @@ Spec: `workflow.steps[].access` — see [spec-format.md](../transfer/spec-format
 | `WorkflowStepActionIsCommented` | Comment required |
 | `WorkflowStepActionConfirmMethod` | QR / Push / TOTP confirmation |
 | `WorkflowStepActionReopenTypeID` | Reopen after this **workflow button** (Admin **Reopen on Action**). Spec: `workflow.steps[].actions[].reopenOnSave`. Same catalog as template — [`ReopenActionType.json`](../data/enums/ReopenActionType.json). **New actions: `open-only-assigned`** (Open only (assigned)) unless the user asks otherwise. Omit/`none`/`close` = request closes after the button. Do not flip an existing action unless asked. |
+| `WorkflowStepActionIsOnGrid` | Admin **On grid**. Spec: `actions[].isOnGrid: true`. When true, the button is available under the inbox **option wheel** (mass / on-grid). Omit or false = request form footer only. SQL default `0`. |
 | `NotificationID` | Email for this transition (`WorkflowAction`). Spec: `actions[].notification` |
 | `IsActive` | Soft-disable the footer button. Spec: `steps[].actions[].isActive: false`. Omit the action from spec and the site row stays active. |
 
