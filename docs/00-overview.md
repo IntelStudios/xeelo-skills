@@ -16,7 +16,7 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Object Template (ObjectDefault)** | Default values, validation, lookup bindings, create-form access ([object-model.md](entities/object-model.md#create-form-access-objectdefaultaccess)) |
 | **Update action (ObjectUpdateAction)** | User update on completed request → new version; field visible/editable via **ObjectUpdateAccess** ([update-actions.md](entities/update-actions.md)) |
 | **Object action (ObjectAction)** | Server automation on Save / workflow; Node.js Last: [object-actions.md](entities/object-actions.md), [nodejs.md](entities/nodejs.md) |
-| **GraphQL** | Per-site `Select_` / `Mutate_` from object codes; `lines` vs `linesFormatted`: [graphql.md](entities/graphql.md) |
+| **GraphQL** | Per-site `Select_` / `Mutate_` from object codes; subgrid `Select_` / `Mutate_{ObjectSubCode}` + `Delete_subgrid`: [graphql.md](entities/graphql.md) |
 | **Reference (ObjectLineSource)** | Číselník for combo/radio/multi — bind on **ObjectLine**; spec `spec/references.yaml` |
 | **Lookup (ObjectLineLookup)** | Query map on **template line** — fills the field from another line (`sourceField`) |
 | **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |

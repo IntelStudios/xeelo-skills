@@ -90,7 +90,7 @@ Rules:
 - **Omit** defaults extract omits (`matchId: 1`, `isActive: true`, `descMemoBorder: false`).
 - After editing a change-loop spec: `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`.
 
-Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width`, `order`, `slot`, `precision`, `objectSub` / `objectSubId`, `saveAction`, `uniqueId`, type extras, `alwaysHidden`, `isActive`, `mandatory` (layout only when there is no `templates.yaml`), `reference`, `lookup`, `autonumber`. Full tuples: [`spec_key_order.py`](../../scripts/ot_builder/spec_key_order.py).
+Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width`, `order`, `slot`, `precision`, `objectSub` / `objectSubId`, `saveAction`, `uniqueId`, type extras, `alwaysHidden`, `isActive`, `mandatory` (layout only when there is no `templates.yaml`), `reference`, `lookup`, `autonumber`. Subgrid mapping: `name`, `width`, `allowPaging`, `defaultPaging`, `layout`, `code`, `templates`, `onGrid`. Full tuples: [`spec_key_order.py`](../../scripts/ot_builder/spec_key_order.py).
 
 ## Top-level fields
 
@@ -299,6 +299,8 @@ subgrids:
   invoice_lines:
     name: Invoice lines
     width: 80
+    # allowPaging: true
+    # defaultPaging: 10
     layout:
       tabs:
         - name: General
@@ -385,6 +387,8 @@ Also emit `workflow.steps[].access` for the parent line on every step that shoul
 | Spec | Maps to |
 |------|---------|
 | `subgrids.<key>` | `ObjectSub` (`ObjectSubName`, optional `ObjectSubCode`, `ObjectSubWidth` — add/edit-row **modal** width %; default **80**, Admin 50–100). Extra fields → extra tabs/sections or stacked `width: 100`, not a wider modal. |
+| `allowPaging` | `ObjectSub.ObjectSubGridAllowPaging` — User GUI table pager. Omit / false → generator does not emit the column (SQL default off). Two type-5 widgets that share one `ObjectSub` share this setting. |
+| `defaultPaging` | `ObjectSub.ObjectSubGridDefaultPaging` — rows per page. With `allowPaging: true`, omit size → generate **10**. User GUI also falls back to **10** when the column is null. |
 | `layout.tabs/sections/fields` | `ObjectSubLineTab` / `ObjectSubLineSection` / `ObjectSubLine`. Same type slugs and **same extras** as ObjectLine (`precision`, `reference`, … → `ObjectSubLine*`). Not 5 / 13 / 18. |
 | `templates[]` | `ObjectSubDefault` + `ObjectSubDefaultLine`. Omit → one Default template, all lines Optional |
 | `templates[].fields.*.mandatory` / `hint` / `autonumber` / `alwaysDisabled` / `clientCalculation` / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` | `ObjectSubDefaultLine*` (lookup is on the **layout** field like ObjectLine: `lookup` + `sourceField` → `ObjectSubDefaultLineLookupID` / `LookupObjectSubLineID`). `id{CODE}` in calc compiles to `ObjectSubLineID`. Client types 1–5 and 7 (no `focus` / `device_info`). Client-Service: `service` key + `ObjectServiceID` (types 1–2 on columns) — [object-services.md](../entities/object-services.md). `defaultValue` → `ObjectSubDefaultLineValue` (or `DescMemo` on `description_memo`). `calcDelay` / `calcConfirm` on the **source** column; omit unless the user asks — [object-line-types.md](../entities/object-line-types.md#client-calc-delay-and-confirm) |
@@ -397,6 +401,8 @@ Also emit `workflow.steps[].access` for the parent line on every step that shoul
 **IDs:** `ids.explicit.subgrids`, `subgridTabs` (`{sub}/{tab}`), `subgridSections` (`{sub}/{tab}/{section}`), `subgridFields` (`{sub}/{code}`), `subgridTemplates` (`{sub}/{template}`), `subgridDefaultLines` (`{sub}/{template}/{code}`), `subgridOnGrid` (`{sub}/{size}/{type}/{module}/{code}`).
 
 Always emit `onGrid` when adding a subgrid (same habit as request inbox `onGrid`): `fields` so columns are allowed on the table, `layouts` for placement. Without `allowed`, the add-row modal still has fields but the **subgrid table** has no columns.
+
+Object Transfer upload is delete+insert of the provided `ObjectSub` row. If that row is in the package and paging columns are omitted, paging **resets to off**. Keep `allowPaging` / `defaultPaging` in spec whenever the table should page. After `/publish`, precompile rebuilds cache (`SubGridIsPaging`, default page size). GraphQL `Select_{ObjectSubCode}` `limit`/`offset` is a different pager (API result window) — [graphql.md](../entities/graphql.md#subgrid-objectsubcode).
 
 Column extras match ObjectLine ([object-line-types.md](../entities/object-line-types.md#subgrid-columns-objectsubline)): combo/radio/multi **`reference`**, number **`precision`**, attachment `attachmentStorageId`, preview `previewField` (subgrid column code), radio/multi `columnNumbers`. Lookup and client-calc use the same spec keys as the request template; `sourceField` / `id{CODE}` resolve **inside this objectSub**. Types **5 / 13 / 18** are not in `ObjectSubLineType` — do not spec them here.
 

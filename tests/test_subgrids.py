@@ -143,6 +143,7 @@ class SubgridGenerateTests(unittest.TestCase):
         self.assertEqual(sub["ObjectSubName"], "Invoice lines")
         self.assertEqual(sub["ObjectSubCode"], "invoice_lines")
         self.assertEqual(sub["ObjectSubWidth"], 80)
+        self.assertNotIn("ObjectSubGridAllowPaging", sub)
         self.assertEqual(len(result.rows["ObjectSubLine"]), 1)
         subline = result.rows["ObjectSubLine"][0]
         self.assertEqual(subline["ObjectSubLineCode"], "DESC")
@@ -188,6 +189,23 @@ class SubgridGenerateTests(unittest.TestCase):
         self.assertEqual(og_rows[0]["ObjectSubLineOnGridSize"], "Large")
         self.assertEqual(og_rows[0]["ObjectSubLineOnGridLength"], 100)
         self.assertIn(("ObjectSubLine", "ObjectSubLineOnGrid", og_rows[0]["ObjectSubLineOnGridID"]), edges)
+
+    def test_emits_subgrid_paging(self) -> None:
+        spec = _base_spec()
+        spec["subgrids"]["invoice_lines"]["allowPaging"] = True
+        spec["subgrids"]["invoice_lines"]["defaultPaging"] = 10
+        result = build_rows(spec)
+        sub = result.rows["ObjectSub"][0]
+        self.assertEqual(sub["ObjectSubGridAllowPaging"], 1)
+        self.assertEqual(sub["ObjectSubGridDefaultPaging"], 10)
+
+    def test_emits_subgrid_paging_default_size(self) -> None:
+        spec = _base_spec()
+        spec["subgrids"]["invoice_lines"]["allowPaging"] = True
+        result = build_rows(spec)
+        sub = result.rows["ObjectSub"][0]
+        self.assertEqual(sub["ObjectSubGridAllowPaging"], 1)
+        self.assertEqual(sub["ObjectSubGridDefaultPaging"], 10)
 
     def test_rejects_overlapping_subgrid_ongrid(self) -> None:
         spec = _base_spec()

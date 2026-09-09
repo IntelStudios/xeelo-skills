@@ -5,6 +5,8 @@
     {"name": "ObjectSubName", "type": "NVARCHAR(50)", "nullable": false, "identity": false, "default": null},
     {"name": "ObjectSubCode", "type": "nvarchar(255)", "nullable": true, "identity": false, "default": null},
     {"name": "ObjectSubWidth", "type": "INT", "nullable": true, "identity": false, "default": null},
+    {"name": "ObjectSubGridAllowPaging", "type": "BIT", "nullable": false, "identity": false, "default": "0"},
+    {"name": "ObjectSubGridDefaultPaging", "type": "INT", "nullable": true, "identity": false, "default": null},
     {"name": "IsActive", "type": "BIT", "nullable": false, "identity": false, "default": "1"}
   ],
   "foreignKeys": []

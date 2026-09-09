@@ -33,9 +33,9 @@ For `code` = sanitized `ObjectCode`:
 
 Example: `object_9100_account` → `Select_object_9100_account`, `Mutate_object_9100_account`, input `Mutateobject_9100_accountInput`.
 
-**SubGrid** uses the same prefixes from **`ObjectSubCode`** (`subgrids.<key>.code` / `subgrid.code`), not from the parent type-5 `ObjectLineCode`. After `/download-db`, take the stored code from env. New rows live under the parent request; mutations still go through the subgrid’s `Mutate_{code}`.
+**SubGrid** uses the same prefixes from **`ObjectSubCode`** (`subgrids.<key>.code` / `subgrid.code`), not from the parent type-5 `ObjectLineCode`. After `/download-db`, take the stored code from env. New rows live under the parent request. Full `Select_` / `Mutate_` / `Delete_subgrid`: [Subgrid](#subgrid-objectsubcode).
 
-Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` is documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
+Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Delete_subgrid`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` and [Subgrid](#subgrid-objectsubcode) are documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
 
 ## Query `Select_{code}`
 
@@ -173,6 +173,110 @@ Delete_request(objectId: Int!, requestIds: [Int!]!, userLogin: String, userId: I
 Returns one `MutationResponse` per id (`requestId`, `success`, `messages`). A failed id does not stop the rest of the array.
 
 Public HTTP is `POST {SiteServerAddress}/graphql` with `Authorization: Bearer <token>`. Select ids with `Select_{code}` (`limit` default 1000, max 10000, paginate with `offset`), then delete in modest `requestIds` batches.
+
+## Subgrid (`ObjectSubCode`)
+
+`code` here is sanitized **`ObjectSubCode`** (`env` `subgrids.<key>.code`), not the parent object and not the type-5 `ObjectLineCode`.
+
+| Kind | GraphQL name |
+|------|----------------|
+| Query | `Select_{code}` |
+| Mutation | `Mutate_{code}` |
+| Mutation input | `Mutate{code}Input` |
+| Lines input | `Mutate{code}LinesInput` |
+| Row type | `{code}` (`requestId`, `requestSubId`, `objectline`, `created`, `modified`, `isSelected`, `lines`, `linesFormatted`) |
+
+`access_rights` lists **objects**, not ObjectSubs. Subgrid `Select_` / `Mutate_` / `Delete_subgrid` follow the **parent object’s** READ / WRITE.
+
+`objectLineId` is the parent **type-5** `ObjectLineID` (the widget), not `ObjectSubID`. Two type-5 lines that share one `ObjectSub` still have **separate** `RequestSub` rows — always pass the widget’s line id.
+
+### Query `Select_{ObjectSubCode}`
+
+```graphql
+Select_SUBCODE(
+  requestIds: [Int!]
+  objectLineId: Int!          # widget ObjectLineID
+  limit: Int
+  offset: Int
+  lineFilters: SUBCODELineFilter
+): [SUBCODE!]!
+```
+
+Omit `objectLineId` and the server still requires it (`Int!`). Filter one widget per call. `lines` / `linesFormatted` are column codes from `ObjectSubLineCode` (env `subgrids.<key>` layout).
+
+`limit` / `offset` page the **GraphQL result**. They are not the User GUI table pager (`ObjectSubGridAllowPaging` / `ObjectSubGridDefaultPaging` — [spec-format.md](../transfer/spec-format.md#subgrids-specsubgridsyaml)).
+
+### Mutation `Mutate_{ObjectSubCode}`
+
+```graphql
+Mutate_SUBCODE(input: [MutateSUBCODEInput!]!): [MutationResponse!]
+```
+
+Enum `SubGridCreateType` is **`CREATE` only**. There is no subgrid `UPDATE` / `UPDATE_EMPTY` (no new request version). Input type `Mutate{code}Input` (same sanitize).
+
+| Field | Role |
+|-------|------|
+| `createType` | `CREATE` — insert a `RequestSub`. Omit for a line/header update of an existing row |
+| `requestId` | Parent request. **Required** on `CREATE` |
+| `objectLineId` | Parent type-5 `ObjectLineID`. **Required** (`Int!`) on create and update |
+| `requestSubId` | Required when `createType` is omitted. Returned on `CREATE` as `MutationResponse.requestSubId` |
+| `template` | **Not** on the subgrid input. New rows use the parent template’s `ObjectSubDefaultID` bind |
+| `userLogin` / `userId` | Same as object mutate (`fnUserSearch` / fallback **0**) |
+| `isSelected` | Optional updateable header (`Boolean`) when the ObjectSub is selectable |
+| `lines` | `Mutate{code}LinesInput` — `ObjectSubLineCode` keys, all `String` (attachment type **9** is `AttachmentInput`) |
+| `withRefresh` | Default `false`. `CREATE` **always** refreshes the new `RequestSub` |
+
+```graphql
+mutation ($input: [Mutateinvoice_linesInput!]!) {
+  Mutate_invoice_lines(input: $input) {
+    requestId
+    requestSubId
+    success
+    messages { procedure msgType msgText }
+  }
+}
+```
+
+```json
+{
+  "input": [{
+    "createType": "CREATE",
+    "requestId": 1001,
+    "objectLineId": 80,
+    "userLogin": "requestor.login",
+    "lines": { "DESC": "Line 01", "QTY": "2" }
+  }]
+}
+```
+
+`objectLineId` `80` is the parent type-5 **ObjectLineID** (env after `/download-db`), not `ObjectSubID` and not the line `code`.
+
+Do **not** create rows through the parent `Mutate_{objectCode}`. Batch like object mutate: each `input` item is its own insert (no shared transaction). Pattern: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#9-create-subgrid-rows).
+
+### `Delete_subgrid`
+
+Deletes **subgrid rows**, not the parent request. Needs GraphQL **WRITE** on the parent object (not `canDelete`). `objectLineId` is required.
+
+```graphql
+Delete_subgrid(
+  objectLineId: Int!
+  requestIds: [Int!]
+  requestSubIds: [Int!]
+  userLogin: String
+  userId: Int
+): [MutationResponse!]
+```
+
+Provide **either** `requestIds` **or** `requestSubIds`, not both (and not neither).
+
+| Shape | Effect |
+|-------|--------|
+| `objectLineId` + `requestIds` | Delete **all** rows of that widget on each parent request |
+| `objectLineId` + `requestSubIds` | Delete those `RequestSubID`s |
+
+`userLogin` / `userId` same as other mutates (default **0**). Returns `[MutationResponse!]` (one per request or per `requestSubId`).
+
+To remove the whole request (and its sub rows), use `Delete_request` on the parent `objectId`.
 
 ## Admin transfer and precompile
 

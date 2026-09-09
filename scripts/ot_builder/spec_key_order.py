@@ -130,7 +130,7 @@ ONGRID_COLUMN_KEYS = (
     "labelType",
 )
 
-SUBGRID_KEYS = ("name", "width", "layout", "code", "templates", "onGrid")
+SUBGRID_KEYS = ("name", "width", "allowPaging", "defaultPaging", "layout", "code", "templates", "onGrid")
 SUBGRID_TEMPLATE_KEYS = ("key", "name", "isDefault", "fields")
 
 ROLE_KEYS = ("name", "isRequestor", "isOwner", "isActive")
