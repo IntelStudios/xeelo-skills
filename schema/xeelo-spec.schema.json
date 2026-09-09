@@ -442,6 +442,15 @@
           "default": 80,
           "description": "ObjectSubWidth — add/edit-row modal width in percent. Admin 50–100. Default 80. Extra fields go in more tabs/sections or stacked (field width 100); do not bump this just because the tree grew."
         },
+        "allowPaging": {
+          "type": "boolean",
+          "description": "ObjectSubGridAllowPaging — User GUI table pager. Shared type-5 widgets share this ObjectSub setting. Omit / false = off. After /publish so cache SubGridIsPaging rebuilds."
+        },
+        "defaultPaging": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "ObjectSubGridDefaultPaging — rows per page. With allowPaging true, omit → generate 10. User GUI fallback if the column is null is also 10."
+        },
         "layout": {
           "type": "object",
           "required": ["tabs"],

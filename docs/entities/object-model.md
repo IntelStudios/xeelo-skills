@@ -284,6 +284,7 @@ Same type IDs and **same spec extras** as ObjectLine for every type in `ObjectSu
 | Embedding line | `ObjectLine.ObjectSubID` | `fields[].objectSub` (key in `subgrids:`) or `objectSubId` (existing/shared ID, no tree emit) |
 | Which subgrid template new rows use | `ObjectDefaultLine.ObjectSubDefaultID` | `templates.fields.<code>.subgridTemplate` (requires `objectSub:` key) |
 | Prefill | `ObjectDefaultLine.ObjectSubPrefillID` | not in spec yet |
+| Table pager | `ObjectSub.ObjectSubGridAllowPaging` / `ObjectSubGridDefaultPaging` | `subgrids.<key>.allowPaging` / `defaultPaging` (User GUI; omit size → **10**). Shared widgets share the ObjectSub. GraphQL `Select_` `limit`/`offset` is a different pager. |
 
 Admin capability “Subgrid template / prefill” applies only to type 5.
 
@@ -318,10 +319,10 @@ Spec: `access[].field` + optional `access[].sublineId`. Orig. ID keys `{field}` 
 | Prefill | — | `ObjectSubPrefill` — not in spec yet |
 | Width | field 1–100 % | `ObjectSubWidth` = add/edit-row **modal** width; default **80** (Admin 50–100). Grow the form with tabs/sections or stacked fields, not a wider modal |
 | Label | `IsHorizontal` | type-5 label always in the SubGrid header |
-| GraphQL | `ObjectCode` | same `Select_` / `Mutate_` prefixes from **`ObjectSubCode`** |
+| GraphQL | `ObjectCode` | `Select_` / `Mutate_` from **`ObjectSubCode`**; `objectLineId` = type-5 widget. `Delete_subgrid` (WRITE). [graphql.md](graphql.md#subgrid-objectsubcode) |
 | Generate + combo Multiselect | — | subgrid-only (below) |
 
-Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids`. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
+Generator emits the tree + parent FK + `ObjectSubDefaultID` bind + `ObjectSubDefaultLine` validation / hint / autonumber / lookup / client-calc / `defaultValue` / `defaultFilter` / `calcDelay` / `calcConfirm` + `onGrid` + ObjectLine-style type extras on `ObjectSubLine` (`precision`, `reference`, attachment, preview, …) + `languageTable.subgrids` + `allowPaging` / `defaultPaging` when the GUI pager is on. Not yet: unique/gridSort, Generate/Multiselect, prefill, comments on `ObjectSub*`.
 
 ### Generate + combo Multiselect
 
@@ -331,7 +332,7 @@ With Generate on, the user picks several číselník values on that combo; runti
 
 ### GraphQL and notifications
 
-Sanitize `ObjectSubCode` the same way as `ObjectCode`. Query/mutation names use that code (`Select_{code}`, `Mutate_{code}`), not the parent `ObjectLineCode`. Email tokens: `{RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...}`.
+Sanitize `ObjectSubCode` the same way as `ObjectCode`. Query/mutation names use that code (`Select_{code}`, `Mutate_{code}`), not the parent `ObjectLineCode`. Pass `objectLineId` (type-5 `ObjectLineID`). Create rows with `Mutate_{code}` (`createType: CREATE`); do not use the parent object mutate. Delete rows with `Delete_subgrid` (parent WRITE). Full args: [graphql.md](graphql.md#subgrid-objectsubcode). Email tokens: `{RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...}`.
 
 ## Update actions
 

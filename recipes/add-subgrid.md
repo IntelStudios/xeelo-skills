@@ -18,6 +18,8 @@ subgrids:
   invoice_lines:
     name: Invoice lines
     width: 80
+    # allowPaging: true          # User GUI table pager (ObjectSub)
+    # defaultPaging: 10          # omit size → generate 10
     layout:
       tabs:
         - name: General
@@ -167,6 +169,21 @@ Same overlap and delete rules as inbox onGrid: no overlapping cells on a letter;
 
 `isTotal` on a subgrid is `ObjectSubLineIsTotal` (types **3 and 12**). `isTag` is `ObjectSubLineOnGridIsTag` (compile types 3 and 4). After deploy, **/publish** so cache SQL is rebuilt.
 
+## Paging
+
+User GUI table pager lives on **`ObjectSub`**, not on the type-5 line. Spec: `subgrids.<key>.allowPaging` / `defaultPaging`.
+
+| Spec | SQL | Notes |
+|------|-----|-------|
+| `allowPaging: true` | `ObjectSubGridAllowPaging` | Omit / false → generator does not emit the column (SQL default off) |
+| `defaultPaging` | `ObjectSubGridDefaultPaging` | With paging on, omit → generate **10**. User GUI also uses **10** when the column is null |
+
+Two type-5 widgets that share one `ObjectSub` share the pager. GraphQL `Select_{ObjectSubCode}` `limit`/`offset` is the API result window, not this GUI pager.
+
+Object Transfer upload is delete+insert of provided PKs. If an `ObjectSub` row is in the package without paging columns, paging **resets to off**. Keep the keys in spec whenever the table should page. After `/publish`, precompile rebuilds cache (`SubGridIsPaging`).
+
+GraphQL create/list/delete of rows: [graphql.md](../docs/entities/graphql.md#subgrid-objectsubcode). Pattern: [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#9-create-subgrid-rows).
+
 ## Calculation order
 
 The type-5 parent **must** have an **`ObjectDefaultLineCalculationOrder`** row on the template (typical order **0**, then **10**, **20**, …). Without it Admin reports **C.72** (sub-grid without calculation order) and request refresh skips the subgrid.
@@ -212,6 +229,6 @@ Several unique **subgrid** columns are a **composite AND** within that parent re
 
 ## Hints
 
-Parent type 5 has no slot and is not on the request inbox grid. `ObjectSubWidth` is the **add/edit-row modal** width (percent). Default **80**. Admin allows 50–100. More columns go in extra **tabs / sections** or stacked fields (`width: 100`) — do not bump the modal past 80 just because the tree grew. Label of the type-5 line stays in the SubGrid header (`IsHorizontal` does not move it). GraphQL names come from `ObjectSubCode`.
+Parent type 5 has no slot and is not on the request inbox grid. `ObjectSubWidth` is the **add/edit-row modal** width (percent). Default **80**. Admin allows 50–100. More columns go in extra **tabs / sections** or stacked fields (`width: 100`) — do not bump the modal past 80 just because the tree grew. Label of the type-5 line stays in the SubGrid header (`IsHorizontal` does not move it). GraphQL names come from `ObjectSubCode` (`Select_` / `Mutate_{code}` with `objectLineId` = the type-5 widget).
 
 **Type extras** are the same spec keys as ObjectLine (`precision`, `reference`, `attachmentStorageId`, `previewField`, `columnNumbers`, …). SQL is `ObjectSubLine*`. Number needs `precision` (slot alone does not store). Combo/radio/multi need `reference`. Lookup (`lookup` + `sourceField` on another **subgrid** column) and client-calc (`templates[].fields.*.clientCalculation`, `id{CODE}` → `ObjectSubLineID`) sit on `ObjectSubDefaultLine`. Same opt-in keys as the request template: `defaultValue`, `defaultFilter`, `calcDelay`, `calcConfirm` (do not set delay/confirm unless asked). No nested `subgrid`, `report`, or `button`. Czech labels: `languageTable.subgrids.<key>`. [object-line-types.md](../docs/entities/object-line-types.md#subgrid-columns-objectsubline).

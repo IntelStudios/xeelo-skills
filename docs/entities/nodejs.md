@@ -171,7 +171,8 @@ GraphQL identifiers are `sanitizeGraphQLName` of **site** codes after `/download
 |----------|---------|
 | `object.code` | `Select_{code}`, `Mutate_{code}`, input `Mutate{code}Input` |
 | `fields[].code` | `lines.{code}` (Select and Mutate) |
-| `ids.explicit.objectDefaultId` / `templates.*` | `template` on `CREATE` |
+| `subgrids.<key>.code` | `Select_{code}`, `Mutate_{code}` (ObjectSub). Pass `objectLineId` of the type-5 widget. CREATE has no `template`. [graphql.md](graphql.md#subgrid-objectsubcode) |
+| `ids.explicit.objectDefaultId` / `templates.*` | `template` on object `CREATE` |
 
 Full naming, query args, `createType` variants, **`lines` vs `linesFormatted`**, date `dd-MM-yyyy`, and `lineFilters`: [graphql.md](graphql.md).
 

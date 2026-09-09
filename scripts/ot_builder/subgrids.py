@@ -450,6 +450,10 @@ def emit_subgrids(spec: dict, registry: IdRegistry, mapping: dict, result: Any) 
         code = sub_def.get("code")
         if code:
             sub_row["ObjectSubCode"] = str(code)
+        if _boolish(sub_def.get("allowPaging")):
+            sub_row["ObjectSubGridAllowPaging"] = 1
+            paging = _int(sub_def.get("defaultPaging"))
+            sub_row["ObjectSubGridDefaultPaging"] = 10 if paging is None else paging
         sub_rows.append(sub_row)
 
         layout = sub_def.get("layout") or {}
@@ -1098,8 +1102,13 @@ def extract_subgrids_spec(
         spec_entry: dict[str, Any] = {
             "name": sub.get("ObjectSubName", ""),
             "width": sub.get("ObjectSubWidth") or DEFAULT_WIDTH,
-            "layout": {"tabs": tab_list},
         }
+        if _boolish(sub.get("ObjectSubGridAllowPaging")):
+            spec_entry["allowPaging"] = True
+        paging = _int(sub.get("ObjectSubGridDefaultPaging"))
+        if paging is not None:
+            spec_entry["defaultPaging"] = paging
+        spec_entry["layout"] = {"tabs": tab_list}
         if sub.get("ObjectSubCode"):
             spec_entry["code"] = sub.get("ObjectSubCode")
 

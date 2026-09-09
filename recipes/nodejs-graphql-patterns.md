@@ -13,6 +13,7 @@ Replace `OBJECTCODE`, `FIELD_CODE`, `OTHERCODE`, `TEMPLATE_ID` with **site** cod
 - [ ] ObjectAction self-update: no `createType`, `withRefresh: false`
 - [ ] Periodic GraphQL mutate: **must refresh** (`withRefresh: true` or `createType` CREATE/UPDATE) — [nodejs.md](../docs/entities/nodejs.md#periodic--graphql-mutate-must-refresh)
 - [ ] `CREATE` only on a **different** object; `template` = `ObjectDefaultID`
+- [ ] Subgrid rows: `Mutate_{ObjectSubCode}` `createType: CREATE` + `requestId` + `objectLineId` (type-5 widget); no `template` — [§9](#9-create-subgrid-rows)
 - [ ] Bulk CREATE: several items per `input` array **and** a small pool of concurrent `client.request` calls; raise `EndPointRunTimeout` — [§6](#6-batch--parallel-create)
 - [ ] Refresh **open** other requests: `withRefresh: true` without `lines`; batch + pool — [§7](#7-refresh-other-requests-in-parallel-no-line-writes)
 - [ ] **Completed** other requests that need Last (tags, titles): `createType: UPDATE` + `updateAction`, no `lines` — [§8](#8-start-update-action-on-completed-requests)
@@ -296,4 +297,37 @@ await mapPool(batches, UPDATE_CONCURRENCY, async (batch) => {
 ```
 
 Schema: [graphql.md](../docs/entities/graphql.md#mutation-mutate_code). Runtime table: [nodejs.md](../docs/entities/nodejs.md#mutating-the-current-request--no-refresh).
+
+## 9. CREATE subgrid rows
+
+Subgrid rows are **not** created through the parent `Mutate_{objectCode}`. Use `Mutate_{ObjectSubCode}` (`env` `subgrids.<key>.code`).
+
+`createType: CREATE` + parent `requestId` + `objectLineId` (the type-5 **ObjectLineID**, not `ObjectSubID`) + `lines` (`ObjectSubLineCode`). **No `template`.** Optional `userLogin` / `userId` (same fallback **0**). `CREATE` always refreshes the new `RequestSub`.
+
+Two type-5 widgets that share one `ObjectSub` still need **two** `objectLineId`s (separate `RequestSub` rows). Batch like §6: each `input` item is its own insert.
+
+```javascript
+const OBJECT_LINE_ID = 80; // type-5 widget ObjectLineID
+
+await client.request(
+    `mutation ($input: [Mutateinvoice_linesInput!]!) {
+        Mutate_invoice_lines(input: $input) {
+            requestId
+            requestSubId
+            success
+            messages { procedure msgType msgText }
+        }
+    }`,
+    {
+        input: [{
+            createType: "CREATE",
+            requestId: Context.RequestID,
+            objectLineId: OBJECT_LINE_ID,
+            lines: { DESC: "Line 01", QTY: "2" },
+        }],
+    }
+);
+```
+
+List one widget with `Select_{code}(requestIds, objectLineId)`. Delete rows with `Delete_subgrid` (parent **WRITE**; XOR `requestIds` vs `requestSubIds`). Schema: [graphql.md](../docs/entities/graphql.md#subgrid-objectsubcode).
 
