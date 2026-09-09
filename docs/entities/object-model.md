@@ -22,6 +22,7 @@ Root form definition. Belongs to Company + ObjectType.
 | `ObjectGridSortObjectLineID` | Default inbox sort line. Spec: `object.gridSort.field` (field **code**) |
 | `ObjectGridSortType` | `ASC` or `DESC`. Spec: `object.gridSort.type`. Admin also offers `None` (no line sort). After precompile, date (type 8) is parsed as `date`; tie-break is always `RequestID DESC`. A user filter can override. Subgrid analog: `ObjectSubGridSortObjectSubLineID` / `ObjectSubGridSortType` (not in spec yet). |
 | `ObjectCreateCopyType` | Which slots copy when GraphQL/UI **CREATE** sends a source `requestId` (`@CreateRequestID`). See [Create copy](#create-copy-create-from-request). Not in spec yet. |
+| `ObjectIsDirectCreate` | Inbox **Add** on this object’s grid. `1` = skip the object-picker modal and create the request (template picker only when there are several templates). `0` (SQL default) = show the Add-request modal. Spec: `object.directCreate`. **New objects: `true`.** Not the same as `ObjectOnGridIsDirectOpen` (opens the first request from the tree). |
 | `IsActive` | Inactive = hidden from Admin, Inbox, Browser |
 
 ## Company and ObjectType (tree)

@@ -158,12 +158,14 @@ List existing workflows from `projects/<site>/env/`: `catalog.yaml` (`objects[].
 
 ### Creating a new object
 
+Set **`object.directCreate: true`** (`Object.ObjectIsDirectCreate`) unless the user asks otherwise. Inbox **Add** then skips the object-picker and creates the request on this object (template picker only when there are several templates). Omit or `false` keeps the SQL default `0`. Do not flip the flag on an existing object unless asked. Recipe: [create-object.md](recipes/create-object.md).
+
 Before `spec/workflow.yaml` (and before `workflow.mode: minimal`):
 
 1. **New workflow** — new `Workflow` row (minimal Draft → Active → Completed unless the user described steps). Then **ask which roles and statuses** (below).
 2. **Existing workflow** — pick from the env list. Set `workflow.reuse: true` and bind `ObjectDefault.WorkflowID` to that Orig. ID. Roles and statuses come with the shared workflow — do not ask.
 
-Never create an object with a silent new minimal workflow. Recipe: [create-object.md](recipes/create-object.md).
+Never create an object with a silent new minimal workflow.
 
 ### New workflow: ask which roles and statuses
 
@@ -313,7 +315,7 @@ Next step: greenfield Object Transfer or change loop once specs exist under `env
 
 ## Spec v2 layout
 
-Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). Template extras `calcDelay` / `calcConfirm` / `defaultFilter` are **opt-in** (do not set unless the user asks); `defaultValue` only when the field should have a default. `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). Tree icon = Font Awesome **6.5.1** class string (`object.icon` / `objectType.icon` / `company.icon`); color = existing `CustomColorCode` (`object.color`, `objectType.color` — not HEX, not `CompanyTreeColor` / `ObjectTypeTreeColorFont`). Search icons with `python scripts/search-fa-icons.py --query bank`. Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). YAML mapping key order must match OT extract — [spec-format.md](docs/transfer/spec-format.md#yaml-key-order); after spec edits run `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`. Per-object files typically:
+Multiple tabs and sections — see [spec-format.md](docs/transfer/spec-format.md). Field types and template capabilities: [object-line-types.md](docs/entities/object-line-types.md). New **`description_memo`** fields omit `descMemoBorder` (or set `false`); a visible box only when the user asks. Extended validation and Client-Math/String: [xeelo-grammar.md](docs/entities/xeelo-grammar.md). Template extras `calcDelay` / `calcConfirm` / `defaultFilter` are **opt-in** (do not set unless the user asks); `defaultValue` only when the field should have a default. `object.requestTitleField` selects the ObjectLine used as the request title in GUI (`Object.RequestTitleObjectLineID`). New objects set **`object.directCreate: true`** (`Object.ObjectIsDirectCreate`) unless the user asks otherwise. Tree icon = Font Awesome **6.5.1** class string (`object.icon` / `objectType.icon` / `company.icon`); color = existing `CustomColorCode` (`object.color`, `objectType.color` — not HEX, not `CompanyTreeColor` / `ObjectTypeTreeColorFont`). Search icons with `python scripts/search-fa-icons.py --query bank`. Definition-level hide: field/tab `alwaysHidden` (`ObjectLineIsHidden` / `ObjectLineTabAlwaysHidden`); template `alwaysDisabled` (`ObjectDefaultLineIsDisabled`). These are not the same as template `hidden: true` (extended validation) or `templates[].access` / `updateActions[].access` / `workflow.steps[].access` (static visible/editable dual-lists). YAML mapping key order must match OT extract — [spec-format.md](docs/transfer/spec-format.md#yaml-key-order); after spec edits run `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`. Per-object files typically:
 
 - `spec/object.yaml` — object, objectType, company, layout, onGrid
 - `spec/references.yaml` — numberedníky (`references:` map)
@@ -423,6 +425,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
 - [ ] Admin comments: `spec/comments.yaml` per **Generate table comments** in conventions (`ask` → offer now / remember / skip; `auto` → write HTML on new/changed entities) ([comments.md](docs/entities/comments.md))
+- [ ] New object: **`object.directCreate: true`** unless the user asked otherwise ([create-object.md](recipes/create-object.md))
 - [ ] New object: asked which workflow (new vs existing from env) — do not silent-default minimal ([create-object.md](recipes/create-object.md))
 - [ ] New workflow: asked existing vs new **roles** and existing vs new **statuses** (lists from `env/shared/roles.yaml` / `statuses.yaml`: name — id); reuse skips both; existing catalog rows copied verbatim ([add-workflow.md](recipes/add-workflow.md))
 - [ ] New object onGrid: Items Grid + Table at Large/Medium/Small and Mobile Items Grid Small; no overlapping cells on a letter; dropped inbox/subgrid placements keep their `ids.explicit` keys so generate emits `IsActive: 0` ([ongrid.md](docs/entities/ongrid.md#no-overlap))

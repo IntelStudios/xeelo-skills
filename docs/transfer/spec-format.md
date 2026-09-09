@@ -50,6 +50,7 @@ object:
   code: ACCOUNT
   objectType: Finance
   requestTitleField: TITLE
+  directCreate: true                 # new objects; omit or false = SQL default 0
 company:
   name: Finance Company
 layout:
@@ -87,7 +88,7 @@ Rules:
 
 - **New mapping:** emit keys in extract order. Skip omitted optionals; put the next present key in its canonical slot (not at the end). New layout fields always include `width` and `order` (extract always writes them); tabs always include `placement` and `order`; sections always include `order` and `width`.
 - **Edit:** insert a new key at the canonical position among keys that are already present. Do not rewrite the rest of the file just to tidy order — run normalize after the edit.
-- **Omit** defaults extract omits (`matchId: 1`, `isActive: true`, `descMemoBorder: false`).
+- **Omit** defaults extract omits (`matchId: 1`, `isActive: true`, `descMemoBorder: false`, `directCreate: false`).
 - After editing a change-loop spec: `python scripts/normalize-spec-yaml.py projects/<name>/changes/<slug>/objects/<object>/`.
 
 Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width`, `order`, `slot`, `precision`, `objectSub` / `objectSubId`, `saveAction`, `uniqueId`, type extras, `alwaysHidden`, `isActive`, `mandatory` (layout only when there is no `templates.yaml`), `reference`, `lookup`, `autonumber`. Subgrid mapping: `name`, `width`, `allowPaging`, `defaultPaging`, `layout`, `code`, `templates`, `onGrid`. Full tuples: [`spec_key_order.py`](../../scripts/ot_builder/spec_key_order.py).
@@ -99,7 +100,7 @@ Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `icon`, `color`, `requestTitleField`, `gridSort`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `icon`, `color`, `requestTitleField`, `gridSort`, `directCreate`) |
 | `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
@@ -214,6 +215,8 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `autonumber` | Bind catalog key from `spec/autonumbers.yaml` on this layout field (single default template). Prefer `templates.fields.<code>.autonumber` when `templates.yaml` exists. Text (type 3) only. |
 
 `object.requestTitleField` is a **field code** on the object (not a layout extra). It sets `Object.RequestTitleObjectLineID` — that line’s value is the request title in inbox, header, and links.
+
+`object.directCreate` is `Object.ObjectIsDirectCreate`. When `true`, inbox **Add** on this object’s grid skips the object-picker modal and creates the request (template picker only when there are several templates). SQL default is `0` — omit or `false`. **New objects: set `true`.** Do not confuse with `ObjectOnGridIsDirectOpen` (opens the first request from the tree; not in spec).
 
 `object.gridSort` is default inbox sort (Admin Object → Sorting), not a template setting:
 

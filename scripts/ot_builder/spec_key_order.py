@@ -52,6 +52,7 @@ OBJECT_KEYS = (
     "color",
     "requestTitleField",
     "gridSort",
+    "directCreate",
 )
 
 OBJECT_TYPE_KEYS = ("icon", "color")

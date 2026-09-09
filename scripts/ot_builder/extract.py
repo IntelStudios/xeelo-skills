@@ -1834,6 +1834,8 @@ def extract_spec_from_index(
         if sort_code:
             spec["object"]["gridSort"] = {"field": sort_code, "type": sort_type}
 
+    _emit_true(spec["object"], "directCreate", obj.get("ObjectIsDirectCreate"))
+
     if ongrid:
         spec["onGrid"] = ongrid
     if sources_spec:

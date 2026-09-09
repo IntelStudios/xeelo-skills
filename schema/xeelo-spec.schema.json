@@ -30,6 +30,10 @@
           "type": "string",
           "minLength": 1,
           "description": "ObjectLine code used as the request title in GUI (Object.RequestTitleObjectLineID)"
+        },
+        "directCreate": {
+          "type": "boolean",
+          "description": "Object.ObjectIsDirectCreate — inbox Add skips the object-picker modal. New objects: true. Omit or false = SQL default 0."
         }
       }
     },

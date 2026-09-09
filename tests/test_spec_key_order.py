@@ -125,6 +125,7 @@ class ReorderSpecTests(unittest.TestCase):
         spec["object"] = {
             "name": "Account",
             "requestTitleField": "TITLE",
+            "directCreate": True,
             "code": "ACCOUNT",
             "icon": "fa-university fa-solid fa-fw",
             "objectType": "Finance",
@@ -133,7 +134,7 @@ class ReorderSpecTests(unittest.TestCase):
         out = reorder_spec(spec)
         self.assertEqual(
             list(out["object"].keys()),
-            ["name", "code", "objectType", "icon", "color", "requestTitleField"],
+            ["name", "code", "objectType", "icon", "color", "requestTitleField", "directCreate"],
         )
 
     def test_write_spec_roundtrip_field_order(self) -> None:

@@ -1564,6 +1564,7 @@ def build_rows(spec: dict) -> BuildResult:
     }
     _set_optional_nonempty(object_row, "ObjectTreeIcon", obj.get("icon"))
     _set_optional_nonempty(object_row, "ObjectTreeColor", obj.get("color"))
+    _set_optional_bool(object_row, "ObjectIsDirectCreate", obj.get("directCreate"))
     result.rows["Object"] = [object_row]
     result.edges.extend(
         [

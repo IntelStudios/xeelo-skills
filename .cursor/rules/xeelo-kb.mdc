@@ -34,6 +34,8 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Tree icon / color:** Font Awesome **6.5.1** class string on `object.icon` / `objectType.icon` / `company.icon`. Color = existing `CustomColorCode` on `object.color` / `objectType.color` (not HEX). Do not spec obsolete `CompanyTreeColor` or `ObjectTypeTreeColorFont`.
 
+**New object:** set **`object.directCreate: true`** (`Object.ObjectIsDirectCreate`) unless the user asks otherwise. Inbox Add then skips the object-picker. Do not flip the flag on an existing object unless asked. See [AGENT.md](../../AGENT.md) and [create-object.md](../../recipes/create-object.md).
+
 **New object workflow:** always ask whether to create a **new** workflow or **reuse** an existing one (list from site `env/`: object — name — id). Reuse = `workflow.reuse: true`. OT JSON is a delta vs download: unchanged entity rows are omitted even when FKs still reference them. Do not silent-default `workflow.mode: minimal`. **New workflow roles and statuses:** always ask existing vs new for **both** (`env/shared/roles.yaml` and `statuses.yaml`: name — id, Recommended = existing; choices independent); reuse skips both. Existing catalog rows: copy `env/shared` verbatim — do not change name/flags/order. See [AGENT.md § Ask which workflow](../../AGENT.md#ask-which-workflow).
 
 **Update action workflow:** always ask which workflow the new request version should use. **Default (Recommended)** = default `ObjectDefault` workflow — omit `updateActions[].workflow`. See [AGENT.md](../../AGENT.md) and [recipes/add-update-action.md](../../recipes/add-update-action.md).
