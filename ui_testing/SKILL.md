@@ -2,9 +2,10 @@
 name: ui-test
 description: >-
   Drive Xeelo User UI in a browser: load site credentials, local login, create
-  request, fill+save, workflow action, inbox. Use when the user invokes
-  /ui-test, asks to UI-test a site, verify User UI after publish, or log in as
-  a Xeelo user. Not Admin UI. Not GraphQL transfer (/download-db, /publish).
+  request, fill+save, workflow action, inbox; always write a result MP4.
+  Use when the user invokes /ui-test, asks to UI-test a site, verify User UI
+  after publish, or log in as a Xeelo user. Not Admin UI. Not GraphQL transfer
+  (/download-db, /publish).
 disable-model-invocation: true
 ---
 
@@ -18,7 +19,7 @@ Platform facts: [docs/ui-testing.md](../docs/ui-testing.md).
 
 ## Safety
 
-- Never print, log, screenshot-caption, or put `userPwd` (or the GraphQL `token`) into chat, `notes.md`, or a shell command.
+- Never print, log, screenshot-caption, put on a result video, or put `userPwd` (or the GraphQL `token`) into chat, `notes.md`, or a shell command.
 - Fill the password field from the connection file; do not echo it.
 - On failure: describe what is on screen (labels, errors) **without** credentials.
 
@@ -44,14 +45,16 @@ Read the matching file **before** acting. Stop at the first blocker; do not skip
 
 1. [connection.md](connection.md) — load JSON; require `userLogin` / `userPwd`.
 2. [login/SKILL.md](login/SKILL.md) — local Sign in only. Stop on SSO/MFA ([reference/blockers.md](reference/blockers.md)).
-3. Then only the flows the user asked for:
+3. Then only the flows the user asked for (screenshot each step that ran):
    - [create-request/SKILL.md](create-request/SKILL.md)
    - [fill-save/SKILL.md](fill-save/SKILL.md) + [reference/field-types.md](reference/field-types.md)
    - [workflow-action/SKILL.md](workflow-action/SKILL.md)
    - [inbox/SKILL.md](inbox/SKILL.md)
 
-Smoke default (user said “UI test” with no object): connection → login → inbox/home visible.
+   Smoke default (user said “UI test” with no object): connection → login → inbox/home visible.
+
+4. **Always** write a result video — [report-video.md](report-video.md). Do this even when a step fails or the flow stops early. Chat pass/fail is extra, not a substitute.
 
 ## Report
 
-Pass/fail per step. Failed step: visible text, URL path if known, screenshot if useful. Never include passwords.
+Pass/fail per step in chat **and** an MP4 under `projects/<project>/ui-test/<stamp>/result.mp4`. Screenshot each step that ran. Failed step: visible text, URL path, screenshot of the blocker. Never include passwords. Open the video when it is written.

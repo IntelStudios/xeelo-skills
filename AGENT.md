@@ -217,7 +217,7 @@ User UI testing skills live in [`ui_testing/`](ui_testing/) (not mixed with tran
 | `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 | `/graphql` | Live schema + `access_rights` from `POST {xeeloUrl}/graphql` | [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md) |
 | `/sync-main` | Hourly check of `origin/main` and fast-forward pull | [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md) |
-| `/ui-test` | Drive User UI in the browser (login → request lifecycle) | [`ui_testing/SKILL.md`](ui_testing/SKILL.md) |
+| `/ui-test` | Drive User UI in the browser; **always** write a result MP4 | [`ui_testing/SKILL.md`](ui_testing/SKILL.md), [`ui_testing/report-video.md`](ui_testing/report-video.md) |
 
 After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
@@ -261,6 +261,7 @@ projects/<name>/
     baseline.yaml
     objects/<slug>/...
     output/*-object-transfer.json
+  ui-test/<stamp>/                # /ui-test screenshots + result.mp4 (not public KB)
 ```
 
 ## Commands

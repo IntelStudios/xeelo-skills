@@ -2,3 +2,7 @@
 pyyaml>=6.0
 # Xeelo GraphQL (download-db, OT push, publish, precompile)
 httpx>=0.27
+# /ui-test result videos
+pillow>=10
+imageio>=2.34
+imageio-ffmpeg>=0.5

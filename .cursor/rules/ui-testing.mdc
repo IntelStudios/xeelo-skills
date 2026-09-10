@@ -11,5 +11,6 @@ When the user invokes `/ui-test`, asks to UI-test a Xeelo site, verify User UI a
 2. Credentials: optional `userLogin` / `userPwd` in `projects/<project>/.xeelo-connection.json`. Never print `userPwd`.
 3. Local username/password Sign in only. Stop on SSO/MFA.
 4. Not Admin UI. Not GraphQL transfer.
+5. Always end with a result **video** (`projects/<project>/ui-test/<stamp>/result.mp4`). Follow [ui_testing/report-video.md](../../ui_testing/report-video.md). Chat text is not a substitute.
 
 Canonical docs: [docs/ui-testing.md](../../docs/ui-testing.md).

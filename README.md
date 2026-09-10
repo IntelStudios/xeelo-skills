@@ -39,7 +39,7 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 | [AGENT.md](AGENT.md) | Agent playbook |
 | [docs/projects.md](docs/projects.md) | Nested private git for `projects/` |
 | [docs/ui-testing.md](docs/ui-testing.md) | User UI browser testing (`/ui-test`) |
-| [ui_testing/](ui_testing/SKILL.md) | UI testing skills (login → request lifecycle) |
+| [ui_testing/](ui_testing/SKILL.md) | UI testing skills; every `/ui-test` writes a result MP4 |
 | [docs/transfer/object-transfer-format.md](docs/transfer/object-transfer-format.md) | OT output format |
 | [docs/transfer/db-transfer-format.md](docs/transfer/db-transfer-format.md) | DB transfer + download protocol |
 | [docs/transfer/spec-format.md](docs/transfer/spec-format.md) | Spec v2 language |
