@@ -115,7 +115,7 @@ Bind:
 
 ## Placeholders
 
-Subject and body go through `fnRequestFormat`. **Subject** = plain text (`style` 2). **Body** = HTML (`style` 1) and is wrapped in a full HTML document with table CSS (HTML style only).
+Subject and body go through `fnRequestFormat`. **Subject** = plain text (`style` 2). **Body** = HTML (`style` 1) and is wrapped in a full HTML document with `table.table-style-two` CSS (HTML style only). Do **not** emit a second `<html>` / `<body>`. Outlook-safe layout: nested **tables** + **inline** `style` / `bgcolor` (the wrapper CSS does not style your chrome). Avoid extra `{…}` in CSS — `fnParseFormat` treats braces as tokens. `{RequestDetails,w,lineId,…}` already renders as `table-style-two`.
 
 Tokens are `{Name}` or `{Name,arg1,arg2,…}`. Admin’s `NotificationFormat` hint is **incomplete**. Generate/extract **do not rewrite** tokens. Spec must use **numeric `ObjectLineID`** in `{idXXXX}` — `{idAMOUNT}` is not resolved.
 
