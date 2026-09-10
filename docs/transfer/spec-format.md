@@ -100,7 +100,7 @@ Layout field order (skip keys that do not apply): `name`, `code`, `type`, `width
 | `version` | yes | Must be `2` |
 | `kind` | yes | `create_object` |
 | `transferType` | no | `object` (default) |
-| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `icon`, `color`, `requestTitleField`, `gridSort`, `directCreate`) |
+| `object` | yes | Object identity (`name`, `code`, `objectType`, optional `icon`, `color`, `requestTitleField`, `gridSort`, `directCreate`). `object.code` → `ObjectCode` — unique site-wide. [GraphQL codes](../entities/object-model.md#graphql-codes-site-unique) |
 | `objectType` | no | ObjectType tree visuals (`icon`, `color`). Type **name** stays `object.objectType`. |
 | `company` | yes | Company row in transfer (`name`, optional `icon`) |
 | `layout.tabs[]` | yes | Tabs with nested sections and fields |
@@ -185,7 +185,7 @@ Fields are defined inside their section under `layout.tabs[]`.
 | Property | Maps to |
 |----------|---------|
 | `name` | `ObjectLineName` |
-| `code` | `ObjectLineCode` (also used in `onGrid`) |
+| `code` | `ObjectLineCode` (also used in `onGrid`). Unique **site-wide**, not per object — prefix when two objects would share a short name. [GraphQL codes](../entities/object-model.md#graphql-codes-site-unique) |
 | `type` | `ObjectLineTypeID` via [`field-type-mapping.json`](../../data/field-type-mapping.json) — all 20 slugs in [object-line-types.md](../entities/object-line-types.md) |
 | `width` | `ObjectLineTypeWidth` — field width in **percent** (1–100) |
 | `order` | `ObjectLineOrder` |
@@ -389,7 +389,7 @@ Also emit `workflow.steps[].access` for the parent line on every step that shoul
 
 | Spec | Maps to |
 |------|---------|
-| `subgrids.<key>` | `ObjectSub` (`ObjectSubName`, optional `ObjectSubCode`, `ObjectSubWidth` — add/edit-row **modal** width %; default **80**, Admin 50–100). Extra fields → extra tabs/sections or stacked `width: 100`, not a wider modal. |
+| `subgrids.<key>` | `ObjectSub` (`ObjectSubName`, optional `ObjectSubCode`, `ObjectSubWidth` — add/edit-row **modal** width %; default **80**, Admin 50–100). Extra fields → extra tabs/sections or stacked `width: 100`, not a wider modal. `ObjectSubCode` and layout field `code` (`ObjectSubLineCode`) are unique site-wide in their tables — [GraphQL codes](../entities/object-model.md#graphql-codes-site-unique). |
 | `allowPaging` | `ObjectSub.ObjectSubGridAllowPaging` — User GUI table pager. Omit / false → generator does not emit the column (SQL default off). Two type-5 widgets that share one `ObjectSub` share this setting. |
 | `defaultPaging` | `ObjectSub.ObjectSubGridDefaultPaging` — rows per page. With `allowPaging: true`, omit size → generate **10**. User GUI also falls back to **10** when the column is null. |
 | `layout.tabs/sections/fields` | `ObjectSubLineTab` / `ObjectSubLineSection` / `ObjectSubLine`. Same type slugs and **same extras** as ObjectLine (`precision`, `reference`, … → `ObjectSubLine*`). Not 5 / 13 / 18. |

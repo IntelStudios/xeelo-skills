@@ -13,7 +13,7 @@ Transfer JSON is a **delta vs download**: omit any entity row that already exist
 
 ### 1. Write spec v2
 
-See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md).
+See [`docs/transfer/spec-format.md`](../docs/transfer/spec-format.md). `object.code` and field `code` (`ObjectLineCode`) are unique **site-wide**, not per object — prefix when two objects would share a short name ([object-model.md](../docs/entities/object-model.md#graphql-codes-site-unique)).
 
 Use nested `layout.tabs[]` → `sections[]` → `fields[]`. Set **`object.directCreate: true`** on a **new** object (`Object.ObjectIsDirectCreate`) unless the user asks otherwise — inbox Add skips the object-picker. Inbox `onGrid`: [ongrid.md](../docs/entities/ongrid.md) (seven default layouts on a new object). Optional `spec/subgrids.yaml` for a type-5 subgrid — emit `templates[].access` and per-step `workflow.steps[].access` for the parent type-5 line or the widget is hidden; emit `subgrids.<key>.onGrid` or the subgrid **table** has no columns ([add-subgrid.md](add-subgrid.md)). Optional `spec/language-table.yaml` for translated labels ([localization.md](../docs/entities/localization.md)); canonical `name` stays English. Optional `spec/comments.yaml` for Admin HTML comments ([comments.md](../docs/entities/comments.md)). Optional tree `icon` / `color` on `object`, `objectType`, `company` — [spec-format.md](../docs/transfer/spec-format.md#tree-icons-and-colors).
 

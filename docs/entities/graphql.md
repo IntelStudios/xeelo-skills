@@ -8,7 +8,7 @@ The schema is generated from the object model (`spGraphQLObjectModel`). After ob
 
 ## Sanitize names
 
-Identifiers come from **site** `ObjectCode` / `ObjectLineCode` (after `/download-db`, see `env/objects/<slug>/spec/object.yaml`). `sanitizeGraphQLName`:
+Identifiers come from **site** `ObjectCode` / `ObjectLineCode` (after `/download-db`, see `env/objects/<slug>/spec/object.yaml`). Non-null codes are unique **site-wide** in their table (`ObjectSubCode` / `ObjectSubLineCode` the same) — [object-model.md](object-model.md#graphql-codes-site-unique). `sanitizeGraphQLName`:
 
 - spaces and specials → `_`
 - consecutive `_` collapse

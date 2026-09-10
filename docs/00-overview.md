@@ -17,11 +17,12 @@ Xeelo is a metadata-driven **workflow and request-management platform** (Smarter
 | **Update action (ObjectUpdateAction)** | User update on completed request → new version; field visible/editable via **ObjectUpdateAccess** ([update-actions.md](entities/update-actions.md)) |
 | **Object action (ObjectAction)** | Server automation on Save / workflow; Node.js Last: [object-actions.md](entities/object-actions.md), [nodejs.md](entities/nodejs.md) |
 | **GraphQL** | Per-site `Select_` / `Mutate_` from object codes; subgrid `Select_` / `Mutate_{ObjectSubCode}` + `Delete_subgrid`: [graphql.md](entities/graphql.md) |
+| **GraphQL codes** | `ObjectCode` / `ObjectLineCode` / `ObjectSubCode` / `ObjectSubLineCode` — each non-null value unique **site-wide** in that table (not per object). Spec `code` copies as-is. [object-model.md](entities/object-model.md#graphql-codes-site-unique) |
 | **Reference (ObjectLineSource)** | Číselník for combo/radio/multi — bind on **ObjectLine**; spec `spec/references.yaml` |
 | **Lookup (ObjectLineLookup)** | Query map on **template line** — fills the field from another line (`sourceField`) |
 | **Autonumber (ObjectLineAutoNumber)** | Site sequence (format + next); bind on **template line** — [object-model.md](entities/object-model.md#autonumber) |
 | **Object Service** | Site HTTP/SQL catalog; Client-Service binds it on the **template line** — [object-services.md](entities/object-services.md) |
-| **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted requests — [object-model.md](entities/object-model.md#unique) |
+| **Unique** | `ObjectLineUniqueID` level on a line — uniqueness among submitted **request values**, not GraphQL codes — [object-model.md](entities/object-model.md#unique) |
 | **Subgrid (ObjectSub)** | Embedded table on a type-5 ObjectLine (`ObjectSubID`). May be **shared** across objects. Own tabs/lines/templates. [object-model.md](entities/object-model.md#subgrid) |
 | **Localization (LanguageTable)** | Translated labels for objects, tabs, sections, fields, subgrid tabs/sections/lines — [localization.md](entities/localization.md) |
 | **Admin comments (TableComments)** | HTML notes on config entities — [comments.md](entities/comments.md) |

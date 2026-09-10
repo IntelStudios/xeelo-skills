@@ -2,7 +2,7 @@
 
 Embedded repeatable table on a parent **type 5** line (`ObjectSub` via `ObjectLine.ObjectSubID`). Own tabs, sections, columns, and templates.
 
-Not a request. Rows live under the parent request (no own workflow). Details: [object-model.md](../docs/entities/object-model.md#subgrid).
+Not a request. Rows live under the parent request (no own workflow). Details: [object-model.md](../docs/entities/object-model.md#subgrid). `subgrids.<key>.code` (`ObjectSubCode`) and column `code` (`ObjectSubLineCode`) are unique **site-wide** in their tables — prefix when another object already uses the short name ([object-model.md](../docs/entities/object-model.md#graphql-codes-site-unique)).
 
 ## When to use
 

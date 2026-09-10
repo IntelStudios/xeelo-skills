@@ -116,7 +116,7 @@ Detailed semantics from admin hints:
 
 | Doc | Entities |
 |-----|----------|
-| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, **create copy**, lookups, autonumber, unique, **subgrid** |
+| [entities/object-model.md](entities/object-model.md) | Object, lines, templates, create access, **create copy**, lookups, autonumber, unique, **GraphQL codes** (site-wide), **subgrid** |
 | [entities/object-line-types.md](entities/object-line-types.md) | ObjectLine types 1–20, extras, template capabilities |
 | [entities/xeelo-grammar.md](entities/xeelo-grammar.md) | Extended validation + Client-Math/String/Service expressions |
 | [entities/update-actions.md](entities/update-actions.md) | ObjectUpdateAction, access, conditions |

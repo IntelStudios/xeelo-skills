@@ -15,7 +15,7 @@ Root form definition. Belongs to Company + ObjectType.
 | `ObjectName` | Display name (canonical; translations in [localization.md](localization.md)) |
 | `CompanyID` | Owning company |
 | `ObjectTypeID` | Category |
-| `ObjectCode` | Optional unique code |
+| `ObjectCode` | Optional GraphQL / integration code. Non-null values are unique **site-wide** (this table), not per company. Spec: `object.code`. [GraphQL codes](#graphql-codes-site-unique) |
 | `ObjectTreeIcon` | Font Awesome 6.5.1 class string (`fa-{id} fa-{variant} fa-fw`). Spec: `object.icon` |
 | `ObjectTreeColor` | Treeview icon color = `CustomColor.CustomColorCode` (not HEX). Spec: `object.color` |
 | `RequestTitleObjectLineID` | ObjectLine whose value is the **request title** in GUI (inbox, header, links). Spec: `object.requestTitleField` |
@@ -76,7 +76,7 @@ Note: no direct `ObjectID` FK — association is via sections → lines → obje
 | `ObjectLineSlot` | Unique slot per object (required for most active lines; not 5, 6, 13, 16, 17) |
 | `ObjectLineOrder` | Display order |
 | `ObjectLineTypeWidth` | Field width in percent (1–100) |
-| `ObjectLineCode` | Optional stable code (GraphQL, integrations). After insert, Admin often persists `line_{ObjectLineID}_{slug}` even if the transfer sent a shorter code. GraphQL uses the stored value — take it from env after `/download-db`. |
+| `ObjectLineCode` | Optional stable code (GraphQL, integrations). Non-null values are unique **site-wide** (this table), not per object — two objects cannot share `KPI_1`. Spec: `fields[].code`. After insert, Admin often persists `line_{ObjectLineID}_{slug}` even if the transfer sent a shorter code. GraphQL uses the stored value — take it from env after `/download-db`. [GraphQL codes](#graphql-codes-site-unique) |
 | `ObjectLineIsHidden` | Hide this line in GUI (definition-level). Spec: `fields[].alwaysHidden`. Distinct from template `hidden: true` / `extended.hidden`. Helper fields often live on an `alwaysHidden` tab instead. |
 | `IsActive` | Soft-disable the line. Spec: `fields[].isActive: false`. Object Transfer does not delete. Distinct from `alwaysHidden` (line still active, just not shown). |
 | `ObjectLineOnGridIsAllowed` | Line may appear on the request grid — [ongrid.md](ongrid.md) |
@@ -241,11 +241,32 @@ Subgrid template lines bind the same catalog (`ObjectSubDefaultLineAutoNumberID`
 
 Site HTTP catalog (`ObjectService`) bound on the template line as **Client-Service**. Spec: `spec/object-services.yaml` + `templates.fields.<code>.clientCalculation` (`type: service`). [object-services.md](object-services.md). Recipe: [`add-client-service.md`](../../recipes/add-client-service.md).
 
+## GraphQL codes (site-unique)
+
+**Columns:** `ObjectCode`, `ObjectLineCode`, `ObjectSubCode`, `ObjectSubLineCode`
+
+Each non-null value is unique **across the whole site** in **that** table (filtered unique index; `NULL` is allowed). Not per object, not per subgrid, not per company. Spec `object.code` / `fields[].code` / `subgrids.<key>.code` / subgrid field `code` copy as-is — generate does not prefix by object. Two objects cannot both use `KPI_1`; prefix (`STR_KPI_1`) or omit the code and let precompile fill an id-slug. Same for subgrids (`OWNERS` vs `STR_OWNERS`).
+
+This is **not** [Unique](#unique) (`ObjectLineUniqueID`) — that checks request **values**. Slot (`ObjectLineSlot`) is unique per object, not site-wide.
+
+SQL uniqueness is **per table**. GraphQL `Select_` / `Mutate_` names come from `ObjectCode` and `ObjectSubCode` with the same prefix, so do not reuse an object code as a subgrid code.
+
+Precompile fills only `NULL` codes (slug of the display name):
+
+| Table | Pattern |
+|-------|---------|
+| Object | `object_{ObjectID}_{slug}` |
+| ObjectLine | `line_{ObjectLineID}_{slug}` |
+| ObjectSub | `subgrid_{ObjectSubID}_{slug}` |
+| ObjectSubLine | `line_{ObjectSubLineID}_{slug}` |
+
+`ObjectLineGraphQL = 0` / `ObjectSubLineGraphQL = 0` clears the code. Admin insert often stores `line_{id}_{slug}` even when the transfer sent a shorter `code`. GraphQL uses the stored value — [graphql.md](graphql.md).
+
 ## Unique
 
 **Columns:** `ObjectLineUniqueID` (level), `ObjectLineIsUnique` (bit)
 
-Uniqueness of a field **value** among **submitted** requests of this object (last version of each request code). Empty values are not checked. GraphQL line flag `unique` is 1 when `ObjectLineUniqueID` is not null — runtime follows UniqueID, not the bit. Spec `fields[].uniqueId` writes both (`ObjectLineUniqueID` + `ObjectLineIsUnique = 1`).
+Uniqueness of a field **value** among **submitted** requests of this object (last version of each request code). Empty values are not checked. GraphQL line flag `unique` is 1 when `ObjectLineUniqueID` is not null — runtime follows UniqueID, not the bit. Spec `fields[].uniqueId` writes both (`ObjectLineUniqueID` + `ObjectLineIsUnique = 1`). Not the same as [GraphQL codes](#graphql-codes-site-unique) on the metadata columns.
 
 Levels ([`ObjectLineUnique.json`](../data/enums/ObjectLineUnique.json)):
 
@@ -333,7 +354,7 @@ With Generate on, the user picks several číselník values on that combo; runti
 
 ### GraphQL and notifications
 
-Sanitize `ObjectSubCode` the same way as `ObjectCode`. Query/mutation names use that code (`Select_{code}`, `Mutate_{code}`), not the parent `ObjectLineCode`. Pass `objectLineId` (type-5 `ObjectLineID`). Create rows with `Mutate_{code}` (`createType: CREATE`); do not use the parent object mutate. Delete rows with `Delete_subgrid` (parent WRITE). Full args: [graphql.md](graphql.md#subgrid-objectsubcode). Email tokens: `{RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...}`.
+Sanitize `ObjectSubCode` the same way as `ObjectCode`. Query/mutation names use that code (`Select_{code}`, `Mutate_{code}`), not the parent `ObjectLineCode`. `ObjectSubCode` and `ObjectSubLineCode` are unique site-wide in their tables — [GraphQL codes](#graphql-codes-site-unique). Pass `objectLineId` (type-5 `ObjectLineID`). Create rows with `Mutate_{code}` (`createType: CREATE`); do not use the parent object mutate. Delete rows with `Delete_subgrid` (parent WRITE). Full args: [graphql.md](graphql.md#subgrid-objectsubcode). Email tokens: `{RequestSubGrid,Width,ObjectLineID,ObjectSubLineID,...}`.
 
 ## Update actions
 
