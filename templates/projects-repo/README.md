@@ -17,6 +17,7 @@ Full workflow lives in the parent xeelo-skills clone: `docs/projects.md`. Typica
   snapshots/               # DB transfer JSON — gitignored; refresh with /download-db
   env/                     # extracted specs (versioned)
   changes/<loop-slug>/     # change loops + generated Object Transfer (versioned)
+  ui-test/<stamp>/         # /ui-test screenshots + result.mp4
 ```
 
 Do not add this tree to the public xeelo-skills repository. Pull KB updates in the xeelo-skills root; pull site updates here.

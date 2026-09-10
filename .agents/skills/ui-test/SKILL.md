@@ -2,8 +2,9 @@
 name: ui-test
 description: >-
   Drive Xeelo User UI in the browser (login, create request, fill+save,
-  workflow, inbox). Use when the user invokes /ui-test, asks to UI-test a
-  site, verify User UI after publish, or log in as a Xeelo user.
+  workflow, inbox). Always write a result MP4. Use when the user invokes
+  /ui-test, asks to UI-test a site, verify User UI after publish, or log in as
+  a Xeelo user.
 disable-model-invocation: true
 ---
 

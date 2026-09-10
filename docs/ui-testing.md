@@ -35,3 +35,7 @@ Unauthenticated User UI shows Sign in at the site root. Path `/login` is logout 
 6. Inbox grid: find the row; optional on-grid workflow when `actions[].isOnGrid`
 
 Save and Workflow live in the **request header**, not a form footer.
+
+## Result video
+
+Every `/ui-test` writes an MP4 (pass or fail). Screenshots + `manifest.json` + `result.mp4` live under `projects/<project>/ui-test/<stamp>/` (site copy, not the public KB git). No `userPwd` / `token` on slides. How to capture and render: [`ui_testing/report-video.md`](../ui_testing/report-video.md).
