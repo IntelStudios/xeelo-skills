@@ -15,7 +15,7 @@ Announce once at the start of site work (`Režim: project` or `Režim: project-k
 
 ## project (default)
 
-Edit only `projects/<name>/`. **Read** KB (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills, `.cursor/rules/`); do **not** edit it as a side effect of site work. If you hit a KB gap, one sentence at the end — do not fix it.
+Edit only `projects/<name>/`. **Read** KB (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills including `ui_testing/`, `.cursor/rules/`); do **not** edit it as a side effect of site work. If you hit a KB gap, one sentence at the end — do not fix it.
 
 ## project-kb
 

@@ -51,16 +51,18 @@ Determine from the user message or ask once:
 
    Copy [`templates/project/conventions.md`](../../../templates/project/conventions.md) to `projects/<name>/conventions.md`.
 
-3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `token` from other projects.
+3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `token` or `userPwd` from other projects.
 
    ```json
    {
      "xeeloUrl": "https://<name>.xeelo.online/",
-     "token": ""
+     "token": "",
+     "userLogin": "",
+     "userPwd": ""
    }
    ```
 
-   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`.
+   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`. `userLogin` / `userPwd` are optional until `/ui-test`.
 
 4. **Do not** create `.xeelo-connection.example.json`.
 
@@ -72,5 +74,7 @@ Determine from the user message or ask once:
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
 | `token` | GraphQL access token with **`isAdmin`** (from site GraphQL access tokens). Fixed; no refresh. |
+| `userLogin` | User UI **local** username (not the GraphQL token). Optional until `/ui-test`. |
+| `userPwd` | User UI **local** password. Optional until `/ui-test`. Never print it; never copy from other projects. |
 
-Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling connection: `/download-db`.
+Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling GraphQL connection: `/download-db`. UI testing: [docs/ui-testing.md](../../../docs/ui-testing.md).

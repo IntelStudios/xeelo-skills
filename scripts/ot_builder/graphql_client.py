@@ -53,11 +53,24 @@ CONNECTION_HELP = (
     'Example: { "xeeloUrl": "https://<site>.xeelo.online/", "token": "..." }'
 )
 
+UI_CONNECTION_HELP = (
+    "UI testing also needs userLogin and userPwd "
+    "(User UI local username and password). "
+    "Omit or leave empty when not UI-testing. Never print userPwd."
+)
+
 AUTH_HINT = (
     "Use a GraphQL access token with isAdmin in .xeelo-connection.json "
     'as { "xeeloUrl": "https://<site>.xeelo.online/", "token": "..." }. '
     "There is no token refresh."
 )
+
+
+def _optional_str(value: Any) -> str | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
 
 
 class GraphqlError(RuntimeError):
@@ -191,6 +204,8 @@ class ConnectionConfig:
     xeelo_url: str
     token: str
     path: Path | None = None
+    user_login: str | None = None
+    user_pwd: str | None = None
 
     @classmethod
     def load(cls, path: Path) -> "ConnectionConfig":
@@ -208,7 +223,27 @@ class ConnectionConfig:
             xeelo_url=str(xeelo).rstrip("/"),
             token=str(token).strip(),
             path=path,
+            user_login=_optional_str(data.get("userLogin")),
+            user_pwd=_optional_str(data.get("userPwd")),
         )
+
+    def __repr__(self) -> str:
+        pwd = "<set>" if self.user_pwd else None
+        return (
+            "ConnectionConfig("
+            f"xeelo_url={self.xeelo_url!r}, token='***', path={self.path!r}, "
+            f"user_login={self.user_login!r}, user_pwd={pwd})"
+        )
+
+    @property
+    def has_ui_login(self) -> bool:
+        return bool(self.user_login and self.user_pwd)
+
+    def require_ui_login(self) -> tuple[str, str]:
+        if not self.has_ui_login:
+            where = self.path or ".xeelo-connection.json"
+            raise ValueError(f"{where}: missing userLogin/userPwd. {UI_CONNECTION_HELP}")
+        return self.user_login or "", self.user_pwd or ""
 
     @property
     def graphql_url(self) -> str:
