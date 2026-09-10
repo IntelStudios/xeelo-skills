@@ -86,6 +86,41 @@ class ConnectionConfigTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing token"):
             ConnectionConfig.load(path)
 
+    def test_optional_ui_fields_empty_or_omitted(self) -> None:
+        path = self._write(
+            {
+                "xeeloUrl": "https://example.xeelo.online/",
+                "token": "secret-admin",
+                "userLogin": "",
+                "userPwd": "  ",
+                "ignoredExtra": True,
+            }
+        )
+        config = ConnectionConfig.load(path)
+        self.assertIsNone(config.user_login)
+        self.assertIsNone(config.user_pwd)
+        self.assertFalse(config.has_ui_login)
+        with self.assertRaisesRegex(ValueError, "missing userLogin/userPwd"):
+            config.require_ui_login()
+
+    def test_loads_ui_login_and_redacts_password_in_repr(self) -> None:
+        path = self._write(
+            {
+                "xeeloUrl": "https://example.xeelo.online/",
+                "token": "secret-admin",
+                "userLogin": "tester",
+                "userPwd": "super-secret-password",
+            }
+        )
+        config = ConnectionConfig.load(path)
+        self.assertEqual(config.user_login, "tester")
+        self.assertEqual(config.user_pwd, "super-secret-password")
+        self.assertEqual(config.require_ui_login(), ("tester", "super-secret-password"))
+        text = repr(config)
+        self.assertNotIn("super-secret-password", text)
+        self.assertNotIn("secret-admin", text)
+        self.assertIn("user_pwd=<set>", text)
+
 
 class XmlHelperTests(unittest.TestCase):
     def test_utf16_roundtrip_with_bom(self) -> None:

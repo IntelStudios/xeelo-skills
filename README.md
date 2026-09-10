@@ -7,7 +7,7 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
 1. Read **[AGENT.md](AGENT.md)** — playbook
 2. If `projects/` is empty or missing, set up the nested private repo — **[docs/projects.md](docs/projects.md)**
 3. Per project (`projects/<name>/` = one Xeelo):
-   - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL `token`
+   - Write `projects/<name>/.xeelo-connection.json` with `xeeloUrl` and GraphQL `token` (optional `userLogin` / `userPwd` for `/ui-test`)
    - `python scripts/download-db-transfer.py --connection projects/<name>/.xeelo-connection.json`
    - `python scripts/extract-db-transfer-to-env.py <snapshot.json> -o projects/<name>/env`
    - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
@@ -38,6 +38,8 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 |------|---------|
 | [AGENT.md](AGENT.md) | Agent playbook |
 | [docs/projects.md](docs/projects.md) | Nested private git for `projects/` |
+| [docs/ui-testing.md](docs/ui-testing.md) | User UI browser testing (`/ui-test`) |
+| [ui_testing/](ui_testing/SKILL.md) | UI testing skills (login → request lifecycle) |
 | [docs/transfer/object-transfer-format.md](docs/transfer/object-transfer-format.md) | OT output format |
 | [docs/transfer/db-transfer-format.md](docs/transfer/db-transfer-format.md) | DB transfer + download protocol |
 | [docs/transfer/spec-format.md](docs/transfer/spec-format.md) | Spec v2 language |

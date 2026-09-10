@@ -71,4 +71,5 @@ See [01-entity-hierarchy.md](01-entity-hierarchy.md) for portlet-grouped entity 
 - [entities/localization.md](entities/localization.md) — `LanguageTable`, `spec/language-table.yaml`
 - [entities/comments.md](entities/comments.md) — `TableComments`, `spec/comments.yaml`
 - [../AGENT.md](../AGENT.md) — project loop (download → env → change-loop OT)
+- [ui-testing.md](ui-testing.md) — User UI browser checks (`/ui-test`, optional `userLogin` / `userPwd`)
 - [projects.md](projects.md) — nested private git for `projects/`

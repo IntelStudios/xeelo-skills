@@ -1,0 +1,15 @@
+---
+description: When the user asks to UI-test Xeelo User UI, log in as a site user, or invokes /ui-test, read ui_testing/SKILL.md
+alwaysApply: false
+---
+
+# UI testing
+
+When the user invokes `/ui-test`, asks to UI-test a Xeelo site, verify User UI after publish, or sign in as a User UI account:
+
+1. Read [ui_testing/SKILL.md](../../ui_testing/SKILL.md) and follow it.
+2. Credentials: optional `userLogin` / `userPwd` in `projects/<project>/.xeelo-connection.json`. Never print `userPwd`.
+3. Local username/password Sign in only. Stop on SSO/MFA.
+4. Not Admin UI. Not GraphQL transfer.
+
+Canonical docs: [docs/ui-testing.md](../../docs/ui-testing.md).

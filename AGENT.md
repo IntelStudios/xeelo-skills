@@ -8,7 +8,7 @@
 
 | Path | Role |
 |------|------|
-| `docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills, … | Knowledge base. When the user asks what the KB contains or what it says, answer **only** from here. |
+| `docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills (`.agents/skills/`, `ui_testing/`), … | Knowledge base. When the user asks what the KB contains or what it says, answer **only** from here. |
 | `projects/` | Site working copies (env, snapshots, change loops). Gitignored; one **private** git repo = the whole directory. You may **draw from** them when implementing. They are **not** KB content. |
 | `internal/` | Optional local playbook (gitignored). Product-source index for this machine. **Not** KB. If it exists, read it when the KB is incomplete or when re-verifying platform behaviour. Write extracted facts back into the public KB **only in `project-kb` work mode** — do not copy source paths into `docs/` or `recipes/`. |
 
@@ -26,7 +26,7 @@ mode: project
 
 Allowed values: `project` | `project-kb`. Missing `internal/`, missing file, empty, or any other value → **`project`**.
 
-| Mode | Site work | KB (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills, `.cursor/rules/`) |
+| Mode | Site work | KB (`docs/`, `recipes/`, `data/`, `scripts/`, `AGENT.md`, skills including `ui_testing/`, `.cursor/rules/`) |
 |------|-----------|-------------------------------------------------------------------------------------|
 | **`project`** (default) | Edit `projects/<name>/` | **Read** only. If you hit a KB gap, one sentence at the end — do not fix it. |
 | **`project-kb`** | Same | Also **harvest**: write repeatable platform facts (enum, recipe step, spec field, Admin/GraphQL behaviour). Not site-specific data, not `internal/` paths, not a chat dump. |
@@ -49,7 +49,7 @@ flowchart LR
   Pub --> DL
 ```
 
-1. **Connect** — user provides Xeelo URL + GraphQL token (`isAdmin`) → `projects/<project>/.xeelo-connection.json` (gitignored)
+1. **Connect** — user provides Xeelo URL + GraphQL token (`isAdmin`) → `projects/<project>/.xeelo-connection.json` (gitignored). Optional `userLogin` / `userPwd` for User UI testing (`/ui-test`)
 2. **Download** DB transfer JSON → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
@@ -126,7 +126,7 @@ When the user asks for a **new empty project** (`projects/<name>/`):
 1. Create the folder with empty `snapshots/`, `env/`, `changes/` (`.gitkeep` if needed for git).
 2. Copy [`templates/project/conventions.md`](templates/project/conventions.md) to `projects/<name>/conventions.md`.
 3. Add **only** `projects/<name>/.xeelo-connection.json` — **no** `.xeelo-connection.example.json`.
-4. Fill **placeholder / empty** values. Do **not** copy `token` from other projects.
+4. Fill **placeholder / empty** values. Do **not** copy `token` or `userPwd` from other projects.
 5. You may **infer** `xeeloUrl` as `https://<name>.xeelo.online/` when that matches the site slug; leave it empty if unsure.
 6. After creation, **tell the user exactly what to fill in** (see checklist below).
 
@@ -135,9 +135,13 @@ Template (empty values for user to complete):
 ```json
 {
   "xeeloUrl": "https://<name>.xeelo.online/",
-  "token": ""
+  "token": "",
+  "userLogin": "",
+  "userPwd": ""
 }
 ```
+
+`userLogin` / `userPwd` are optional until `/ui-test` (User UI local account, not the GraphQL token). Never print `userPwd`.
 
 **User checklist** (agent reports this after scaffold):
 
@@ -145,6 +149,8 @@ Template (empty values for user to complete):
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
 | `token` | GraphQL access token with **`isAdmin`**. Fixed; no refresh |
+| `userLogin` | User UI local username. Optional until `/ui-test` |
+| `userPwd` | User UI local password. Optional until `/ui-test`; never copy from other projects |
 
 File is gitignored in both xeelo-skills and the nested projects repo (`**/.xeelo-connection.json`). Commit the new site folder in `projects/` (the private repo), not in xeelo-skills. Do not download DB transfer until the user has filled connection details.
 
@@ -199,7 +205,9 @@ Recipe: [add-update-action.md](recipes/add-update-action.md). Runtime fallback: 
 
 ## Skills
 
-Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, `/precompile`, `/graphql`, and `/sync-main`.
+Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini; Claude in Cursor). Invoke with `/new-project`, `/download-db`, `/publish`, `/precompile`, `/graphql`, `/sync-main`, and `/ui-test`.
+
+User UI testing skills live in [`ui_testing/`](ui_testing/) (not mixed with transfer skills). `/ui-test` is a pointer: [`.agents/skills/ui-test/SKILL.md`](.agents/skills/ui-test/SKILL.md).
 
 | Skill | When | File |
 |-------|------|------|
@@ -209,6 +217,7 @@ Canonical location: [`.agents/skills/`](.agents/skills/) (Cursor, Codex, Gemini;
 | `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 | `/graphql` | Live schema + `access_rights` from `POST {xeeloUrl}/graphql` | [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md) |
 | `/sync-main` | Hourly check of `origin/main` and fast-forward pull | [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md) |
+| `/ui-test` | Drive User UI in the browser (login → request lifecycle) | [`ui_testing/SKILL.md`](ui_testing/SKILL.md) |
 
 After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
@@ -230,7 +239,7 @@ After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publis
 
 On later rounds in the same loop, **append** (new bullets or a dated subsection). Do not silently rewrite earlier history.
 
-Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points it at these files.
+Claude Code CLI does not scan `.agents/skills/` or `ui_testing/`; [CLAUDE.md](CLAUDE.md) points it at these files.
 
 ## Project layout
 
@@ -239,7 +248,7 @@ Claude Code CLI does not scan `.agents/skills/`; [CLAUDE.md](CLAUDE.md) points i
 ```text
 projects/<name>/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
-  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL token
+  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL token; optional userLogin/userPwd for /ui-test
   graphql/{schema,access_rights}.json  # live introspection — gitignored; refresh with /graphql
   snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
