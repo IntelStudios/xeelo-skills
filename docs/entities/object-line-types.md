@@ -277,7 +277,7 @@ Same keys on subgrid templates (`ObjectSubDefaultLine*`).
 
 Catalog: [`ObjectDefaultLineCalculationType.json`](../data/enums/ObjectDefaultLineCalculationType.json) (IDs **51+**). Stored on **`ObjectDefaultLineCalculationTypeID`** + **`ObjectDefaultLineCalculation`**, not the client dropdown.
 
-Spec/generator do **not** emit those two columns. After generate, patch the `ObjectDefaultLine` row on the OT JSON (same pattern as [on-grid badge](#on-grid-badge) Server-String **53**).
+Spec/generator do **not** emit those two columns. After generate, patch the `ObjectDefaultLine` row on the OT JSON (same pattern as [on-grid badge](#on-grid-badge) Server-String **53**). To **remove** a server calc already on site, upsert the same Orig. ID with `ObjectDefaultLineCalculationTypeID` / `ObjectDefaultLineCalculation` **null** (omitting the keys on generate does not clear them). Soft-disable the matching `ObjectDefaultLineCalculationOrder` row (`IsActive: 0`).
 
 ### Calculation order
 
