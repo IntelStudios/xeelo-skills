@@ -238,6 +238,14 @@ Client-Service requires `ObjectServiceID` (`clientCalculation.service`). On a **
 
 Expression language for **Math** and **String**: [xeelo-grammar.md](xeelo-grammar.md#client-math-vs-client-string). Spec stores the expression **without** the `1#` / `2#` prefix. On a subgrid, `id{CODE}` compiles to `ObjectSubLineID`.
 
+### Adhoc (typeID > 30)
+
+Same `ObjectDefaultLineClientCalculationTypeID` column as Client 1–8; catalog IDs **31–44** (Adhoc-String **33**, Adhoc-Math **35**, …). Adhoc does **not** overwrite the field on `valueChanges`. The user clicks **Refresh** on the **target** line; the result is a **suggested value** they may keep or edit. Treat that line like any other input.
+
+**Keep the target editable.** Do not set `alwaysDisabled`. Create-form `templates[].access` and `workflow.steps[].access` must be `editable: true` on Draft / create (same as neighbouring inputs). User UI and mobile **hide** Refresh when the control is disabled, so a locked adhoc line cannot run.
+
+Spec/generator only know Client slugs (`string` → 2, `math` → 1). After generate, patch the OT `ObjectDefaultLine` to the adhoc ID (33 / 35 / …). Omitting `alwaysDisabled` does not clear an existing `ObjectDefaultLineIsDisabled = 1` — upsert `false` on that Orig. ID. Extract drops unmapped adhoc type IDs from `templates.yaml`.
+
 **UserInfo** / **DeviceInfo** require `expr` as a single `{Placeholder}` (without `7#` / `8#`). Catalog: [xeelo-grammar.md](xeelo-grammar.md#client-userinfo--client-deviceinfo).
 
 ## Client calc delay and confirm
@@ -253,7 +261,7 @@ Admin labels **Calculation Delay** and **Calculation Confirm**. They sit on the 
 
 Confirm Admin enable: text (3) and number (12). Delay also textarea (4). Combo has no Confirm; Refresh on combo is unique / adhoc calc only.
 
-The Refresh button also appears without Confirm when `uniqueId > 0` or the line has an adhoc client calc (`typeID > 30`).
+The Refresh button also appears without Confirm when `uniqueId > 0` or the line has an adhoc client calc (`typeID > 30`). Adhoc Refresh is on the **target** line and requires that line to be editable — [adhoc](#adhoc-typeid--30).
 
 Client-Service (ARES, …) follows this: put delay/confirm on **IČO**, not Company name, and only when asked.
 
