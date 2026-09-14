@@ -92,10 +92,21 @@ Read **Download-db after publish** in `projects/<project>/conventions.md` (`ask`
 - **`auto`** — run `/download-db` to refresh `projects/<project>/env/`. Announce that conventions say so.
 - **`ask`** — offer: **Refresh env now** / **Refresh now and remember for this site** / **Don't download**. Do not run unless they pick a refresh option. Remember → set **Download-db after publish** to `auto` in that file (add **Agent loop** if missing).
 
+## Interrupted or uncertain publish
+
+A timeout or lost response does not prove that an upload failed or rolled back. Do not rerun the whole publish command merely with a larger timeout.
+
+1. Preserve package order, hashes, last confirmed result and the failed phase (upload, precompile or health polling). Classify each package as confirmed applied, confirmed not applied or unknown. A multi-package command is not an atomic rollback.
+2. Reconcile the affected configuration through a fresh target snapshot or narrow read within the existing authorization. Preserve the baseline and local changes; save recovery evidence separately rather than overwriting them with a routine env refresh. If recovery reads are unavailable or unauthorized, stop and report the unknown state.
+3. If OT application is confirmed and only precompile is outstanding, do not upload OT again. Follow /precompile only with full permission and applicable authorization. Endpoint health alone does not prove the expected settings were compiled.
+4. For confirmed unapplied or partial changes, check the current target, prepare only the necessary recovery delta, validate and dry-run before an authorized retry. Do not assume repeated apply is harmless. If the result remains unknown, do not retry writes.
+
+Report confirmed results, unknowns and the next recovery step. Preserve valid approval for the same target and scope; seek approval for changed recovery scope. This guidance does not add automatic retry or rollback support to the CLI.
+
 ## Errors
 
 - **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
 - **Permission** — `read-only` cannot publish. Script exits with `needs read-write or full`. Do not retry until the user sets `permission`.
 - **Upload success=false** — report mutation messages; site was not fully applied.
-- **Timeout** — GraphQL SQL limit is 10 minutes; retry with higher `--timeout`.
+- **Timeout / lost response** — follow Interrupted or uncertain publish above before deciding whether any retry is safe.
 - After precompile GraphQL may restart; the script polls health before exiting. At `read-write`, stdout `Precompile skipped` is success for the OT apply, not a failed precompile.

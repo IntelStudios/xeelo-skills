@@ -97,7 +97,7 @@ The keys are independent. Template: [`templates/project/conventions.md`](templat
 
 **Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). User says stop doing it yourself → set that key back to `ask`. A one-loop exception (“don’t publish this time”) does **not** change conventions.
 
-Failed dry-run, missing connection, or **`read-only`**: do not offer `/publish`, do not write conventions. Failed `/publish`: do not run `/download-db`.
+Failed dry-run, missing connection, or **`read-only`**: do not offer `/publish`, do not write conventions. Failed `/publish`: do not run the automatic success-path `/download-db`. For an uncertain result, follow the publish skill recovery procedure: separately authorized reads may reconcile the target while preserving the baseline and local changes.
 
 ### Site vs company
 
