@@ -94,6 +94,8 @@ clientCalculation:
 
 Generator writes `ObjectDefaultLineClientCalculationTypeID` + compiled `expr` **without** `1#`/`2#`.
 
+**Adhoc** (catalog **31–44**, e.g. Adhoc-String **33**) uses the same Math/String `expr`. It is only a suggested value: the user clicks Refresh on that field. Keep the target **editable** — no `alwaysDisabled`, create/workflow `access` like other inputs. Spec still uses `type: string` / `math`; patch the OT type ID after generate. [object-line-types.md](object-line-types.md#adhoc-typeid--30).
+
 Examples (stored `expr`):
 
 ```text

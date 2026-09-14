@@ -109,4 +109,5 @@ Commit updated `ids.explicit`. Further generates use **Import with Orig. ID**.
 - JSON object keyed by table name (same shape as DB-transfer download)
 - Only tables the spec emits; no TransferInfo / ObjectSetup
 - Unique slots; combo has reference; lookup maps live in `spec/lookups.yaml`; autonumbers in `spec/autonumbers.yaml`; Client-Service in `spec/object-services.yaml`
+- Adhoc calc target is editable (no `alwaysDisabled`; create/workflow access like other inputs) — [object-line-types.md](../docs/entities/object-line-types.md#adhoc-typeid--30)
 - onGrid `field` codes match layout field codes; new object has seven default layouts; no overlapping cells; leftover onGrid IDs emit `IsActive: 0` ([ongrid.md](../docs/entities/ongrid.md#default-for-a-new-object))

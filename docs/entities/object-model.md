@@ -104,14 +104,14 @@ Every usable object needs a default template linking the object to a workflow.
 | `ObjectLineID` | Which field |
 | `ObjectDefaultLineValidationID` | `1` Mandatory, `2` Optional (always emit; never omit), `9` Extended — [object-line-types.md](object-line-types.md#validation) |
 | `ObjectDefaultLineValidationExt*Condition` | Independent hide / disable / mandatory expressions — [xeelo-grammar.md](xeelo-grammar.md) |
-| `ObjectDefaultLineIsDisabled` | Admin **Always disabled** on this template line. Spec: `templates.fields.<code>.alwaysDisabled` |
+| `ObjectDefaultLineIsDisabled` | Admin **Always disabled** on this template line. Spec: `templates.fields.<code>.alwaysDisabled`. Do not set on an **adhoc** target — [object-line-types.md](object-line-types.md#adhoc-typeid--30) |
 | `ObjectDefaultLineLookupID` | Lookup map (dotazovací mapa) |
 | `ObjectDefaultLineLookupObjectLineID` | Source field — whose value is matched |
 | `ObjectDefaultLineLookupFilterObjectLineID` | Optional filter field — further restricts the map row |
 | `ObjectDefaultLineValue` | Default value (not used for description memo). Spec: `templates.fields.<code>.defaultValue` — [object-line-types.md](object-line-types.md#default-value-and-filter) |
 | `ObjectDefaultLineValueFilter` | Default filter for combo/radio/multi. Spec: `defaultFilter`. Omit unless asked |
 | `ObjectDefaultLineDescMemo` | Description memo (16) default — **HTML**. Spec: `defaultValue` on `description_memo` |
-| `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 — [object-line-types.md](object-line-types.md#client-calculations) |
+| `ObjectDefaultLineClientCalculationTypeID` | Client calc 1–8 and adhoc **31–44** — [object-line-types.md](object-line-types.md#client-calculations) |
 | `ObjectDefaultLineClientCalculation` | Math/String expr without `1#`/`2#` prefix — [xeelo-grammar.md](xeelo-grammar.md) |
 | `ObjectDefaultLineClientCalcDelay` | Debounce ms on the **source** line. Spec: `calcDelay`. Omit = runtime 400. Do not set unless asked — [object-line-types.md](object-line-types.md#client-calc-delay-and-confirm) |
 | `ObjectDefaultLineIsClientCalcConfirm` | Refresh button on text/number source. Spec: `calcConfirm`. Omit = off. Do not set unless asked |

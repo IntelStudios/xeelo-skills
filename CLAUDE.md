@@ -32,6 +32,8 @@ When the user asks to create or modify Xeelo objects, workflows, or transfers:
 
 **Object Service / Client-Service:** site catalog (`spec/object-services.yaml`, type `external`) bound on the template line (`clientCalculation.type: service` + `service` + `expr`). Contract and known wrappers: [object-services.md](docs/entities/object-services.md). Do **not** set `calcDelay` or `calcConfirm` unless the user asks (runtime debounce 400 ms). `defaultValue` / `defaultFilter` only when the field should have a default or combo filter.
 
+**Adhoc calc:** the target field stays **editable** (no `alwaysDisabled`; create/workflow access like other inputs). Adhoc is a suggested value (Refresh on that field); locking it hides Refresh. Spec `clientCalculation.type: string` / `math`, then patch OT to type **33** / **35**. See [object-line-types.md](docs/entities/object-line-types.md#adhoc-typeid--30).
+
 **Description memo:** new `description_memo` fields default **`descMemoBorder: false`** (omit or false). Set `true` only when the user wants a visible box.
 
 **Labels:** canonical `name` in English; translations in `spec/language-table.yaml`. Read `projects/<name>/conventions.md` when present. See [AGENT.md](AGENT.md) and [docs/entities/localization.md](docs/entities/localization.md).

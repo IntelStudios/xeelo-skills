@@ -433,6 +433,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] Combobox / radio / multi → **`reference` required**; lookup is optional query map (same field allowed)
 - [ ] Request identifier → **text** + `spec/autonumbers.yaml` + `templates.fields.<code>.autonumber` + `uniqueId` (usually `1`)
 - [ ] Client-Service → `spec/object-services.yaml` (type `external` + `link` with `{@n}`) + `clientCalculation.type: service` + `service` + `expr` ([object-services.md](docs/entities/object-services.md), [add-client-service.md](recipes/add-client-service.md)). Do **not** set `calcDelay` / `calcConfirm` unless asked
+- [ ] **Adhoc calc** (`typeID > 30`, e.g. Adhoc-String **33**): target line stays **editable** — no `alwaysDisabled`; create/workflow `access` like other inputs. Adhoc is a suggested value (Refresh on that field). Spec `clientCalculation.type: string` / `math`, then patch OT type ID. [object-line-types.md](docs/entities/object-line-types.md#adhoc-typeid--30)
 - [ ] New `references.*` → **`styleId: 4`** (Value) unless the user asked otherwise
 - [ ] New `description_memo` → **`descMemoBorder: false`** (omit or false) unless the user asked for a box
 - [ ] User-visible labels: canonical `name` English; translations in `spec/language-table.yaml` per `projects/<name>/conventions.md` ([localization.md](docs/entities/localization.md))
