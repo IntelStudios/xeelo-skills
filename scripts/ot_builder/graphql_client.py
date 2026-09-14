@@ -547,5 +547,6 @@ def publish_object_transfers(
                 timeout_seconds=timeout_seconds,
             )
         )
-    precompile_settings(config, timeout_seconds=timeout_seconds)
+    if config.can_precompile:
+        precompile_settings(config, timeout_seconds=timeout_seconds)
     return results

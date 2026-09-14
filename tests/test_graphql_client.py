@@ -480,3 +480,35 @@ class PushObjectTransferTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PublishPermissionRegressionTests(unittest.TestCase):
+    def test_publish_precompiles_only_with_full_permission(self):
+        from ot_builder import graphql_client as client
+        for permission, expected in [(PERMISSION_READ_WRITE, 0), (PERMISSION_FULL, 1)]:
+            with self.subTest(permission=permission):
+                config = ConnectionConfig(xeelo_url="https://example.invalid", token="synthetic", permission=permission)
+                paths = [Path("one.json"), Path("two.json")]
+                with patch.object(client, "push_object_transfer") as upload, patch.object(client, "precompile_settings") as compile_settings:
+                    results = client.publish_object_transfers(config, paths)
+                    self.assertEqual(upload.call_count, 2)
+                    self.assertEqual(len(results), 2)
+                    self.assertEqual(compile_settings.call_count, expected)
+
+    def test_read_only_publish_stops_before_transport(self):
+        from ot_builder import graphql_client as client
+        config = ConnectionConfig(xeelo_url="https://example.invalid", token="synthetic")
+        with patch.object(client, "XeeloGraphqlClient") as transport, patch.object(client, "precompile_settings") as compile_settings:
+            with self.assertRaises(ConnectionPermissionError):
+                client.publish_object_transfers(config, [Path("missing.json")])
+            transport.assert_not_called()
+            compile_settings.assert_not_called()
+
+    def test_failed_upload_does_not_precompile(self):
+        from ot_builder import graphql_client as client
+        config = ConnectionConfig(xeelo_url="https://example.invalid", token="synthetic", permission=PERMISSION_FULL)
+        with patch.object(client, "push_object_transfer", side_effect=GraphqlError("synthetic failure")) as upload, patch.object(client, "precompile_settings") as compile_settings:
+            with self.assertRaises(GraphqlError):
+                client.publish_object_transfers(config, [Path("one.json"), Path("two.json")])
+            self.assertEqual(upload.call_count, 1)
+            compile_settings.assert_not_called()
