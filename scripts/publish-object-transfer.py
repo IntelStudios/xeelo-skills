@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from ot_builder.graphql_client import (  # noqa: E402
     DEFAULT_TIMEOUT_SECONDS,
     ConnectionConfig,
+    ConnectionPermissionError,
     collect_transfer_paths,
     format_mutation_messages,
     precompile_settings,
@@ -22,7 +23,10 @@ from ot_builder.graphql_client import (  # noqa: E402
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Upload Object Transfer JSON (isTest=false), then precompile via Xeelo GraphQL"
+        description=(
+            "Upload Object Transfer JSON (isTest=false); "
+            "precompile only when connection permission is full"
+        )
     )
     parser.add_argument(
         "--connection",
@@ -56,24 +60,36 @@ def main() -> None:
     except FileNotFoundError as exc:
         raise SystemExit(str(exc)) from exc
 
-    config = ConnectionConfig.load(args.connection)
+    try:
+        config = ConnectionConfig.load(args.connection)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     print(f"Publishing {len(paths)} Object Transfer package(s) to {config.graphql_url}")
-    for path in paths:
-        print(f"Uploading {path} (isTest=false)")
-        result = push_object_transfer(
-            config,
-            path,
-            only_test=False,
-            timeout_seconds=args.timeout,
-        )
-        extra = format_mutation_messages(result.messages)
-        suffix = f" {extra}" if extra else ""
-        print(f"Uploaded {result.filename} success={result.success}{suffix}")
-    print(f"Precompiling settings at {config.graphql_url}")
-    payload = precompile_settings(config, timeout_seconds=args.timeout)
-    extra = format_mutation_messages(payload.get("messages"))
-    suffix = f" {extra}" if extra else ""
-    print(f"Precompile success={payload.get('success')}{suffix}")
+    try:
+        for path in paths:
+            print(f"Uploading {path} (isTest=false)")
+            result = push_object_transfer(
+                config,
+                path,
+                only_test=False,
+                timeout_seconds=args.timeout,
+            )
+            extra = format_mutation_messages(result.messages)
+            suffix = f" {extra}" if extra else ""
+            print(f"Uploaded {result.filename} success={result.success}{suffix}")
+        if config.can_precompile:
+            print(f"Precompiling settings at {config.graphql_url}")
+            payload = precompile_settings(config, timeout_seconds=args.timeout)
+            extra = format_mutation_messages(payload.get("messages"))
+            suffix = f" {extra}" if extra else ""
+            print(f"Precompile success={payload.get('success')}{suffix}")
+        else:
+            print(
+                f"Precompile skipped: permission is {config.permission!r} "
+                "(needs full)"
+            )
+    except ConnectionPermissionError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 if __name__ == "__main__":

@@ -57,12 +57,13 @@ Determine from the user message or ask once:
    {
      "xeeloUrl": "https://<name>.xeelo.online/",
      "token": "",
+     "permission": "read-only",
      "userLogin": "",
      "userPwd": ""
    }
    ```
 
-   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`. `userLogin` / `userPwd` are optional until `/ui-test`.
+   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`. `permission` template default is **`read-only`**. Ask once whether to set `read-write` (edit + publish OT, no precompile) or `full` (also `/precompile`). Do not change it later unless the user asks. `userLogin` / `userPwd` are optional until `/ui-test`.
 
 4. **Do not** create `.xeelo-connection.example.json`.
 
@@ -74,6 +75,7 @@ Determine from the user message or ask once:
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI), e.g. `https://<name>.xeelo.online/` |
 | `token` | GraphQL access token with **`isAdmin`** (from site GraphQL access tokens). Fixed; no refresh. |
+| `permission` | `read-only` (default) / `read-write` / `full`. Missing = `read-only`. See [AGENT.md § Site permission](../../../AGENT.md#site-permission). |
 | `userLogin` | User UI **local** username (not the GraphQL token). Optional until `/ui-test`. |
 | `userPwd` | User UI **local** password. Optional until `/ui-test`. Never print it; never copy from other projects. |
 

@@ -11,7 +11,7 @@ Parse the `mode:` line. Allowed: `project` | `project-kb`. Missing `internal/`, 
 
 Do **not** rewrite `internal/work-mode.md` unless the user asks to switch.
 
-Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply.
+Announce once at the start of site work (`Režim: project` or `Režim: project-kb`, plus `Oprávnenie:` from that site’s `.xeelo-connection.json`), not on every reply.
 
 ## project (default)
 

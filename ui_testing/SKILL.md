@@ -39,6 +39,8 @@ Same steps for both. Prefer the tools you have; do not invent a Playwright runne
 
 `projects/` and `.xeelo-connection.json` are gitignored. If the connection file is missing, **stop**. Tell the user to fill it in this workspace (or run locally). Do not ask them to paste `userPwd` into chat for storage.
 
+`permission` must be **`read-write`** or **`full`**. Missing/empty = `read-only` → **stop**. Tell the user to set `permission` if they want UI tests. Do not change the field unless they ask.
+
 ## Procedure
 
 Read the matching file **before** acting. Stop at the first blocker; do not skip ahead.

@@ -12,10 +12,11 @@ Same gitignored file as transfer: `projects/<project>/.xeelo-connection.json`.
 |-------|---------|---------|
 | `xeeloUrl` | yes | yes — open this origin |
 | `token` | yes (`isAdmin` for transfer) | unused |
+| `permission` | yes — site gate; see [AGENT.md § Site permission](../AGENT.md#site-permission) | `/ui-test` needs `read-write` or `full` |
 | `userLogin` | unused | local username |
 | `userPwd` | unused | local password |
 
-`userLogin` / `userPwd` are optional. Empty or omitted: `/download-db` and `/publish` still work; `/ui-test` stops until they are set. Never copy `userPwd` between projects. Never print it.
+`permission` missing or empty is **`read-only`**. `userLogin` / `userPwd` are optional. Empty or omitted: `/download-db` still works; `/publish` needs `read-write` or `full`; `/ui-test` stops until UI fields are set and permission allows write. Never copy `userPwd` between projects. Never print it.
 
 Cloud agents often lack gitignored `projects/`. If the file is missing, run `/ui-test` in a workspace that has the connection filled in.
 

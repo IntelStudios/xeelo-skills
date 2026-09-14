@@ -65,6 +65,19 @@ AUTH_HINT = (
     "There is no token refresh."
 )
 
+PERMISSION_READ_ONLY = "read-only"
+PERMISSION_READ_WRITE = "read-write"
+PERMISSION_FULL = "full"
+PERMISSIONS = (
+    PERMISSION_READ_ONLY,
+    PERMISSION_READ_WRITE,
+    PERMISSION_FULL,
+)
+PERMISSION_HELP = (
+    '.xeelo-connection.json permission must be "read-only", "read-write", or "full". '
+    "Missing or empty defaults to read-only."
+)
+
 
 def _optional_str(value: Any) -> str | None:
     if value is None:
@@ -79,6 +92,19 @@ class GraphqlError(RuntimeError):
 
 class GraphqlAuthError(GraphqlError):
     """Missing, invalid, or GraphQL token without isAdmin."""
+
+
+class ConnectionPermissionError(RuntimeError):
+    """Site permission in .xeelo-connection.json forbids this operation."""
+
+
+def _parse_permission(value: Any, path: Path) -> str:
+    text = _optional_str(value)
+    if text is None:
+        return PERMISSION_READ_ONLY
+    if text not in PERMISSIONS:
+        raise ValueError(f"{path}: invalid permission {text!r}. {PERMISSION_HELP}")
+    return text
 
 
 def _require_httpx():
@@ -206,6 +232,7 @@ class ConnectionConfig:
     path: Path | None = None
     user_login: str | None = None
     user_pwd: str | None = None
+    permission: str = PERMISSION_READ_ONLY
 
     @classmethod
     def load(cls, path: Path) -> "ConnectionConfig":
@@ -225,6 +252,7 @@ class ConnectionConfig:
             path=path,
             user_login=_optional_str(data.get("userLogin")),
             user_pwd=_optional_str(data.get("userPwd")),
+            permission=_parse_permission(data.get("permission"), path),
         )
 
     def __repr__(self) -> str:
@@ -232,7 +260,8 @@ class ConnectionConfig:
         return (
             "ConnectionConfig("
             f"xeelo_url={self.xeelo_url!r}, token='***', path={self.path!r}, "
-            f"user_login={self.user_login!r}, user_pwd={pwd})"
+            f"user_login={self.user_login!r}, user_pwd={pwd}, "
+            f"permission={self.permission!r})"
         )
 
     @property
@@ -244,6 +273,31 @@ class ConnectionConfig:
             where = self.path or ".xeelo-connection.json"
             raise ValueError(f"{where}: missing userLogin/userPwd. {UI_CONNECTION_HELP}")
         return self.user_login or "", self.user_pwd or ""
+
+    @property
+    def can_write(self) -> bool:
+        return self.permission in (PERMISSION_READ_WRITE, PERMISSION_FULL)
+
+    @property
+    def can_precompile(self) -> bool:
+        return self.permission == PERMISSION_FULL
+
+    def require_write(self) -> None:
+        if not self.can_write:
+            where = self.path or ".xeelo-connection.json"
+            raise ConnectionPermissionError(
+                f"{where}: permission is {self.permission!r} "
+                "(needs read-write or full). "
+                'Set "permission" in .xeelo-connection.json.'
+            )
+
+    def require_precompile(self) -> None:
+        if not self.can_precompile:
+            where = self.path or ".xeelo-connection.json"
+            raise ConnectionPermissionError(
+                f"{where}: permission is {self.permission!r} (needs full). "
+                'Set "permission": "full" in .xeelo-connection.json.'
+            )
 
     @property
     def graphql_url(self) -> str:
@@ -406,6 +460,7 @@ def push_object_transfer(
     only_test: bool = False,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
 ) -> TransferResult:
+    config.require_write()
     filename, payload = transfer_path_to_json(path)
     if not payload.strip():
         raise GraphqlError(f"Empty Object Transfer JSON: {path}")
@@ -437,6 +492,7 @@ def precompile_settings(
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
     health_wait_seconds: float = HEALTH_WAIT_SECONDS,
 ) -> dict[str, Any]:
+    config.require_precompile()
     interrupted = False
     result: dict[str, Any] | None = None
     with XeeloGraphqlClient(config, timeout=timeout_seconds) as client:

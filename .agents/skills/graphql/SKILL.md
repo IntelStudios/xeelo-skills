@@ -20,6 +20,7 @@ GET `{xeeloUrl}/graphql` is Apollo Sandbox (HTML). Schema comes from **POST** in
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl` — Xeelo site URL (User UI)
   - `token` — GraphQL Bearer token (`isAdmin` for transfer/precompile; any GraphQL token for `access_rights` / `Select_`)
+  - `permission` — missing/empty = `read-only`. **`Select_`** (and this skill’s schema / `access_rights` load) is allowed at every level. **`Mutate_` / `Delete_`** need `read-write` or `full`.
 - If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Inputs
@@ -161,9 +162,9 @@ Replace `<project>` before running.
 
 After a successful save:
 
-1. **`Select_`** only when `access_rights` has `canRead` for that object `code`.
-2. **`Mutate_`** only when `canWrite`.
-3. **`Delete_request`** only when `canDelete`. `code` is the GraphQL object code (`Select_{code}`).
+1. **`Select_`** only when `access_rights` has `canRead` for that object `code`. Allowed at **`read-only`**, `read-write`, and `full`.
+2. **`Mutate_`** only when `canWrite` **and** connection `permission` is `read-write` or `full`. In `read-only`, stop and tell the user to set `permission`.
+3. **`Delete_request`** only when `canDelete` **and** `permission` is `read-write` or `full`. `code` is the GraphQL object code (`Select_{code}`).
 4. Argument and filter shapes (`created`, `dateFrom` / `dateTo`, `lineFilters`, …) come from **`schema.json`** (or a follow-up `__type` query). Do not invent them from product source. Do not add them to `docs/entities/graphql.md` unless the user asks to update the KB.
 5. Pagination: `limit` default 1000, max 10000, `offset`.
 
@@ -181,5 +182,6 @@ Report:
 ## Errors
 
 - **Auth / ACCESS_DENIED** — token lacks GraphQL access. Ask the user to put a valid token in `.xeelo-connection.json`. There is no refresh.
+- **Permission** — `Mutate_` / `Delete_` in `read-only`: stop; user must set `permission` to `read-write` or `full`. Do not change the field unless they ask.
 - **Introspection disabled** — `GRAPHQL_INTROSPECTION=false` on the site; stop and say schema cannot be loaded.
 - **Timeout** — large schema; retry with a longer client timeout if needed.

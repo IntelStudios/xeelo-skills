@@ -16,6 +16,7 @@ Download the latest DB transfer from Xeelo GraphQL (`Select_admin_transfer_downl
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl` — Xeelo site URL (User UI)
   - `token` — GraphQL Bearer token with **`isAdmin`**; no refresh
+  - `permission` — all levels may download (`read-only` default if missing)
 - If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Site vs company
@@ -85,7 +86,7 @@ Remove `.gitkeep` files under `env/` if real content was written.
 
 ## On success — suggest next step
 
-Offer to start a change loop (`/change-loop` when available) or edit specs under `projects/<project>/env/objects/`.
+If `permission` is `read-write` or `full`, offer to start a change loop (`/change-loop` when available) or edit specs under `projects/<project>/env/objects/`. In **`read-only`**, do not offer edits; only reading `env/` is allowed.
 
 ## Errors
 

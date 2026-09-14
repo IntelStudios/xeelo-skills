@@ -13,13 +13,14 @@ Call GraphQL `Mutate_admin_precompile` and wait until the GraphQL process is hea
 
 Use this when the site already has the Object Transfer applied (or no OT is needed) and you only need to rebuild settings cache / GraphQL schema.
 
-Do **not** auto-run `/precompile` from the change loop. After generate, the loop dry-runs the transfer, then `/publish` (transfer + precompile) per conventions (`ask` or `auto`). Follow this skill only when the user explicitly wants precompile alone.
+Do **not** auto-run `/precompile` from the change loop. After generate, the loop dry-runs the transfer, then `/publish` per conventions (`ask` or `auto`). `/publish` precompiles only at `permission: full`. Follow this skill only when the user explicitly wants precompile alone **and** `permission` is `full`.
 
 ## Prerequisites
 
 - `projects/<project>/.xeelo-connection.json` exists and is filled in:
   - `xeeloUrl`
   - `token` (GraphQL token with `isAdmin`)
+  - `permission` — must be **`full`**. `read-write` may publish OT but **not** precompile. Missing/empty = `read-only` → **stop**. Tell the user to set `"permission": "full"` if they want precompile. Do not change the field unless they ask.
 - If the connection file is missing or `xeeloUrl` / `token` is empty, stop and tell the user to complete it first (see `/new-project` checklist).
 
 ## Inputs
@@ -59,5 +60,6 @@ If metadata just changed on the site, **ask** whether to `/download-db` to refre
 ## Errors
 
 - **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
+- **Permission** — script exits if `permission` is not `full` (`needs full`). Do not retry until the user sets it.
 - **success=false** — report mutation messages; do not claim the site is compiled.
 - **Timeout** — precompile can take long on a large site; retry with higher `--timeout`.

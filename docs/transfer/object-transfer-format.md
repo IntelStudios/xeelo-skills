@@ -44,7 +44,7 @@ Some tables/columns have **no spec keys** yet. Merge them into the OT JSON befor
 
 ## Publish from xeelo-skills
 
-After generate, the loop **automatically** dry-runs (`isTest: true`). `/publish` applies for real (`isTest: false`) then precompiles (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`).
+After generate, the loop **automatically** dry-runs (`isTest: true`) unless site `permission` is `read-only`. `/publish` applies for real (`isTest: false`). Precompile (`Mutate_admin_precompile`) runs only when `permission` is **`full`**; at `read-write` the publish script skips it (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`). See [AGENT.md § Site permission](../../AGENT.md#site-permission).
 
 ```bash
 # Dry-run (automatic after generate) — CLI flag --only-test maps to isTest
@@ -53,7 +53,7 @@ python scripts/push-object-transfer.py \
   --loop projects/<project>/changes/<slug> \
   --only-test
 
-# Real apply + precompile (/publish)
+# Real apply (/publish); precompile only if permission is full
 python scripts/publish-object-transfer.py \
   --connection projects/<project>/.xeelo-connection.json \
   --loop projects/<project>/changes/<slug>
@@ -65,9 +65,9 @@ python scripts/precompile-settings.py \
 
 GraphQL flow (synchronous, 10 min SQL timeout):
 
-1. Load `.xeelo-connection.json` (`xeeloUrl`, admin `token`)
-2. `Mutate_admin_transfer_upload(json, isTest)` — JSON string of table→rows; `isTest: true` dry-run, `false` apply. There is **no** separate process mutation.
-3. `/publish` then `Mutate_admin_precompile` and poll `{xeeloUrl}/graphql-api/health` (process may restart)
+1. Load `.xeelo-connection.json` (`xeeloUrl`, admin `token`, `permission`)
+2. `Mutate_admin_transfer_upload(json, isTest)` — JSON string of table→rows; `isTest: true` dry-run, `false` apply. There is **no** separate process mutation. Needs `read-write` or `full`.
+3. `/publish` then `Mutate_admin_precompile` **only if `permission` is `full`**, and poll `{xeeloUrl}/graphql-api/health` (process may restart)
 
 ```graphql
 mutation AdminTransferUpload($json: String!, $isTest: Boolean!) {
@@ -96,7 +96,7 @@ Schema pairs: [`data/object-transfer-map.json`](../../data/object-transfer-map.j
 
 ## Partial deployment
 
-`/publish` applies the generated JSON (all rows in the file, Orig. ID) then precompiles.
+`/publish` applies the generated JSON (all rows in the file, Orig. ID). Precompile follows only when `permission` is `full`.
 
 ## Import modes
 

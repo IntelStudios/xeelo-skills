@@ -1,11 +1,12 @@
 # Connection for UI testing
 
-Load `projects/<project>/.xeelo-connection.json` (gitignored). GraphQL scripts still need only `xeeloUrl` + `token`. UI testing also needs local User UI credentials.
+Load `projects/<project>/.xeelo-connection.json` (gitignored). GraphQL scripts still need `xeeloUrl` + `token`. Writes (including `/ui-test`) also need `permission` `read-write` or `full`. UI testing also needs local User UI credentials.
 
 ```json
 {
   "xeeloUrl": "https://<name>.xeelo.online/",
   "token": "",
+  "permission": "read-only",
   "userLogin": "",
   "userPwd": ""
 }
@@ -15,6 +16,7 @@ Load `projects/<project>/.xeelo-connection.json` (gitignored). GraphQL scripts s
 |-------|----------------|-------|
 | `xeeloUrl` | GraphQL and UI | User UI origin. Open this URL, not `/graphql`. |
 | `token` | GraphQL only | Not used to sign in to User UI. |
+| `permission` | UI write | `read-write` or `full`. Missing/empty = `read-only` → stop. |
 | `userLogin` | UI | Local username. Empty/omitted → stop. |
 | `userPwd` | UI | Local password. Empty/omitted → stop. **Never print.** |
 
@@ -25,12 +27,13 @@ from pathlib import Path
 from scripts.ot_builder.graphql_client import ConnectionConfig
 
 cfg = ConnectionConfig.load(Path("projects/<project>/.xeelo-connection.json"))
+cfg.require_write()
 user_login, user_pwd = cfg.require_ui_login()
 ```
 
-## Missing file or empty UI fields
+## Missing file, empty UI fields, or read-only
 
-Stop. Tell the user to add `userLogin` and `userPwd` in this workspace’s connection file. Cloud agents often cannot see gitignored `projects/` — then say to run `/ui-test` locally after filling the file.
+Stop. Tell the user to add `userLogin` and `userPwd`, and set `permission` to `read-write` or `full`. Cloud agents often cannot see gitignored `projects/` — then say to run `/ui-test` locally after filling the file.
 
 Do **not**:
 

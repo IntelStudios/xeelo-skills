@@ -4,7 +4,7 @@ How Xeelo builds the per-site GraphQL schema from object metadata. Use this when
 
 Runtime wiring from Node.js: [nodejs.md](nodejs.md). Patterns: [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md).
 
-The schema is generated from the object model (`spGraphQLObjectModel`). After object/layout changes, **`/precompile`** so GraphQL picks up new codes and fields. After an Object Transfer, use **`/publish`** (real transfer + precompile).
+The schema is generated from the object model (`spGraphQLObjectModel`). After object/layout changes, **`/precompile`** so GraphQL picks up new codes and fields (`permission: full`). After an Object Transfer, use **`/publish`** (real transfer; precompile only at `full`).
 
 ## Sanitize names
 
@@ -280,7 +280,7 @@ To remove the whole request (and its sub rows), use `Delete_request` on the pare
 
 ## Admin transfer and precompile
 
-Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
+Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token, permission }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
 
 | Operation | Skill | Role |
 |-----------|-------|------|
@@ -310,4 +310,4 @@ mutation {
 }
 ```
 
-`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). `/publish` uploads again with `isTest: false`, then precompiles. Use `/precompile` when the transfer is already on the site.
+`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). `/publish` uploads again with `isTest: false`, then precompiles only when connection `permission` is `full`. Use `/precompile` when the transfer is already on the site (`full` only).

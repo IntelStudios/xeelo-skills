@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from ot_builder.graphql_client import (  # noqa: E402
     DEFAULT_TIMEOUT_SECONDS,
     ConnectionConfig,
+    ConnectionPermissionError,
     format_mutation_messages,
     precompile_settings,
 )
@@ -34,9 +35,12 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    config = ConnectionConfig.load(args.connection)
-    print(f"Precompiling settings at {config.graphql_url}")
-    payload = precompile_settings(config, timeout_seconds=args.timeout)
+    try:
+        config = ConnectionConfig.load(args.connection)
+        print(f"Precompiling settings at {config.graphql_url}")
+        payload = precompile_settings(config, timeout_seconds=args.timeout)
+    except (ValueError, ConnectionPermissionError) as exc:
+        raise SystemExit(str(exc)) from exc
     extra = format_mutation_messages(payload.get("messages"))
     suffix = f" {extra}" if extra else ""
     print(f"Precompile success={payload.get('success')}{suffix}")

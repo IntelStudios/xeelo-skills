@@ -33,7 +33,7 @@ Allowed values: `project` | `project-kb`. Missing `internal/`, missing file, emp
 
 Direct KB requests (“fix this recipe”, “what does the KB say about GraphQL”) are **not** gated.
 
-Announce once at the start of site work (`Režim: project` or `Režim: project-kb`), not on every reply. If `projects/<name>/conventions.md` exists, **read it** before creating or editing objects (language, naming, agent loop, other site rules).
+Announce once at the start of site work (`Režim: project` or `Režim: project-kb`, plus `Oprávnenie: read-only` / `read-write` / `full` from that site’s `.xeelo-connection.json`), not on every reply. If `projects/<name>/conventions.md` exists, **read it** before creating or editing objects (language, naming, agent loop, other site rules).
 
 ## Development loop
 
@@ -49,14 +49,30 @@ flowchart LR
   Pub --> DL
 ```
 
-1. **Connect** — user provides Xeelo URL + GraphQL token (`isAdmin`) → `projects/<project>/.xeelo-connection.json` (gitignored). Optional `userLogin` / `userPwd` for User UI testing (`/ui-test`)
+1. **Connect** — user provides Xeelo URL + GraphQL token (`isAdmin`) → `projects/<project>/.xeelo-connection.json` (gitignored). Optional `userLogin` / `userPwd` for User UI testing (`/ui-test`). Optional `permission` (`read-only` | `read-write` | `full`; missing/empty = **`read-only`**). Do not change `permission` unless the user asks.
 2. **Download** DB transfer JSON → `projects/<project>/snapshots/<stamp>/`
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
-4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought.
-5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload with `isTest: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`.
-6. **Publish** — only after a successful dry-run. `/publish` applies the OT for real and precompiles; then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**.
+4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought. Skip this step in **`read-only`**.
+5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload with `isTest: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`. Skip in **`read-only`**.
+6. **Publish** — only after a successful dry-run. `/publish` applies the OT (`isTest: false`). **Precompile** runs only when `permission` is **`full`**; at `read-write` the script skips it and you announce that. Then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**. **`read-only`** never publishes.
 
-There is **no** `/push` skill. `/precompile` is precompile only (not part of the loop).
+There is **no** `/push` skill. `/precompile` is precompile only (not part of the loop; **`full`** only).
+
+### Site permission
+
+`permission` in `projects/<project>/.xeelo-connection.json` is an **agent + script gate** (not the GraphQL token, not work-mode). Missing or empty → **`read-only`**. Invalid value → stop (allowed: `read-only` | `read-write` | `full`). Do not rewrite existing connection files to add the key. Do not change `permission` unless the user asks.
+
+Higher level = everything from the previous plus **naviac**.
+
+| Level | May | Extra vs previous |
+|-------|-----|-------------------|
+| **`read-only`** | `/download-db`; `/graphql` introspection + `Select_`; read `env/` / spec | (base — change nothing) |
+| **`read-write`** | everything from `read-only` | edit `env/` / `changes/`; generate OT; dry-run (`isTest: true`); publish OT (`isTest: false`); GraphQL `Mutate_` / `Delete_`; `/ui-test` |
+| **`full`** | everything from `read-write` | `/precompile` (`Mutate_admin_precompile`); `/publish` here = OT apply **plus** precompile |
+
+**Publish** = Object Transfer upload with `isTest: false`. Dry-run is `--only-test` (`isTest: true`). Today’s `/publish` skill does both OT and precompile; at `read-write` it **splits**: OT yes, precompile no.
+
+`permission` beats **Publish after dry-run: auto** only for **`read-only`** (do not publish). At `read-write` / `full`, conventions `ask` / `auto` work as before; after a successful `read-write` publish, announce that precompile was skipped (needs `full` or `/precompile` later).
 
 ### Agent loop in conventions
 
@@ -81,7 +97,7 @@ The keys are independent. Template: [`templates/project/conventions.md`](templat
 
 **Remember** → set that key to `auto` in this site’s `conventions.md` (add the **Agent loop** section if missing). User says stop doing it yourself → set that key back to `ask`. A one-loop exception (“don’t publish this time”) does **not** change conventions.
 
-Failed dry-run or missing connection: do not offer `/publish`, do not write conventions. Failed `/publish`: do not run `/download-db`.
+Failed dry-run, missing connection, or **`read-only`**: do not offer `/publish`, do not write conventions. Failed `/publish`: do not run `/download-db`.
 
 ### Site vs company
 
@@ -99,7 +115,7 @@ Extract includes **all** objects from the site; `companyId` is metadata on each 
 | Init loop | [`scripts/init-change-loop.py`](scripts/init-change-loop.py) |
 | Generate change OT | [`scripts/generate-change-loop.py`](scripts/generate-change-loop.py) |
 | Dry-run OT (`isTest`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
-| Publish (real OT + precompile) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
+| Publish (real OT; precompile if `full`) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
 | Precompile only | [`scripts/precompile-settings.py`](scripts/precompile-settings.py) |
 | Spec language | [spec-format.md](docs/transfer/spec-format.md) ([YAML key order](docs/transfer/spec-format.md#yaml-key-order)) |
 | Normalize spec YAML keys | [`scripts/normalize-spec-yaml.py`](scripts/normalize-spec-yaml.py) |
@@ -136,12 +152,13 @@ Template (empty values for user to complete):
 {
   "xeeloUrl": "https://<name>.xeelo.online/",
   "token": "",
+  "permission": "read-only",
   "userLogin": "",
   "userPwd": ""
 }
 ```
 
-`userLogin` / `userPwd` are optional until `/ui-test` (User UI local account, not the GraphQL token). Never print `userPwd`.
+`permission` defaults to **`read-only`** in the template. Ask once whether to set `read-write` or `full`. `userLogin` / `userPwd` are optional until `/ui-test` (User UI local account, not the GraphQL token). Never print `userPwd`.
 
 **User checklist** (agent reports this after scaffold):
 
@@ -149,6 +166,7 @@ Template (empty values for user to complete):
 |-------|-----------------|
 | `xeeloUrl` | Xeelo site URL (User UI); confirm inferred URL if used |
 | `token` | GraphQL access token with **`isAdmin`**. Fixed; no refresh |
+| `permission` | `read-only` (default) / `read-write` (edit + publish OT, no precompile) / `full` (also `/precompile`). Missing = `read-only` |
 | `userLogin` | User UI local username. Optional until `/ui-test` |
 | `userPwd` | User UI local password. Optional until `/ui-test`; never copy from other projects |
 
@@ -213,13 +231,13 @@ User UI testing skills live in [`ui_testing/`](ui_testing/) (not mixed with tran
 |-------|------|------|
 | `/new-project` | New empty Xeelo site under `projects/<name>/` | [`.agents/skills/new-project/SKILL.md`](.agents/skills/new-project/SKILL.md) |
 | `/download-db` | Download DB transfer JSON and extract `env/` | [`.agents/skills/download-db/SKILL.md`](.agents/skills/download-db/SKILL.md) |
-| `/publish` | Apply Object Transfer for real and precompile | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
-| `/precompile` | Precompile settings only (no transfer) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
+| `/publish` | Apply Object Transfer (`isTest: false`); precompile only if `full` | [`.agents/skills/publish/SKILL.md`](.agents/skills/publish/SKILL.md) |
+| `/precompile` | Precompile settings only (no transfer; `full` only) | [`.agents/skills/precompile/SKILL.md`](.agents/skills/precompile/SKILL.md) |
 | `/graphql` | Live schema + `access_rights` from `POST {xeeloUrl}/graphql` | [`.agents/skills/graphql/SKILL.md`](.agents/skills/graphql/SKILL.md) |
 | `/sync-main` | Hourly check of `origin/main` and fast-forward pull | [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md) |
 | `/ui-test` | Drive User UI in the browser; **always** write a result MP4 | [`ui_testing/SKILL.md`](ui_testing/SKILL.md), [`ui_testing/report-video.md`](ui_testing/report-video.md) |
 
-After generate, **auto-run** dry-run `--only-test`. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`), then `/download-db` per **Download-db after publish**. There is no `/push` skill.
+After generate, **auto-run** dry-run `--only-test` unless **`read-only`**. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`) when permission is `read-write` or `full`. Then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
 ### Change loop `notes.md`
 
@@ -248,7 +266,7 @@ Claude Code CLI does not scan `.agents/skills/` or `ui_testing/`; [CLAUDE.md](CL
 ```text
 projects/<name>/
   conventions.md                  # site rules (language, naming, agent loop); read before object work
-  .xeelo-connection.json          # gitignored — xeeloUrl + GraphQL token; optional userLogin/userPwd for /ui-test
+  .xeelo-connection.json          # gitignored — xeeloUrl, GraphQL token, permission; optional userLogin/userPwd for /ui-test
   graphql/{schema,access_rights}.json  # live introspection — gitignored; refresh with /graphql
   snapshots/<stamp>/*.json        # DB transfer JSON from GraphQL (UTF-8)
   env/
@@ -292,7 +310,7 @@ python scripts/push-object-transfer.py \
   --loop projects/<name>/changes/20260811-loop-01-short-name \
   --only-test
 
-# 5) Publish: apply JSON (isTest false) + precompile (only if the user says yes)
+# 5) Publish: apply JSON (isTest false); precompile only if permission is full
 python scripts/publish-object-transfer.py \
   --connection projects/<name>/.xeelo-connection.json \
   --loop projects/<name>/changes/20260811-loop-01-short-name
@@ -455,7 +473,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] Tree icon = FA **6.5.1** class via `search-fa-icons.py` (local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)); color = existing CustomColorCode on `object.color` / `objectType.color` (not HEX; do not spec obsolete `CompanyTreeColor` / `ObjectTypeTreeColorFont`)
 - [ ] `ids.explicit` populated for Orig. ID import
 - [ ] `output/*-object-transfer.json` generated
-- [ ] After generate, dry-run `--only-test`; on success `/publish` per conventions (`ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
+- [ ] After generate, dry-run `--only-test` (skip in `read-only`); on success `/publish` per conventions and site `permission` (`read-write` = OT only; `full` = OT + precompile; `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
 
 ## Key data files
 

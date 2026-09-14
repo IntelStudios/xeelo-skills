@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from ot_builder.graphql_client import (  # noqa: E402
     DEFAULT_TIMEOUT_SECONDS,
     ConnectionConfig,
+    ConnectionPermissionError,
     collect_transfer_paths,
     format_mutation_messages,
     push_object_transfer,
@@ -60,26 +61,32 @@ def main() -> None:
     except FileNotFoundError as exc:
         raise SystemExit(str(exc)) from exc
 
-    config = ConnectionConfig.load(args.connection)
+    try:
+        config = ConnectionConfig.load(args.connection)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     mode = "test" if args.only_test else "real"
     print(
         f"Pushing {len(paths)} Object Transfer package(s) to "
         f"{config.graphql_url} ({mode})"
     )
-    for path in paths:
-        print(f"Uploading {path} (isTest={str(args.only_test).lower()})")
-        result = push_object_transfer(
-            config,
-            path,
-            only_test=args.only_test,
-            timeout_seconds=args.timeout,
-        )
-        extra = format_mutation_messages(result.messages)
-        suffix = f" {extra}" if extra else ""
-        print(
-            f"Uploaded {result.filename} success={result.success} "
-            f"isTest={str(result.only_test).lower()}{suffix}"
-        )
+    try:
+        for path in paths:
+            print(f"Uploading {path} (isTest={str(args.only_test).lower()})")
+            result = push_object_transfer(
+                config,
+                path,
+                only_test=args.only_test,
+                timeout_seconds=args.timeout,
+            )
+            extra = format_mutation_messages(result.messages)
+            suffix = f" {extra}" if extra else ""
+            print(
+                f"Uploaded {result.filename} success={result.success} "
+                f"isTest={str(result.only_test).lower()}{suffix}"
+            )
+    except ConnectionPermissionError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 if __name__ == "__main__":

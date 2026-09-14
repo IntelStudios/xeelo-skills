@@ -55,7 +55,7 @@ python scripts/download-db-transfer.py \
 
 Flow:
 
-1. Load `.xeelo-connection.json` (`xeeloUrl`, GraphQL `token`)
+1. Load `.xeelo-connection.json` (`xeeloUrl`, GraphQL `token`; `permission` may be present — download is allowed at every level)
 2. `POST {xeeloUrl}/graphql` — `Select_admin_transfer_download { json }` (`Authorization: Bearer <token>`)
 3. Validate the string is a JSON object, write UTF-8 to `projects/<project>/snapshots/<stamp>/`
 
