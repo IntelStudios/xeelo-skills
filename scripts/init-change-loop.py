@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import shutil
 import sys
-from datetime import date
+from datetime import datetime
 from pathlib import Path
 
 try:
@@ -43,7 +43,7 @@ def main() -> None:
     parser.add_argument(
         "--slug",
         required=True,
-        help="Loop folder name, e.g. 20260811-loop-01-add-field",
+        help="Loop folder name, e.g. 20260811_103045-loop-01-add-field",
     )
     parser.add_argument(
         "--objects",
@@ -71,7 +71,7 @@ def main() -> None:
 
     baseline = {
         "snapshot": _latest_snapshot(project),
-        "createdAt": date.today().isoformat(),
+        "createdAt": datetime.now().replace(microsecond=0).isoformat(),
         "objects": list(args.objects),
     }
     (loop_dir / "baseline.yaml").write_text(
