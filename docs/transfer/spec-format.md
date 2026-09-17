@@ -1042,6 +1042,7 @@ objectActions:
         export async function main() { return "OK"; }
       EndPointRunWait: "1"
       ApplicableEventType: "Save,SaveNew"
+      ResponseCodeObjectLineID: { field: RESULT_CODE }
       ResponseTextObjectLineID: { field: RESULT_MEMO }
     conditions:
       - field: LOAD_TX
@@ -1049,7 +1050,7 @@ objectActions:
         param1: "1"
 ```
 
-Default Node.js type is **`spEndPointRunNodeJSMain`**. Use **`spEndPointRunNodeJSMainLast`** only to **display** role / status / assigned users after inbox assignment — [request-refresh.md](../entities/request-refresh.md#design-objectaction-last-vs-assignment).
+Default Node.js type is **`spEndPointRunNodeJSMain`**. Use **`spEndPointRunNodeJSMainLast`** only to **display** role / status / assigned users after inbox assignment — [request-refresh.md](../entities/request-refresh.md#design-objectaction-last-vs-assignment). Every Node.js ObjectAction must emit `ResponseCodeObjectLineID` and `ResponseTextObjectLineID`; [object-actions.md](../entities/object-actions.md#run-nodejs-last).
 
 `params.*.ObjectLineID` values may be `{ field: CODE }` and resolve to the line ID. `RoleID1` / `RequestStatusID1` (Change role and status) may be `{ role: requestor }` / `{ status: updating }`. `NotificationID1` / `NotificationID2` may be `{ notification: assigned }` ([notifications](#notifications-specnotificationsyaml)). Condition `type` slugs match update actions. Do not gate on **memo** `is_not_empty` — that tests the memo record ID, not HTML ([object-actions.md](../entities/object-actions.md#objectactioncondition)).
 
