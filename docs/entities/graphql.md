@@ -35,7 +35,7 @@ Example: `object_9100_account` → `Select_object_9100_account`, `Mutate_object_
 
 **SubGrid** uses the same prefixes from **`ObjectSubCode`** (`subgrids.<key>.code` / `subgrid.code`), not from the parent type-5 `ObjectLineCode`. After `/download-db`, take the stored code from env. New rows live under the parent request. Full `Select_` / `Mutate_` / `Delete_subgrid`: [Subgrid](#subgrid-objectsubcode).
 
-Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Delete_subgrid`, `Execute_Periodic`, plus **admin transfer / precompile** below. `Delete_request` and [Subgrid](#subgrid-objectsubcode) are documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
+Other operations (one-line; not object-model generated the same way): `health`, `access_rights`, `Select_reference` / `Mutate_reference`, `Select_lookup` / `Mutate_lookup`, `Select_variable`, `select_attachment`, `Delete_request`, `Delete_subgrid`, `Execute_Periodic`, plus **admin transfer / backup / precompile** below. `Delete_request` and [Subgrid](#subgrid-objectsubcode) are documented next. `Execute_Periodic(periodicId)` runs `spPeriodicExecute` (WRITE on the object); same engine as Scheduler CRON — [integrations.md](integrations.md#periodic).
 
 ## Query `Select_{code}`
 
@@ -278,13 +278,14 @@ Provide **either** `requestIds` **or** `requestSubIds`, not both (and not neithe
 
 To remove the whole request (and its sub rows), use `Delete_request` on the parent `objectId`.
 
-## Admin transfer and precompile
+## Admin transfer, backup, and precompile
 
 Fixed operations, **not** bound to an object. They require a GraphQL token with **`isAdmin`**. Object READ/WRITE/DELETE is not checked. xeelo-skills connection is `{ xeeloUrl, token, permission }` — `POST {xeeloUrl}/graphql`. SQL timeout is **10 minutes**. DB-transfer download and Object Transfer upload both use a **JSON string** (table name → row arrays). Object Transfer is a **delta**: only rows that are new or changed vs the latest download; FKs may point at Orig. IDs that already exist on the site. `/publish` does not send XML.
 
 | Operation | Skill | Role |
 |-----------|-------|------|
 | `Select_admin_transfer_download { json }` | `/download-db` | Whole-site DB-transfer JSON |
+| `Mutate_admin_transfer_backup(deleteOlderThan)` | `/publish` (ask first) | Application backup; optional days to drop older `ApplicationBackup*` rows |
 | `Mutate_admin_transfer_upload(json, isTest)` | dry-run after generate; `/publish` | Apply Object Transfer JSON (`isTest: true` dry-run, `false` apply) |
 | `Mutate_admin_precompile` | `/publish` (after upload) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
 
@@ -303,6 +304,13 @@ mutation ($json: String!, $isTest: Boolean!) {
 }
 
 mutation {
+  Mutate_admin_transfer_backup {
+    success
+    messages { procedure msgType msgText }
+  }
+}
+
+mutation {
   Mutate_admin_precompile {
     success
     messages { procedure msgType msgText }
@@ -310,4 +318,4 @@ mutation {
 }
 ```
 
-`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). `/publish` uploads again with `isTest: false`, then precompiles only when connection `permission` is `full`. Use `/precompile` when the transfer is already on the site (`full` only).
+`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). Before `/publish` (`isTest: false`), **always ask** whether to run `Mutate_admin_transfer_backup` first (no `deleteOlderThan` unless the user asked for days). Yes → `scripts/backup-admin-transfer.py`; fail → do not publish. `/publish` then uploads with `isTest: false`, then precompiles only when connection `permission` is `full`. Use `/precompile` when the transfer is already on the site (`full` only).

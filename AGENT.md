@@ -54,7 +54,7 @@ flowchart LR
 3. **Extract env** — catalog + shared + per-object specs under `projects/<project>/env/`
 4. **Change loop** — `changes/<slug>/` with `tasks.md` (checklist), **`notes.md`** (requested vs done), copied object specs, generated Object Transfer in `output/`. Write or update `notes.md` while working, not as an afterthought. Skip this step in **`read-only`**.
 5. **Dry-run** — after generate, **immediately** run `scripts/push-object-transfer.py --only-test` (upload with `isTest: true`). Do **not** ask first. If it fails, report messages and do **not** offer `/publish`. If connection is missing, skip dry-run with one sentence and do not offer `/publish`. Skip in **`read-only`**.
-6. **Publish** — only after a successful dry-run. `/publish` applies the OT (`isTest: false`). **Precompile** runs only when `permission` is **`full`**; at `read-write` the script skips it and you announce that. Then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**. **`read-only`** never publishes.
+6. **Publish** — only after a successful dry-run. Before `/publish`, **always ask** whether to run an application backup first (`Mutate_admin_transfer_backup`, no `deleteOlderThan`) — even when conventions **Publish after dry-run** is `auto`. Yes → `scripts/backup-admin-transfer.py`; fail → stop, do not publish. No → publish immediately. `/publish` applies the OT (`isTest: false`). **Precompile** runs only when `permission` is **`full`**; at `read-write` the script skips it and you announce that. Then `/download-db` refreshes `env/`. Follow **Agent loop** in `projects/<name>/conventions.md` (below). Default is **ask**. **`read-only`** never publishes.
 
 There is **no** `/push` skill. `/precompile` is precompile only (not part of the loop; **`full`** only).
 
@@ -116,6 +116,7 @@ Extract includes **all** objects from the site; `companyId` is metadata on each 
 | Generate change OT | [`scripts/generate-change-loop.py`](scripts/generate-change-loop.py) |
 | Dry-run OT (`isTest`) | [`scripts/push-object-transfer.py`](scripts/push-object-transfer.py) `--only-test` |
 | Publish (real OT; precompile if `full`) | [`scripts/publish-object-transfer.py`](scripts/publish-object-transfer.py) |
+| Application backup (ask before `/publish`) | [`scripts/backup-admin-transfer.py`](scripts/backup-admin-transfer.py) (`Mutate_admin_transfer_backup`) |
 | Precompile only | [`scripts/precompile-settings.py`](scripts/precompile-settings.py) |
 | Spec language | [spec-format.md](docs/transfer/spec-format.md) ([YAML key order](docs/transfer/spec-format.md#yaml-key-order)) |
 | Normalize spec YAML keys | [`scripts/normalize-spec-yaml.py`](scripts/normalize-spec-yaml.py) |
@@ -237,7 +238,7 @@ User UI testing skills live in [`ui_testing/`](ui_testing/) (not mixed with tran
 | `/sync-main` | Hourly check of `origin/main` and fast-forward pull | [`.agents/skills/sync-main/SKILL.md`](.agents/skills/sync-main/SKILL.md) |
 | `/ui-test` | Drive User UI in the browser; **always** write a result MP4 | [`ui_testing/SKILL.md`](ui_testing/SKILL.md), [`ui_testing/report-video.md`](ui_testing/report-video.md) |
 
-After generate, **auto-run** dry-run `--only-test` unless **`read-only`**. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`) when permission is `read-write` or `full`. Then `/download-db` per **Download-db after publish**. There is no `/push` skill.
+After generate, **auto-run** dry-run `--only-test` unless **`read-only`**. Then `/publish` per **Publish after dry-run** in conventions (`ask` unless `auto`) when permission is `read-write` or `full`. Before `/publish`, always ask whether to run `Mutate_admin_transfer_backup` first (no conventions `auto`). Then `/download-db` per **Download-db after publish**. There is no `/push` skill.
 
 ### Change loop `notes.md`
 
@@ -473,7 +474,7 @@ Full apply via `/publish` (upload JSON with `isTest: false`, then precompile; ge
 - [ ] Tree icon = FA **6.5.1** class via `search-fa-icons.py` (local [`data/fontawesome-icons.json`](data/fontawesome-icons.json)); color = existing CustomColorCode on `object.color` / `objectType.color` (not HEX; do not spec obsolete `CompanyTreeColor` / `ObjectTypeTreeColorFont`)
 - [ ] `ids.explicit` populated for Orig. ID import
 - [ ] `output/*-object-transfer.json` generated
-- [ ] After generate, dry-run `--only-test` (skip in `read-only`); on success `/publish` per conventions and site `permission` (`read-write` = OT only; `full` = OT + precompile; `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Same for `/download-db` after successful publish.
+- [ ] After generate, dry-run `--only-test` (skip in `read-only`); on success `/publish` per conventions and site `permission` (`read-write` = OT only; `full` = OT + precompile; `ask` → offer this loop / this+remember / skip; `auto` → run and announce). Before `/publish`, always ask whether to backup (`Mutate_admin_transfer_backup`; fail → stop). Same for `/download-db` after successful publish.
 
 ## Key data files
 

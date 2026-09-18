@@ -12,7 +12,7 @@ Agent-oriented knowledge base for Xeelo configuration: **download DB transfer �
    - `python scripts/extract-db-transfer-to-env.py <snapshot.json> -o projects/<name>/env`
    - `python scripts/init-change-loop.py --project projects/<name> --slug <slug>`
    - Edit `changes/<slug>/objects/...` then `python scripts/generate-change-loop.py projects/<name>/changes/<slug>`
-4. After generate the loop dry-runs the OT (`--only-test`) unless `permission` is `read-only`. **`/publish`** applies it (`isTest: false`) and precompiles only when `permission` is **`full`** (`ask` unless the site’s `conventions.md` says `auto`). Same for **`/download-db`** after a successful publish.
+4. After generate the loop dry-runs the OT (`--only-test`) unless `permission` is `read-only`. **`/publish`** applies it (`isTest: false`) and precompiles only when `permission` is **`full`** (`ask` unless the site’s `conventions.md` says `auto`). Before `/publish`, always ask whether to backup (`Mutate_admin_transfer_backup`). Same for **`/download-db`** after a successful publish.
 
 ## Read vs generate
 
@@ -49,6 +49,7 @@ Env vars: `XEELO_ADMIN_REPO`, `XEELO_USER_REPO` (defaults: sibling repos under `
 | [scripts/download-db-transfer.py](scripts/download-db-transfer.py) | GraphQL DB-transfer download |
 | [scripts/push-object-transfer.py](scripts/push-object-transfer.py) | GraphQL OT JSON upload (dry-run `--only-test` → `isTest`) |
 | [scripts/publish-object-transfer.py](scripts/publish-object-transfer.py) | Real OT upload (`isTest: false`); precompile if `permission` is `full` |
+| [scripts/backup-admin-transfer.py](scripts/backup-admin-transfer.py) | Application backup (`Mutate_admin_transfer_backup`; ask before `/publish`) |
 | [scripts/precompile-settings.py](scripts/precompile-settings.py) | GraphQL precompile only |
 | [scripts/extract-db-transfer-to-env.py](scripts/extract-db-transfer-to-env.py) | DB → env |
 | [scripts/generate-change-loop.py](scripts/generate-change-loop.py) | Loop → OT JSON |

@@ -1,4 +1,4 @@
-"""Xeelo GraphQL client: connection, admin transfer download/upload, precompile."""
+"""Xeelo GraphQL client: connection, admin transfer download/upload/backup, precompile."""
 
 from __future__ import annotations
 
@@ -39,6 +39,15 @@ mutation AdminTransferUpload($json: String!, $isTest: Boolean!) {
 MUTATION_PRECOMPILE = """
 mutation AdminPrecompile {
   Mutate_admin_precompile {
+    success
+    messages { procedure msgType msgText }
+  }
+}
+"""
+
+MUTATION_BACKUP = """
+mutation AdminTransferBackup($deleteOlderThan: Int) {
+  Mutate_admin_transfer_backup(deleteOlderThan: $deleteOlderThan) {
     success
     messages { procedure msgType msgText }
   }
@@ -484,6 +493,31 @@ def push_object_transfer(
         success=True,
         messages=messages,
     )
+
+
+def backup_admin_transfer(
+    config: ConnectionConfig,
+    *,
+    delete_older_than: int | None = None,
+    timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
+) -> dict[str, Any]:
+    """Create an application backup via Mutate_admin_transfer_backup."""
+    config.require_write()
+    if delete_older_than is not None and (
+        not isinstance(delete_older_than, int) or isinstance(delete_older_than, bool) or delete_older_than < 1
+    ):
+        raise ValueError("delete_older_than must be a positive integer")
+    with XeeloGraphqlClient(config, timeout=timeout_seconds) as client:
+        data = client.request(
+            MUTATION_BACKUP,
+            {"deleteOlderThan": delete_older_than},
+        )
+    result = data.get("Mutate_admin_transfer_backup") or {}
+    messages = list(result.get("messages") or [])
+    if not bool(result.get("success")):
+        detail = format_mutation_messages(messages) or "unknown error"
+        raise GraphqlError(f"Mutate_admin_transfer_backup failed: {detail}")
+    return {"success": True, "messages": messages}
 
 
 def precompile_settings(

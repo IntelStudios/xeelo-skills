@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 Upload Object Transfer JSON and apply it (`isTest: false`). Then `Mutate_admin_precompile` **only** when `.xeelo-connection.json` `permission` is `full`; at `read-write` skip precompile and announce it. Read [AGENT.md](../../AGENT.md) for the full development loop.
 
-Typical order after a change: generate OT → dry-run `--only-test` (automatic, `isTest: true`) → `/publish` (ask or `auto` in conventions) → `/download-db` (ask or `auto`).
+Typical order after a change: generate OT → dry-run `--only-test` (automatic, `isTest: true`) → `/publish` (ask or `auto` in conventions; **always ask backup first**) → `/download-db` (ask or `auto`).
 
 Do **not** auto-run `/publish` after generate unless this site’s `conventions.md` has **Publish after dry-run:** `auto`. Otherwise only follow this skill when the user explicitly asks to publish, agrees after you asked, or picks “remember” (then write `auto` into that file — see [AGENT.md § Agent loop](../../AGENT.md#agent-loop-in-conventions)).
 
@@ -54,6 +54,23 @@ $PYTHON scripts/generate-change-loop.py \
 
 Then continue. Do not invent a path.
 
+## Step 0.5 — Application backup (always ask)
+
+Before any real upload (`isTest: false`), when `permission` is `read-write` or `full`, **ask** whether to create an application backup first. Ask even if **Publish after dry-run** is `auto`. Do **not** ask before dry-run (`--only-test`). Do **not** add a conventions `auto` key for this.
+
+Offer **Yes** / **No**:
+
+- **Yes** — run backup **without** `--delete-older-than` (SQL `null`, keep all backups). Wait for `Backup success=True`. Then continue to Step 1. If the mutation fails (`ACCESS_DENIED`, unknown field on older Xeelo, `success=false`), **stop** and do **not** publish.
+
+```bash
+$PYTHON scripts/backup-admin-transfer.py \
+  --connection projects/<project>/.xeelo-connection.json
+```
+
+Optional `--delete-older-than N` only when the user explicitly asked to drop older `ApplicationBackup*` rows.
+
+- **No** — skip backup and continue to Step 1.
+
 ## Step 1 — Publish (apply; precompile if `full`)
 
 The script uploads OT (`isTest: false`). It precompiles **only** when `permission` is `full`. At `read-write` it prints `Precompile skipped` — announce that in chat (`full` or `/precompile` later).
@@ -94,6 +111,7 @@ Read **Download-db after publish** in `projects/<project>/conventions.md` (`ask`
 
 ## Errors
 
+- **Backup success=false / unknown field** — report messages; **do not publish**. Older sites may lack `Mutate_admin_transfer_backup`.
 - **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
 - **Permission** — `read-only` cannot publish. Script exits with `needs read-write or full`. Do not retry until the user sets `permission`.
 - **Upload success=false** — report mutation messages; site was not fully applied.

@@ -23,11 +23,13 @@ from ot_builder.graphql_client import (  # noqa: E402
     GraphqlAuthError,
     GraphqlError,
     MUTATION_UPLOAD,
+    MUTATION_BACKUP,
     QUERY_DOWNLOAD,
     XeeloGraphqlClient,
     collect_transfer_paths,
     decode_transfer_xml_bytes,
     download_db_transfer_json,
+    backup_admin_transfer,
     packages_from_loop,
     precompile_settings,
     push_object_transfer,
@@ -476,6 +478,121 @@ class PushObjectTransferTests(unittest.TestCase):
         self.assertTrue(result.success)
         with self.assertRaisesRegex(ConnectionPermissionError, "needs full"):
             precompile_settings(config)
+
+
+class BackupAdminTransferTests(unittest.TestCase):
+    def test_backup_without_delete_older_than(self) -> None:
+        config = ConnectionConfig(
+            xeelo_url="https://example.xeelo.online",
+            token="t",
+            permission=PERMISSION_READ_WRITE,
+        )
+        calls: list[tuple[str, dict | None]] = []
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                calls.append((document, variables))
+                return {
+                    "Mutate_admin_transfer_backup": {
+                        "success": True,
+                        "messages": [],
+                    }
+                }
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            result = backup_admin_transfer(config)
+        self.assertTrue(result["success"])
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0][0], MUTATION_BACKUP)
+        self.assertEqual(calls[0][1], {"deleteOlderThan": None})
+
+    def test_backup_with_delete_older_than(self) -> None:
+        config = ConnectionConfig(
+            xeelo_url="https://example.xeelo.online",
+            token="t",
+            permission=PERMISSION_FULL,
+        )
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                seen.append(variables)
+                return {"Mutate_admin_transfer_backup": {"success": True, "messages": []}}
+
+        seen: list[dict | None] = []
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            backup_admin_transfer(config, delete_older_than=7)
+        self.assertEqual(seen, [{"deleteOlderThan": 7}])
+
+    def test_backup_rejects_non_positive_days(self) -> None:
+        config = ConnectionConfig(
+            xeelo_url="https://example.xeelo.online",
+            token="t",
+            permission=PERMISSION_READ_WRITE,
+        )
+        with self.assertRaisesRegex(ValueError, "positive integer"):
+            backup_admin_transfer(config, delete_older_than=0)
+
+    def test_read_only_blocks_backup(self) -> None:
+        config = ConnectionConfig(
+            xeelo_url="https://example.xeelo.online",
+            token="t",
+            permission=PERMISSION_READ_ONLY,
+        )
+        with self.assertRaisesRegex(ConnectionPermissionError, "read-only"):
+            backup_admin_transfer(config)
+
+    def test_backup_failure_raises(self) -> None:
+        config = ConnectionConfig(
+            xeelo_url="https://example.xeelo.online",
+            token="t",
+            permission=PERMISSION_READ_WRITE,
+        )
+
+        class FakeClient:
+            def __init__(self, *_args, **_kwargs):
+                return None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return None
+
+            def request(self, document, variables=None):
+                return {
+                    "Mutate_admin_transfer_backup": {
+                        "success": False,
+                        "messages": [
+                            {
+                                "procedure": "dbo.spAdminDbSetupXMLBackup",
+                                "msgType": "DANGER",
+                                "msgText": "backup failed",
+                            }
+                        ],
+                    }
+                }
+
+        with patch("ot_builder.graphql_client.XeeloGraphqlClient", FakeClient):
+            with self.assertRaisesRegex(GraphqlError, "backup failed"):
+                backup_admin_transfer(config)
 
 
 if __name__ == "__main__":
