@@ -38,6 +38,7 @@ objectActions:
         export async function main() { return "OK"; }
       EndPointRunWait: "1"
       ApplicableEventType: "Save,SaveNew"
+      ResponseCodeObjectLineID: { field: RESULT_CODE }
       ResponseTextObjectLineID: { field: RESULT_MEMO }
     conditions:
       - field: LOAD_TX
@@ -70,9 +71,9 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 - [ ] `workflowSteps` names match `workflow.steps[].name`. For `WorkflowAction`, that is the **target** step after the button; gate `CustomJS` with `Context.LastWorkflowAction` when several buttons land on the same step
 - [ ] Button (if used) is type `button`; condition equals `1`
 - [ ] Change role and status: `spRequestWorkflowUpdate` (this request) unless you need all versions or keep exclusion; params `{ role }` / `{ status }`; not a `WorkflowStepAction`
-- [ ] `ResponseTextObjectLineID` points at a memo/text/number line
+- [ ] `ResponseCodeObjectLineID` **and** `ResponseTextObjectLineID` both set to existing lines (types 1, 2, 3, 4, 11, 12). Text: **Memo (11)** for long `main()` output. Do not omit these params to shrink Object Transfer. Add the lines in the same change if missing
 - [ ] Email: type `spNotificationDataInsert` / `…Last` + `params.NotificationID1: { notification: key }` ([add-notification.md](add-notification.md))
-- [ ] `EndPointRunWait: "1"` if the result must land on the request
+- [ ] `EndPointRunWait: "1"` if the result must land on the request. Wait `1` without both response line IDs is invalid (`spRequestUpdate` / SQL `Incorrect syntax near '}'`)
 - [ ] Bulk CREATE: batch `input` + limited parallel `client.request`; raise `EndPointRunTimeout` ([nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#6-batch--parallel-create))
 - [ ] GraphQL identifiers in `CustomJS` match **env** `object.code` / `fields[].code` after `/download-db` ([graphql.md](../docs/entities/graphql.md))
 - [ ] Self-update: no `createType`, `withRefresh: false`; `CREATE` only on a **different** object
@@ -93,6 +94,7 @@ python scripts/generate-change-loop.py projects/<project>/changes/<slug>
 | Action never runs | Missing `WorkflowStepObjectAction`; wrong step; `ApplicableEventType` filter |
 | Runs on every save | Missing condition on the button (or other gate); **`is_not_empty` on Memo** is always true after the first write (slot = memo ID, not HTML) |
 | Result not on the form | `EndPointRunWait` is 0; wrong `ResponseTextObjectLineID`; line type not 1/2/3/4/11/12 |
+| Request save fails with SQL `Incorrect syntax near '}'` | `EndPointRunWait=1` and missing / unbound `ResponseCodeObjectLineID` or `ResponseTextObjectLineID`. `spRequestUpdate` still runs and treats the Node JSON body as SQL. Bind both lines; do not `log.error` raw JSON onto the current request |
 | Button does nothing | Request already Completed; button hidden by extended validation; button not editable on the workflow step (`WorkflowStepAccess`); extra step `IsActive = 0` because refresh did not see a `WorkflowStepAction` targeting that status |
 | Action loops / times out | GraphQL mutation on the **current** request used `withRefresh: true` or `createType` — omit both; see [nodejs.md](../docs/entities/nodejs.md#mutating-the-current-request--no-refresh) |
 | Last on other completed requests does not run | `{ requestId, withRefresh: true }` is not an update action — use `createType: UPDATE` + that object’s `updateAction`; see [nodejs-graphql-patterns.md](nodejs-graphql-patterns.md#8-start-update-action-on-completed-requests) |
