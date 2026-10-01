@@ -18,9 +18,10 @@ Platform details: parent xeelo-skills [docs/entities/localization.md](../../docs
 
 ## Agent loop
 
-Values: `ask` (default) or `auto`. Missing key = `ask`.
+Values: `ask` (default) or `auto`. **Backup before publish** is `ask` | `yes` | `no`. Missing key = `ask`.
 
 - **Publish after dry-run:** ask
+- **Backup before publish:** ask
 - **Download-db after publish:** ask
 - **Generate table comments:** ask
 

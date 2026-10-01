@@ -44,7 +44,7 @@ Some tables/columns have **no spec keys** yet. Merge them into the OT JSON befor
 
 ## Publish from xeelo-skills
 
-After generate, the loop **automatically** dry-runs (`isTest: true`) unless site `permission` is `read-only`. `/publish` applies for real (`isTest: false`). Before `/publish`, **always ask** whether to run `Mutate_admin_transfer_backup` first (no `deleteOlderThan` unless asked). Precompile (`Mutate_admin_precompile`) runs only when `permission` is **`full`**; at `read-write` the publish script skips it (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`). See [AGENT.md § Site permission](../../AGENT.md#site-permission).
+After generate, the loop **automatically** dry-runs (`isTest: true`) unless site `permission` is `read-only`. `/publish` applies for real (`isTest: false`). Before `/publish`, follow **Backup before publish** (`ask` | `yes` | `no`; missing = `ask`; remember writes `yes` or `no`). No `deleteOlderThan` unless asked. Precompile (`Mutate_admin_precompile`) runs only when `permission` is **`full`**; at `read-write` the publish script skips it (`ask` unless **Publish after dry-run** in the site’s `conventions.md` is `auto`). See [AGENT.md § Site permission](../../AGENT.md#site-permission).
 
 ```bash
 # Dry-run (automatic after generate) — CLI flag --only-test maps to isTest
@@ -66,7 +66,7 @@ python scripts/precompile-settings.py \
 GraphQL flow (synchronous, 10 min SQL timeout):
 
 1. Load `.xeelo-connection.json` (`xeeloUrl`, admin `token`, `permission`)
-2. Before `/publish`, ask whether to run `Mutate_admin_transfer_backup` (optional `deleteOlderThan`; skill default is omit). Needs `read-write` or `full`. Fail → stop.
+2. Before `/publish`, follow **Backup before publish** (`ask` offers remember; `yes` / `no` run without asking). Optional `deleteOlderThan`; skill default is omit. Needs `read-write` or `full`. Fail → stop.
 3. `Mutate_admin_transfer_upload(json, isTest)` — JSON string of table→rows; `isTest: true` dry-run, `false` apply. There is **no** separate process mutation. Needs `read-write` or `full`.
 4. `/publish` then `Mutate_admin_precompile` **only if `permission` is `full`**, and poll `{xeeloUrl}/graphql-api/health` (process may restart)
 

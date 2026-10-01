@@ -285,7 +285,7 @@ Fixed operations, **not** bound to an object. They require a GraphQL token with 
 | Operation | Skill | Role |
 |-----------|-------|------|
 | `Select_admin_transfer_download { json }` | `/download-db` | Whole-site DB-transfer JSON |
-| `Mutate_admin_transfer_backup(deleteOlderThan)` | `/publish` (ask first) | Application backup; optional days to drop older `ApplicationBackup*` rows |
+| `Mutate_admin_transfer_backup(deleteOlderThan)` | `/publish` (**Backup before publish**) | Application backup; optional days to drop older `ApplicationBackup*` rows |
 | `Mutate_admin_transfer_upload(json, isTest)` | dry-run after generate; `/publish` | Apply Object Transfer JSON (`isTest: true` dry-run, `false` apply) |
 | `Mutate_admin_precompile` | `/publish` (after upload) and `/precompile` | Rebuild settings cache; GraphQL process **may restart** |
 
@@ -318,4 +318,4 @@ mutation {
 }
 ```
 
-`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). Before `/publish` (`isTest: false`), **always ask** whether to run `Mutate_admin_transfer_backup` first (no `deleteOlderThan` unless the user asked for days). Yes → `scripts/backup-admin-transfer.py`; fail → do not publish. `/publish` then uploads with `isTest: false`, then precompiles only when connection `permission` is `full`. Use `/precompile` when the transfer is already on the site (`full` only).
+`isTest: true` verifies the package without applying it (loop dry-run; CLI `--only-test`). Before `/publish` (`isTest: false`), follow **Backup before publish** in the site’s `conventions.md` (`ask` | `yes` | `no`; missing = `ask`). `ask` offers backup now, backup and remember, skip, or skip and remember. `yes` runs `scripts/backup-admin-transfer.py`; `no` skips. No `deleteOlderThan` unless the user asked for days. Fail → do not publish. `/publish` then uploads with `isTest: false`, then precompiles only when connection `permission` is `full`. Use `/precompile` when the transfer is already on the site (`full` only).
