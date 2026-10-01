@@ -173,6 +173,9 @@ def _apply_extracted_line_extras(
             field["imageResizeMax"] = resize
         _emit_true(field, "mobileScan", line.get("ObjectLineAttachmentMobileIsScan"))
         _emit_true(field, "mobileSignature", line.get("ObjectLineAttachmentMobileIsSignature"))
+        file_types = line.get("ObjectLineAttachmentFileTypeList")
+        if file_types and str(file_types).strip():
+            field["fileTypeList"] = str(file_types).strip()
     if ftype == "attachment_preview":
         preview_code = _object_line_code(index, _int(line.get("ObjectLineAttPreviewObjectLineID")))
         if preview_code:

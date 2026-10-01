@@ -60,7 +60,8 @@
       "ObjectLineAttachmentOCRLang": "ocrLang",
       "ObjectLineAttachmentImageResizeMax": "imageResizeMax",
       "ObjectLineAttachmentMobileIsScan": "mobileScan",
-      "ObjectLineAttachmentMobileIsSignature": "mobileSignature"
+      "ObjectLineAttachmentMobileIsSignature": "mobileSignature",
+      "ObjectLineAttachmentFileTypeList": "fileTypeList"
     }
   },
   "subgrid": {

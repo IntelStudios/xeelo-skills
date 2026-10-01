@@ -266,6 +266,9 @@ def _apply_subline_extras(
             line_row["ObjectSubLineAttachmentMobileIsSignature"] = (
                 1 if field.get("mobileSignature") else 0
             )
+        file_types = field.get("fileTypeList")
+        if file_types is not None and str(file_types).strip():
+            line_row["ObjectSubLineAttachmentFileTypeList"] = str(file_types).strip()
 
 
 def _bind_subline_cross_fields(
@@ -841,6 +844,9 @@ def _apply_extracted_subline_extras(
             field["imageResizeMax"] = resize
         _emit_true(field, "mobileScan", line.get("ObjectSubLineAttachmentMobileIsScan"))
         _emit_true(field, "mobileSignature", line.get("ObjectSubLineAttachmentMobileIsSignature"))
+        file_types = line.get("ObjectSubLineAttachmentFileTypeList")
+        if file_types and str(file_types).strip():
+            field["fileTypeList"] = str(file_types).strip()
     if ftype == "attachment_preview":
         preview_id = _int(line.get("ObjectSubLineAttPreviewObjectSubLineID"))
         preview_code = line_id_to_code.get(preview_id) if preview_id is not None else None

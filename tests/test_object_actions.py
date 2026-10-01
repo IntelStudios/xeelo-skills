@@ -424,6 +424,7 @@ def _line_types_spec() -> dict:
                                     "imageResizeMax": 1600,
                                     "mobileScan": True,
                                     "mobileSignature": False,
+                                    "fileTypeList": ".jpg",
                                 },
                                 {
                                     "name": "Preview",
@@ -585,6 +586,7 @@ class LineTypeExtrasTests(unittest.TestCase):
         self.assertEqual(lines["FILE"]["ObjectLineAttachmentImageResizeMax"], 1600)
         self.assertEqual(lines["FILE"]["ObjectLineAttachmentMobileIsScan"], 1)
         self.assertEqual(lines["FILE"]["ObjectLineAttachmentMobileIsSignature"], 0)
+        self.assertEqual(lines["FILE"]["ObjectLineAttachmentFileTypeList"], ".jpg")
         self.assertEqual(
             lines["PREVIEW"]["ObjectLineAttPreviewObjectLineID"], lines["FILE"]["ObjectLineID"]
         )

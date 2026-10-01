@@ -41,7 +41,7 @@ Spec keys on `layout.tabs[].sections[].fields[]`. Existing: `precision`, `object
 |------|---------------------------|
 | `number` | `precision` required in Admin (`ObjectLineNumberPrecision` / **`ObjectSubLineNumberPrecision`**); without it a **subgrid** number does not store. `numberSeparator`, `numberMin`, `numberMax`; on-grid **total** (`onGrid.fields.<code>.isTotal`; subgrid: `subgrids.<key>.onGrid.fields.<code>.isTotal`) |
 | `button` | `saveAction` required — **0 Save** (stay on the request), **1 Save & close** ([`ObjectLineButtonSaveAction.json`](../data/enums/ObjectLineButtonSaveAction.json)). Use **0** when the click should run an ObjectAction / Node.js Last. Optional `buttonMessage`; **`colorBack` / `colorFont`** = `CustomColorCode` from the site palette (Admin Color Back / Color Font; not HEX). GUI classes `xe-back-{code}` / `xe-font-{code}`. Palette: [`CustomColor.json`](../data/enums/CustomColor.json). |
-| `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` |
+| `attachment` | `attachmentStorageId` required; `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature`, `fileTypeList` |
 | `attachment_preview` | `previewField` (attachment field **code**) required → `ObjectLineAttPreviewObjectLineID`; optional `previewDownload` |
 
 ```yaml

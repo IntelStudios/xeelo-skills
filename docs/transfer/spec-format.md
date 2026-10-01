@@ -205,7 +205,7 @@ Fields are defined inside their section under `layout.tabs[]`.
 | `colorFont` | Button **text** — `CustomColor.CustomColorCode` (e.g. `white`). Admin Color Font. GUI: `xe-font-{code}` |
 | `colorBack` | Button **background** — same palette (e.g. `blue`). Admin Color Back. GUI: `xe-back-{code}` |
 | `isReferenceLink` | `ObjectLineIsReferenceLink` (combo types) |
-| `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature` | Attachment extras |
+| `attachmentStorageId`, `ocr`, `ocrLang`, `imageResizeMax`, `mobileScan`, `mobileSignature`, `fileTypeList` | Attachment extras. `fileTypeList` is comma-separated extensions with a leading dot (`.jpg` or `.gif, .jpg, .png`). Omit for no restriction. |
 | `previewField`, `previewDownload` | Attachment preview (`previewField` = attachment field **code**) |
 | `alwaysHidden` | `ObjectLineIsHidden` — line never shown in GUI (definition). Distinct from template `hidden: true` / `extended.hidden`. |
 | `isActive` | `ObjectLine.IsActive`. `false` soft-disables the line (OT does not delete). Omit the field from spec and the site row stays **active**. |
@@ -407,7 +407,7 @@ Always emit `onGrid` when adding a subgrid (same habit as request inbox `onGrid`
 
 Object Transfer upload is delete+insert of the provided `ObjectSub` row. If that row is in the package and paging columns are omitted, paging **resets to off**. Keep `allowPaging` / `defaultPaging` in spec whenever the table should page. After `/publish`, precompile rebuilds cache (`SubGridIsPaging`, default page size). GraphQL `Select_{ObjectSubCode}` `limit`/`offset` is a different pager (API result window) — [graphql.md](../entities/graphql.md#subgrid-objectsubcode).
 
-Column extras match ObjectLine ([object-line-types.md](../entities/object-line-types.md#subgrid-columns-objectsubline)): combo/radio/multi **`reference`**, number **`precision`**, attachment `attachmentStorageId`, preview `previewField` (subgrid column code), radio/multi `columnNumbers`. Lookup and client-calc use the same spec keys as the request template; `sourceField` / `id{CODE}` resolve **inside this objectSub**. Types **5 / 13 / 18** are not in `ObjectSubLineType` — do not spec them here.
+Column extras match ObjectLine ([object-line-types.md](../entities/object-line-types.md#subgrid-columns-objectsubline)): combo/radio/multi **`reference`**, number **`precision`**, attachment `attachmentStorageId` and `fileTypeList`, preview `previewField` (subgrid column code), radio/multi `columnNumbers`. Lookup and client-calc use the same spec keys as the request template; `sourceField` / `id{CODE}` resolve **inside this objectSub**. Types **5 / 13 / 18** are not in `ObjectSubLineType` — do not spec them here.
 
 Not emitted yet: unique/gridSort on sublines, Generate + combo Multiselect, `ObjectSubPrefill*`, comments for `ObjectSub*`.
 

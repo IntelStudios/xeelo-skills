@@ -276,6 +276,11 @@
         "imageResizeMax": { "type": "integer", "minimum": 1 },
         "mobileScan": { "type": "boolean" },
         "mobileSignature": { "type": "boolean" },
+        "fileTypeList": {
+          "type": "string",
+          "minLength": 1,
+          "description": "ObjectLineAttachmentFileTypeList / ObjectSubLineAttachmentFileTypeList. Comma-separated extensions with a leading dot, e.g. .jpg or .gif, .jpg, .png. Omit for no restriction."
+        },
         "previewField": { "type": "string", "minLength": 1 },
         "previewDownload": { "type": "boolean" },
         "alwaysHidden": {

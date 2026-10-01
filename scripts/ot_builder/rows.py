@@ -153,6 +153,9 @@ def _apply_object_line_extras(
         _set_optional_bool(
             line_row, "ObjectLineAttachmentMobileIsSignature", field.get("mobileSignature")
         )
+        _set_optional_nonempty(
+            line_row, "ObjectLineAttachmentFileTypeList", field.get("fileTypeList")
+        )
     if ftype == "attachment_preview":
         preview_field = field.get("previewField")
         if preview_field:

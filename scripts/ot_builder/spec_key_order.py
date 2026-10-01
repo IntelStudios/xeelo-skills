@@ -94,6 +94,7 @@ FIELD_KEYS = (
     "imageResizeMax",
     "mobileScan",
     "mobileSignature",
+    "fileTypeList",
     "previewField",
     "previewDownload",
     "alwaysHidden",
