@@ -234,6 +234,20 @@ def _is_auth_failure(message: str, status_code: int | None = None) -> bool:
     )
 
 
+def read_comment_requestor(path: Path) -> str:
+    """Display name for TableComments.UserName. Does not require xeeloUrl or token."""
+    path = Path(path)
+    if not path.is_file():
+        return ""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    if not isinstance(data, dict):
+        return ""
+    return str(data.get("commentRequestor") or "").strip()
+
+
 @dataclass
 class ConnectionConfig:
     xeelo_url: str
@@ -242,6 +256,7 @@ class ConnectionConfig:
     user_login: str | None = None
     user_pwd: str | None = None
     permission: str = PERMISSION_READ_ONLY
+    comment_requestor: str = ""
 
     @classmethod
     def load(cls, path: Path) -> "ConnectionConfig":
@@ -255,6 +270,7 @@ class ConnectionConfig:
             raise ValueError(f"{path}: missing xeeloUrl. {CONNECTION_HELP}")
         if not token or not str(token).strip():
             raise ValueError(f"{path}: missing token. {CONNECTION_HELP}")
+        requestor = read_comment_requestor(path)
         return cls(
             xeelo_url=str(xeelo).rstrip("/"),
             token=str(token).strip(),
@@ -262,6 +278,7 @@ class ConnectionConfig:
             user_login=_optional_str(data.get("userLogin")),
             user_pwd=_optional_str(data.get("userPwd")),
             permission=_parse_permission(data.get("permission"), path),
+            comment_requestor=requestor,
         )
 
     def __repr__(self) -> str:
@@ -270,7 +287,7 @@ class ConnectionConfig:
             "ConnectionConfig("
             f"xeelo_url={self.xeelo_url!r}, token='***', path={self.path!r}, "
             f"user_login={self.user_login!r}, user_pwd={pwd}, "
-            f"permission={self.permission!r})"
+            f"permission={self.permission!r}, comment_requestor={self.comment_requestor!r})"
         )
 
     @property

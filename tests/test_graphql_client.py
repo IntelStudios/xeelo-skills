@@ -33,6 +33,7 @@ from ot_builder.graphql_client import (  # noqa: E402
     packages_from_loop,
     precompile_settings,
     push_object_transfer,
+    read_comment_requestor,
     transfer_path_to_json,
     transfer_path_to_xml,
     xml_to_utf16_le_bytes,
@@ -85,6 +86,23 @@ class ConnectionConfigTests(unittest.TestCase):
         self.assertFalse(config.can_precompile)
         self.assertEqual(config.graphql_url, "https://example.xeelo.online/graphql")
         self.assertEqual(config.health_url, "https://example.xeelo.online/graphql-api/health")
+        self.assertEqual(config.comment_requestor, "")
+
+    def test_loads_optional_comment_requestor(self) -> None:
+        path = self._write(
+            {
+                "xeeloUrl": "https://example.xeelo.online/",
+                "token": "secret-admin",
+                "commentRequestor": "  Milan Krejčík  ",
+            }
+        )
+        config = ConnectionConfig.load(path)
+        self.assertEqual(config.comment_requestor, "Milan Krejčík")
+
+    def test_read_comment_requestor_without_url_or_token(self) -> None:
+        path = self._write({"commentRequestor": "Milan Krejčík"})
+        self.assertEqual(read_comment_requestor(path), "Milan Krejčík")
+        self.assertEqual(read_comment_requestor(path.parent / "missing.json"), "")
 
     def test_rejects_url_alias(self) -> None:
         path = self._write({"url": "https://demo.xeelo.online", "token": "t"})

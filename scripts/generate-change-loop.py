@@ -15,14 +15,21 @@ from ot_builder.delta import (  # noqa: E402
     latest_snapshot_json,
     load_baseline_json,
 )
+from ot_builder.graphql_client import read_comment_requestor  # noqa: E402
 from ot_builder.jsonout import build_object_transfer_json, write_json  # noqa: E402
 from ot_builder.rows import build_rows  # noqa: E402
 from ot_builder.spec_loader import load_spec  # noqa: E402
 
 
-def _generate_one(spec_path: Path, json_path: Path, baseline: dict | None) -> None:
+def _generate_one(
+    spec_path: Path,
+    json_path: Path,
+    baseline: dict | None,
+    *,
+    default_comment_user_name: str | None = None,
+) -> None:
     spec = load_spec(spec_path)
-    result = build_rows(spec)
+    result = build_rows(spec, default_comment_user_name=default_comment_user_name)
     text, omitted = build_object_transfer_json(result.rows, baseline=baseline)
     write_json(text, json_path)
     extra = f", {omitted} unchanged omitted" if omitted else ""
@@ -63,10 +70,13 @@ def main() -> None:
         raise SystemExit(f"No object specs under {objects_dir}")
 
     baseline = None
+    project = find_project_root(args.loop)
+    default_comment_user_name = (
+        read_comment_requestor(project / ".xeelo-connection.json") if project else ""
+    )
     if not args.no_baseline:
         snap = args.baseline
         if snap is None:
-            project = find_project_root(args.loop)
             snap = latest_snapshot_json(project) if project else None
         if snap is None:
             print("No DB-transfer snapshot; emitting all generated rows")
@@ -77,7 +87,12 @@ def main() -> None:
     for spec_path in specs:
         slug = spec_path.parent.name
         json_path = output_dir / f"{slug}-object-transfer.json"
-        _generate_one(spec_path, json_path, baseline)
+        _generate_one(
+            spec_path,
+            json_path,
+            baseline,
+            default_comment_user_name=default_comment_user_name or None,
+        )
 
     print(f"Generated {len(specs)} Object Transfer package(s) in {output_dir}")
 

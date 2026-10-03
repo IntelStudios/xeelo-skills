@@ -18,6 +18,7 @@ Determine from the user message or ask once:
 
 - **`<name>`** — project slug under `projects/`. Must be a valid directory name.
 - **`xeeloUrl`** — optional. Infer `https://<name>.xeelo.online/` only when the slug clearly matches the site hostname; otherwise leave empty for the user to fill.
+- **`commentRequestor`** — Admin **display name** (given name **and** family name), as shown in the comments portlet (`Milan Krejčík@…`). Not UserID, not login. Ask once if missing; do not invent from Cursor first-name-only user info. Never copy from another project’s connection file together with `token`.
 
 ## Steps
 
@@ -51,7 +52,7 @@ Determine from the user message or ask once:
 
    Copy [`templates/project/conventions.md`](../../../templates/project/conventions.md) to `projects/<name>/conventions.md`.
 
-3. **Write** `.xeelo-connection.json` with **empty placeholder values**. Never copy `token` or `userPwd` from other projects.
+3. **Write** `.xeelo-connection.json` with **empty placeholder values** (except `commentRequestor` when the user already gave a full name). Never copy `token` or `userPwd` from other projects.
 
    ```json
    {
@@ -59,11 +60,12 @@ Determine from the user message or ask once:
      "token": "",
      "permission": "read-only",
      "userLogin": "",
-     "userPwd": ""
+     "userPwd": "",
+     "commentRequestor": ""
    }
    ```
 
-   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`. `permission` template default is **`read-only`**. Ask once whether to set `read-write` (edit + publish OT, no precompile) or `full` (also `/precompile`). Do not change it later unless the user asks. `userLogin` / `userPwd` are optional until `/ui-test`.
+   Use inferred URL when confident; otherwise set `"xeeloUrl": ""`. `permission` template default is **`read-only`**. Ask once whether to set `read-write` (edit + publish OT, no precompile) or `full` (also `/precompile`). Do not change it later unless the user asks. `userLogin` / `userPwd` are optional until `/ui-test`. If they supplied a full name in this request, put it in `commentRequestor`; otherwise leave `""` and list it in the checklist.
 
 4. **Do not** create `.xeelo-connection.example.json`.
 
@@ -78,5 +80,6 @@ Determine from the user message or ask once:
 | `permission` | `read-only` (default) / `read-write` / `full`. Missing = `read-only`. See [AGENT.md § Site permission](../../../AGENT.md#site-permission). |
 | `userLogin` | User UI **local** username (not the GraphQL token). Optional until `/ui-test`. |
 | `userPwd` | User UI **local** password. Optional until `/ui-test`. Never print it; never copy from other projects. |
+| `commentRequestor` | Admin display name for `TableComments.UserName` (`Given Family`). Per developer — gitignored. Other people on this site keep their own value. |
 
 Remind the user that `.xeelo-connection.json` is gitignored, and that the new site folder should be committed in the nested `projects/` repo (not xeelo-skills). Next step after filling GraphQL connection: `/download-db`. UI testing: [docs/ui-testing.md](../../../docs/ui-testing.md).
