@@ -250,7 +250,7 @@ Replace `OBJECTCODE` / `FIELD_CODE` with sanitized site codes from env. **Omit `
 
 If a **button** gated the action (`equals_text` / `1`), that line stays `1` after save. Later Save events will run the action again unless the same mutation clears the button (e.g. `BUTTON_CODE: ""`).
 
-`main()` return value (with `EndPointRunWait: "1"`) writes to `ResponseTextObjectLineID` (use a memo). GraphQL `lines` writes are separate — both can be used in one script.
+`main()` return value (with `EndPointRunWait: "1"`) writes to `ResponseTextObjectLineID` (use a memo). **Require** `ResponseCodeObjectLineID` and `ResponseTextObjectLineID` on the ObjectAction; omitting them is not a valid smaller transfer. GraphQL `lines` writes are separate — both can be used in one script.
 
 ## Periodic — GraphQL mutate must refresh
 

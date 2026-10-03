@@ -88,11 +88,13 @@ Type code **`spEndPointRunNodeJSMainLast`**. Executable calls `spEndPointRunNode
 | `CustomJS` | `export async function main()` | ESM script; return value becomes the HTTP response body |
 | `EndPointRunWait` | `"1"` | Wait and write response onto object lines. `"0"` = do not wait (async); timeout still applies to the ESM process |
 | `EndPointRunTimeout` | `"60000"` | Timeout ms. Raise for bulk GraphQL CREATE (import); see [nodejs-graphql-patterns.md](../../recipes/nodejs-graphql-patterns.md#6-batch--parallel-create) |
-| `ResponseCodeObjectLineID` | — | Line for HTTP status (types 1, 2, 3, 4, 11, 12) |
-| `ResponseTextObjectLineID` | — | Line for response body — use **Memo (11)** for long text |
+| `ResponseCodeObjectLineID` | **required** | Line for HTTP status (types 1, 2, 3, 4, 11, 12) |
+| `ResponseTextObjectLineID` | **required** | Line for response body — **Memo (11)** for long text |
 | `ApplicableEventType` | `"Save,SaveNew"` | Comma list: `SaveNew,Save,WorkflowAction,…` |
 
-With `EndPointRunWait=1`, `spRequestUpdate` writes `EndPointRunResponseText` to `ResponseTextObjectLineID`.
+**Both response line IDs are mandatory** on every Run Node.js ObjectAction (`spEndPointRunNodeJSMain` / `…MainLast`). Bind them in spec and Object Transfer (`params.ResponseCodeObjectLineID` / `ResponseTextObjectLineID` → `{ field: CODE }`). Do not omit them to keep a smaller delta. If the object has no suitable lines, add them in the same change before generate.
+
+With `EndPointRunWait=1`, `spRequestUpdate` writes `EndPointRunResponseText` to `ResponseTextObjectLineID` and the HTTP status to `ResponseCodeObjectLineID`. Empty IDs plus wait still invoke that update; a JSON body with `{` / `}` then fails SQL (`Incorrect syntax near '}'`) on the current request. `EndPointRunWait: "0"` does not skip the requirement — still bind both lines. Prefer a plain string/number `return` from `main()`, not a JS object, when wait writes the body onto a line.
 
 **When mutating the current request from an ObjectAction, do not trigger refresh in the mutation** (`withRefresh: false`, omit `createType`). Nested `spRequestRefresh` re-runs this action and loops. Periodic JS is the opposite: GraphQL mutate **must** refresh ([nodejs.md](nodejs.md#periodic--graphql-mutate-must-refresh)).
 
