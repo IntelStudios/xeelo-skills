@@ -62,4 +62,4 @@ If metadata just changed on the site, **ask** whether to `/download-db` to refre
 - **Auth / ACCESS_DENIED** — GraphQL token with `isAdmin` required; there is no refresh.
 - **Permission** — script exits if `permission` is not `full` (`needs full`). Do not retry until the user sets it.
 - **success=false** — report mutation messages; do not claim the site is compiled.
-- **Timeout** — precompile can take long on a large site; retry with higher `--timeout`.
+- **Timeout / lost response** — the operation may still be running or completed. Do not immediately repeat the mutation or republish OT. Inspect available operation evidence and expected settings through authorized reads; endpoint health alone does not prove compilation. If unresolved, report unknown and stop writes. Retry only after establishing that precompile is needed and safe, with `full` permission and applicable authorization.
