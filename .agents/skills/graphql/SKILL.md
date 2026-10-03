@@ -1,8 +1,8 @@
 ---
 name: graphql
 description: >-
-  Load live GraphQL schema and access_rights from POST {xeeloUrl}/graphql and
-  save them under projects/<project>/graphql/. Use when the user wants to
+  Use verified site GraphQL schema and current access_rights from
+  POST {xeeloUrl}/graphql, with targeted or full discovery as needed. Use when the user wants to
   query or mutate GraphQL, run Select_ / Mutate_, count tickets, filter headers
   (created / createdDate), inspect access_rights, or invokes /graphql. Not for
   admin transfer (/download-db, /publish, /precompile).
@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 # GraphQL (live schema + access_rights)
 
-When the user wants to use site GraphQL (`Select_` / `Mutate_`, ticket counts, header filters, `access_rights`), **read this skill first**. Load schema and rights from `POST {xeeloUrl}/graphql` — do not guess filter shapes from product source. Admin transfer stays `/download-db`, `/publish`, `/precompile`.
+When the user wants to use site GraphQL (`Select_` / `Mutate_`, ticket counts, header filters, `access_rights`), **read this skill first**. Verify schema provenance from this endpoint and load current rights from `POST {xeeloUrl}/graphql` — do not guess filter shapes from product source. Admin transfer stays `/download-db`, `/publish`, `/precompile`.
 
 GET `{xeeloUrl}/graphql` is Apollo Sandbox (HTML). Schema comes from **POST** introspection.
 
@@ -58,9 +58,18 @@ query ExampleQuery {
 }
 ```
 
-## Step 2 — Introspection + save
+## Step 2 — Choose schema discovery scope
 
-Overwrite on every `/graphql` (same idea as a DB snapshot). Create `projects/<project>/graphql/` if missing.
+Keep Step 1's live access-rights check for the current connection; cached schema never grants access. Re-read connection permission before a mutation.
+
+- **Routine query:** reuse schema verified for this exact endpoint when provenance and continued relevance are known. Record endpoint, capture time and available configuration revision in local project notes without credentials. A matching folder name or recent timestamp alone does not establish freshness.
+- **Known missing type details:** use targeted `__type(name: ...)`, following required input/return types and checking argument wrappers and enum values. Do not guess types. Keep partial introspection separate from complete `schema.json`.
+- **First setup without adequate schema, explicit full refresh or broad schema change:** use the full refresh below. A missing or changed type may need only targeted discovery. After a relevant deployment/precompile, endpoint change or schema-validation error, invalidate affected assumptions and verify again before business operations.
+- **Unknown provenance or disabled introspection:** use supplied schema only when verified for this target and applicable to the request; otherwise stop the dependent query and explain what is missing. Never borrow another site's schema.
+
+Create `projects/<project>/graphql/` if missing. Save current rights on every invocation. Replace complete schema only after successful full refresh; a failed refresh must not make the previous schema appear current.
+
+### Full refresh example
 
 - `projects/<project>/graphql/access_rights.json` — `ExampleQuery` result
 - `projects/<project>/graphql/schema.json` — `__schema` from full introspection
@@ -68,6 +77,8 @@ Overwrite on every `/graphql` (same idea as a DB snapshot). Create `projects/<pr
 Do **not** paste the schema JSON into chat (~1.8 MB). Read from disk / `__type` for the current task.
 
 `/new-project` does not create `graphql/`. Nested `projects/` gitignores these JSON files (`templates/projects-repo/.gitignore`); copy that ignore into an existing sites repo if it is missing.
+
+Run this combined example only when full refresh was selected (it includes Step 1; do not repeat that rights request separately). For routine reuse, execute only Step 1 and save its result.
 
 From repo root:
 
@@ -160,15 +171,17 @@ Replace `<project>` before running.
 
 ## Step 3 — Query with rights + schema
 
-After a successful save:
+After current rights and sufficient target-specific schema have been verified:
 
 1. **`Select_`** only when `access_rights` has `canRead` for that object `code`. Allowed at **`read-only`**, `read-write`, and `full`.
 2. **`Mutate_`** only when `canWrite` **and** connection `permission` is `read-write` or `full`. In `read-only`, stop and tell the user to set `permission`.
 3. **`Delete_request`** only when `canDelete` **and** `permission` is `read-write` or `full`. `code` is the GraphQL object code (`Select_{code}`).
 4. Argument and filter shapes (`created`, `dateFrom` / `dateTo`, `lineFilters`, …) come from **`schema.json`** (or a follow-up `__type` query). Do not invent them from product source. Do not add them to `docs/entities/graphql.md` unless the user asks to update the KB.
-5. Pagination: `limit` default 1000, max 10000, `offset`.
+5. Pagination: platform `limit` default 1000, max 10000, `offset`. For an initial diagnostic Select explicitly request a small page (for example 10 rows), only needed fields and a schema-verified filter where appropriate. Fetch further pages sequentially only as needed; do not rely on the platform default.
+6. Bound nested collections using arguments actually supported by the verified schema. For broader retrieval agree row/page and response-size budgets. Stop further pages and narrow the query if a response is unexpectedly large or the budget is exhausted. These are agent-side limits; do not claim the existing client enforces a streaming byte cap.
+7. For counts or existence checks prefer a verified dedicated field when available; otherwise state the limits of a bounded result instead of retrieving all records or presenting a partial page as the total.
 
-Use `XeeloGraphqlClient.request` for the user’s query after this refresh.
+Use `XeeloGraphqlClient.request` after these checks; a full refresh is not required for every query.
 
 ## Output
 
@@ -176,12 +189,12 @@ Report:
 
 1. `health`
 2. `access_rights` count (and which objects are readable / writable / deletable if relevant)
-3. Paths and byte sizes of `graphql/schema.json` and `graphql/access_rights.json`
-4. Then answer the user’s GraphQL question using those files
+3. Schema source (reused, targeted or full), provenance, and paths/byte sizes of artifacts actually saved
+4. Answer the question and state pagination, truncation or unresolved schema limits; do not claim a full refresh if none ran
 
 ## Errors
 
 - **Auth / ACCESS_DENIED** — token lacks GraphQL access. Ask the user to put a valid token in `.xeelo-connection.json`. There is no refresh.
 - **Permission** — `Mutate_` / `Delete_` in `read-only`: stop; user must set `permission` to `read-write` or `full`. Do not change the field unless they ask.
-- **Introspection disabled** — `GRAPHQL_INTROSPECTION=false` on the site; stop and say schema cannot be loaded.
-- **Timeout** — large schema; retry with a longer client timeout if needed.
+- **Introspection disabled** — apply the verified supplied-schema rule in Step 2 or stop the dependent query.
+- **Timeout** — narrow discovery or the read query before considering a longer timeout. A mutation timeout is an unknown outcome: reconcile through authorized reads before any retry; never repeat a write merely with a longer timeout.
