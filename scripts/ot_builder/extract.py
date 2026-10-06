@@ -272,6 +272,7 @@ def _collect_role_status_ids(
             status_ids.add(int(status_id))
 
     track(wf_row.get("RoleID"), wf_row.get("RequestStatusID"))
+    track(wf_row.get("WorkflowFailRoleID"), wf_row.get("WorkflowFailRequestStatusID"))
     for step in steps:
         track(step.get("RoleID"), step.get("RequestStatusID"))
         for action in actions_by_step.get(int(step["WorkflowStepID"]), []):
@@ -1006,6 +1007,8 @@ def _build_workflow(
             "steps": step_specs,
         }
 
+    _apply_extracted_workflow_fail(workflow, wf_row, role_id_to_key, status_id_to_key)
+
     notif_map = notification_id_to_key or {}
     for spec_field, column in WORKFLOW_NOTIFICATION_FIELDS:
         nid = _nid(wf_row.get(column))
@@ -1028,6 +1031,31 @@ def _build_workflow(
     if explicit_step_notifs:
         explicit["workflowStepNotifications"] = explicit_step_notifs
     return workflow, explicit, roles, statuses
+
+
+def _apply_extracted_workflow_fail(
+    workflow: dict,
+    wf_row: dict,
+    role_id_to_key: dict[int, str],
+    status_id_to_key: dict[int, str],
+) -> None:
+    """Write failRole/failStatus only when the site pair differs from the header initial pair."""
+    header_role = _int(wf_row.get("RoleID"))
+    header_status = _int(wf_row.get("RequestStatusID"))
+    fail_role = _int(wf_row.get("WorkflowFailRoleID"))
+    fail_status = _int(wf_row.get("WorkflowFailRequestStatusID"))
+    if fail_role is None or fail_status is None:
+        return
+    if fail_role == header_role and fail_status == header_status:
+        return
+    if fail_role != header_role:
+        role_key = role_id_to_key.get(fail_role)
+        if role_key:
+            workflow["failRole"] = role_key
+    if fail_status != header_status:
+        status_key = status_id_to_key.get(fail_status)
+        if status_key:
+            workflow["failStatus"] = status_key
 
 
 def _workflow_step_access_specs(

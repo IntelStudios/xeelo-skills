@@ -143,6 +143,8 @@ WORKFLOW_KEYS = (
     "reuse",
     "name",
     "steps",
+    "failRole",
+    "failStatus",
     "notification",
     "exportFailNotification",
     "recallNotification",

@@ -223,6 +223,47 @@ def _track_role_status(
     )
 
 
+def _apply_workflow_fail_state(
+    spec: dict,
+    registry: IdRegistry,
+    result: BuildResult,
+    wf_id: int,
+    wf_row: dict,
+    *,
+    initial_role_key: str,
+    initial_status_key: str,
+    initial_role_id: int,
+    initial_status_id: int,
+) -> None:
+    """Workflow fail role/status default to the header initial pair."""
+    wf = spec.get("workflow") or {}
+    fail_role_key = str(wf["failRole"]) if wf.get("failRole") else initial_role_key
+    fail_status_key = str(wf["failStatus"]) if wf.get("failStatus") else initial_status_key
+    fail_role_id, fail_status_id = _track_role_status(
+        spec, registry, result, fail_role_key, fail_status_key
+    )
+    wf_row["WorkflowFailRoleID"] = fail_role_id
+    wf_row["WorkflowFailRequestStatusID"] = fail_status_id
+    if fail_role_id != initial_role_id:
+        result.edges.append(
+            {
+                "TableName": "Workflow",
+                "TableRowID": wf_id,
+                "ChildTableName": "Role",
+                "ChildTableRowID": fail_role_id,
+            }
+        )
+    if fail_status_id != initial_status_id:
+        result.edges.append(
+            {
+                "TableName": "Workflow",
+                "TableRowID": wf_id,
+                "ChildTableName": "RequestStatus",
+                "ChildTableRowID": fail_status_id,
+            }
+        )
+
+
 def _add_wf_role_status_edges(result: BuildResult, wf_id: int, role_id: int, status_id: int) -> None:
     result.edges.extend(
         [
@@ -747,6 +788,17 @@ def _build_workflow_full(spec: dict, registry: IdRegistry, oid: int, result: Bui
         "RequestStatusID": first_status_id,
         "IsActive": 1,
     }
+    _apply_workflow_fail_state(
+        spec,
+        registry,
+        result,
+        wf_id,
+        wf_row,
+        initial_role_key=str(first_step["role"]),
+        initial_status_key=str(first_step["status"]),
+        initial_role_id=first_role_id,
+        initial_status_id=first_status_id,
+    )
     _apply_workflow_header_notifications(spec, registry, wf_id, wf_row, result)
     result.rows["Workflow"] = [wf_row]
     result.edges.append(
@@ -854,6 +906,17 @@ def _build_workflow_minimal(spec: dict, registry: IdRegistry, oid: int, result: 
             "IsActive": 1,
         }
     ]
+    _apply_workflow_fail_state(
+        spec,
+        registry,
+        result,
+        wf_id,
+        result.rows["Workflow"][0],
+        initial_role_key="requestor",
+        initial_status_key="draft",
+        initial_role_id=requestor_id,
+        initial_status_id=draft_id,
+    )
     _apply_workflow_header_notifications(spec, registry, wf_id, result.rows["Workflow"][0], result)
     result.edges.append(
         {"TableName": "Object", "TableRowID": oid, "ChildTableName": "Workflow", "ChildTableRowID": wf_id}

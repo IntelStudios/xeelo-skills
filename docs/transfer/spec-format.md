@@ -794,6 +794,8 @@ Bind email templates by **key** (not Orig. ID). See [notifications](#notificatio
 - `steps[].actions[].notification`
 - `steps[].notifications: [key]` → `WorkflowStepNotification`
 
+`workflow.failRole` / `workflow.failStatus` → `WorkflowFailRoleID` / `WorkflowFailRequestStatusID`. Omit both on a **new** workflow: generate sets them to the header initial role/status (minimal: `requestor` / `draft`; full: first step). Write the keys only when the fail pair should differ. `failNotification` is independent and stays unset unless specified. Extract omits the keys when the site pair matches the header or either fail column is empty.
+
 `workflow.reuse: true` does not upsert Workflow / step / action rows, so header and action FKs on a shared process are not changed. Step junction rows can still be emitted.
 
 `steps[].isActive: false` / `steps[].actions[].isActive: false` → `IsActive = 0`. Object Transfer does not delete leftover steps or footer buttons; omit them from spec and the site row stays **active**.

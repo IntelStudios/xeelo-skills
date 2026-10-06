@@ -19,10 +19,10 @@ Header for a process. Linked to object via `ObjectDefault.WorkflowID` (not direc
 | `NotificationID` | Email on create (`SaveNew`). Spec: `workflow.notification` |
 | `ExportFailNotificationID` | Email on export fail. Spec: `workflow.exportFailNotification` |
 | `RecallNotificationID` | Email on recall. Spec: `workflow.recallNotification` |
-| `WorkflowFailNotificationID` | Email on workflow fail. Spec: `workflow.failNotification` |
+| `WorkflowFailNotificationID` | Email on workflow fail. Spec: `workflow.failNotification`. Not defaulted — omit unless the user asks. |
 | `ExportFailRoleID`, `ExportFailRequestStatusID` | State when export fails |
 | `RecallRoleID`, `RecallRequestStatusID` | State when request recalled |
-| `WorkflowFailRoleID`, `WorkflowFailRequestStatusID` | State on workflow failure |
+| `WorkflowFailRoleID`, `WorkflowFailRequestStatusID` | State on workflow failure. **New workflow:** same pair as the header initial `RoleID` / `RequestStatusID` (minimal: requestor / draft; full: first step). Spec override: `workflow.failRole` / `workflow.failStatus`. Omit both when they match the initial pair. |
 
 ## WorkflowStep
 

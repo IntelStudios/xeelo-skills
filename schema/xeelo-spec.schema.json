@@ -754,6 +754,16 @@
           "description": "Bind an existing Workflow Orig. ID. Generate omits Workflow, WorkflowStep, WorkflowStepAction, Role, and RequestStatus (and their LanguageTable). Still emits WorkflowStepAccess and ObjectDefault.WorkflowID."
         },
         "name": { "type": "string" },
+        "failRole": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Role key → Workflow.WorkflowFailRoleID. Omit = header initial RoleID."
+        },
+        "failStatus": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Status key → Workflow.WorkflowFailRequestStatusID. Omit = header initial RequestStatusID."
+        },
         "steps": {
           "type": "array",
           "items": { "$ref": "#/$defs/workflowStep" }

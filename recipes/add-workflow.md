@@ -41,6 +41,7 @@ From [`data/schemas/Workflow.json`](../data/schemas/Workflow.json):
 
 - `WorkflowName`
 - `RoleID`, `RequestStatusID` — state when request is **created**
+- `WorkflowFailRoleID`, `WorkflowFailRequestStatusID` — state on workflow failure. **New workflow:** same pair as the initial role/status above. Override with `workflow.failRole` / `workflow.failStatus` only when the fail pair should differ. `WorkflowFailNotificationID` stays empty unless `workflow.failNotification` is set.
 - `ExportFailRoleID`, `ExportFailRequestStatusID` — optional error handling
 - `RecallRoleID`, `RecallRequestStatusID` — optional recall handling
 
